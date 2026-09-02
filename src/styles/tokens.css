@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #10b981;
+  --primary-hover: #34d399;
+  --primary-soft: #f0fdf7;
+  --primary-soft-border: #a7f3d0;
+  --info: #2563eb;
+  --info-soft: #eff6ff;
+  --info-border: #bfdbfe;
+  --warning: #f59e0b;
+  --warning-soft: #fef3c7;
+  --warning-border: #fde68a;
+  --danger: #ef4444;
+  --danger-soft: #fee2e2;
+  --danger-border: #fecaca;
+  --neutral-soft: #f1f5f9;
+  --neutral-border: #e2e8f0;
+  --neutral-text: #475569;
+  --shell-bg: #f2f4f6;
+  --surface: #ffffff;
+  --surface-muted: #fafbfc;
+  --border: #e9edf2;
+  --border-strong: #dde3ea;
+  --foreground: #0f172a;
+  --text-main: #334155;
+  --muted-foreground: #64748b;
+  --text-tertiary: #94a3b8;
+  --radius-lg: 14px;
+  --radius-md: 10px;
+  --shadow-card: 0 1px 2px rgba(15,23,42,.04), 0 4px 14px rgba(15,23,42,.05);
+  --header-h: 64px;
+  --rail-w: 88px;
+  --font: Inter, MiSans, "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body, #app { height: 100%; font-family: var(--font); color: var(--text-main); background: var(--shell-bg); }

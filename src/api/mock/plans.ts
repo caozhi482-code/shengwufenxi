@@ -1,0 +1,68 @@
+import type { Plan } from '../../types/experiments';
+
+export const plans: Plan[] = [
+  {
+    id: 'P001',
+    code: 'EXP-2026-001',
+    projectName: '布洛芬 bio 分析',
+    version: 'MV-2025-048 / 1V',
+    methodCode: 'BRH-MN-202506059',
+    methodVersion: 'VAL1',
+    responsiblePerson: '武琴',
+    investigators: ['张明', '李华', '王芳'],
+    itemCount: 8,
+    status: 'running',
+    startDate: '2026-08-01',
+    endDate: '2026-08-20',
+    createdAt: '2026-07-25 09:30:00',
+  },
+  {
+    id: 'P002',
+    code: 'EXP-2026-002',
+    projectName: '巴瑞替尼方法学验证',
+    version: 'MV-2025-049 / 2V',
+    methodCode: 'BRH-MN-202506060',
+    methodVersion: 'VAL2',
+    responsiblePerson: '武琴',
+    investigators: ['赵强'],
+    itemCount: 12,
+    status: 'draft',
+    startDate: '',
+    endDate: '',
+    createdAt: '2026-08-10 14:20:00',
+  },
+  {
+    id: 'P003',
+    code: 'EXP-2026-003',
+    projectName: '奥司他韦稳定性研究',
+    version: 'MV-2025-050 / 1V',
+    methodCode: 'BRH-MN-202506061',
+    methodVersion: 'VAL1',
+    responsiblePerson: '陈明',
+    investigators: ['刘洋', '孙丽'],
+    itemCount: 6,
+    status: 'done',
+    startDate: '2026-06-01',
+    endDate: '2026-06-30',
+    createdAt: '2026-05-28 10:00:00',
+  },
+  {
+    id: 'P004',
+    code: 'EXP-2026-004',
+    projectName: '帕拉米韦生物分析',
+    version: 'MV-2025-051 / 1V',
+    methodCode: 'BRH-MN-202506062',
+    methodVersion: 'VAL1',
+    responsiblePerson: '武琴',
+    investigators: ['周伟'],
+    itemCount: 5,
+    status: 'published',
+    startDate: '2026-09-01',
+    endDate: '2026-09-15',
+    createdAt: '2026-08-20 16:45:00',
+  },
+];
+
+export function getPlanById(id: string): Plan | undefined {
+  return plans.find(p => p.id === id);
+}
