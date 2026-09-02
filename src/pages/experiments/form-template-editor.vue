@@ -30,12 +30,16 @@
       <InjectionSequenceTableBlock v-model:model-value="injectionSequenceModel" editable />
     </div>
 
+    <div v-else-if="template?.templateCode === 'BA-SBR07'" class="bg-white border border-[--border] shadow-[var(--shadow-card)] p-4 overflow-x-auto max-w-[1400px] mx-auto">
+      <AdditionSequenceTableBlock :model-value="additionSequenceModel as any" editable />
+    </div>
+
     <div v-else-if="template?.group === 'work'" class="bg-white border border-[--border] shadow-[var(--shadow-card)] p-4 overflow-x-auto">
       <WorkSolutionTableBlock v-model:model-value="workModel" editable />
     </div>
 
     <div v-else-if="template?.templateCode === 'BA-SBR06'" class="bg-white border border-[--border] shadow-[var(--shadow-card)] p-4 overflow-x-auto">
-      <MatrixSampleTableBlock v-model:model-value="matrixSampleModel" editable />
+      <MatrixSampleTableBlock :model-value="matrixSampleModel as any" editable />
     </div>
 
     <div v-else-if="template?.group === 'split'" class="bg-white border border-[--border] shadow-[var(--shadow-card)] p-4 overflow-x-auto">
@@ -44,6 +48,18 @@
 
     <div v-else-if="template?.templateCode === 'BA-SBR02'" class="bg-white border border-[--border] shadow-[var(--shadow-card)] p-4 overflow-x-auto">
       <ReferenceStockTableBlock v-model:model-value="referenceModel" editable />
+    </div>
+
+    <div v-else-if="template?.templateCode === 'BA-SBR10'" class="bg-white border border-[--border] shadow-[var(--shadow-card)] p-4 overflow-x-auto max-w-[1400px] mx-auto">
+      <InjectionLCMSRecordTableBlock v-model:model-value="lcmModel" editable />
+    </div>
+
+    <div v-else-if="template?.templateCode === 'BA-SBR12'" class="bg-white border border-[--border] shadow-[var(--shadow-card)] p-4 overflow-x-auto max-w-[1400px] mx-auto">
+      <StabilitySampleTableBlock v-model:model-value="stabilityModel" editable />
+    </div>
+
+    <div v-else-if="template?.templateCode === 'FT-SOL-004'" class="bg-white border border-[--border] shadow-[var(--shadow-card)] p-4 overflow-x-auto max-w-[1400px] mx-auto">
+      <SolutionPrepTableBlock v-model:top-rows="solTopRows" v-model:bottom-rows="solBottomRows" editable />
     </div>
 
     <div v-else class="bg-white border border-[--border] rounded-[--radius-lg] shadow-[var(--shadow-card)] p-10 text-center text-[--muted-foreground]">
@@ -97,6 +113,10 @@ import MatrixSampleTableBlock from '@/components/experiments/MatrixSampleTableBl
 import SplitRecordTableBlock from '@/components/experiments/SplitRecordTableBlock.vue';
 import ReferenceStockTableBlock from '@/components/experiments/ReferenceStockTableBlock.vue';
 import InjectionSequenceTableBlock from '@/components/experiments/InjectionSequenceTableBlock.vue';
+import AdditionSequenceTableBlock from '@/components/experiments/AdditionSequenceTableBlock.vue';
+import InjectionLCMSRecordTableBlock from '@/components/experiments/InjectionLCMSRecordTableBlock.vue';
+import StabilitySampleTableBlock from '@/components/experiments/StabilitySampleTableBlock.vue';
+import SolutionPrepTableBlock from '@/components/experiments/SolutionPrepTableBlock.vue';
 import { getFormTemplateById } from '@/api/mock/form-templates';
 import type { SequenceOperation } from '@/types/experiments';
 
@@ -111,6 +131,16 @@ const matrixSampleModel = ref(createMatrixModel());
 const splitModel = ref(createSplitModel());
 const referenceModel = ref(createReferenceModel());
 const injectionSequenceModel = ref(createInjectionSequenceModel());
+const additionSequenceModel = ref(createAdditionSequenceModel());
+const lcmModel = ref(createLCMModel());
+const stabilityModel = ref(createStabilityModel());
+const solTopRows = ref<string[][]>([
+  ['', '', '', '', '', '', ''],
+  ['', '', '', '', '', '', ''],
+  ['', '', '', '', '', '', ''],
+  ['', '', '', '', '', '', ''],
+]);
+const solBottomRows = ref<string[][]>(Array.from({ length: 3 }, () => Array(10).fill('')));
 
 const drawerOpen = ref(false);
 const activeRowIndex = ref(0);
@@ -210,13 +240,99 @@ function createMsModel() {
 }
 
 function createWorkModel() { return { context: { projectCode: '', methodVersion: '' }, rows: [], sourceBatch: '', diluentInfo: '', pureReagentInfo: '', pipetteNo: '', containerMaterial: '', containerColor: '', lightCondition: '', batchLabel: '', completedAt: '', disposalMethod: '', controlledPaperNo: '', refrigeratorNo: '', signatures: { operator: '', reviewer: '', auditor: '' } }; }
-function createMatrixModel() { return { context: { projectCode: '', methodVersion: '' }, rows: [], sourceBatch: '', blankMatrixStatus: '', pipetteNo: '', containerMaterial: '', containerColor: '', preparationCondition: '', batchLabel: '', completedAt: '', disposalMethod: '', controlledPaperNo: '', refrigeratorNo: '', signatures: { operator: '', reviewer: '', auditor: '' } }; }
+function createMatrixModel() { return { context: { projectCode: '', methodVersion: '' }, rows: [], sourceBatch: '', blankMatrixDisposition: '', blankMatrixFridgeNo: '', pipetteNo: '', containerMaterial: '', containerColor: '', lightConditions: [], tempConditions: [], batchLabel: '', completedAt: '', disposalMethod: '', controlledPaperNo: '', refrigeratorNo: '', signatures: { operator: '', reviewer: '', auditor: '' } }; }
 function createSplitModel() { return { context: { projectCode: '' }, rows: [], signatures: { packager: '', reviewer: '', auditor: '' } }; }
 function createReferenceModel() { return { basic: { recordType: '分析物', referenceCode: '', referenceName: '', referenceBatch: '', referenceState: '', referenceExpiry: '', correctionFactor: '', balanceCode: '', pipetteCode: '' }, rows: [], solventCode: '', solventBatch: '', diluentName: '', diluentBatch: '', diluentManufacturer: '', diluentExpiry: '', containerMaterial: '', color: '', lightCondition: '', disposalMethod: '', storageRef: '', batchLabel: '', signatures: { operator: '', reviewer: '', auditor: '' } }; }
 function createInjectionSequenceModel() {
   return {
     context: { projectCode: '', methodVersion: '', analysisBatchNo: '', runId: '', operatorInfo: '', reviewerInfo: '', auditorInfo: '' },
     rows: Array.from({ length: 12 }, (_, index) => ({ seq: String(index + 1), sampleId: '', dilutionFactor: '', wellPosition: '', remark: '' })),
+  };
+}
+
+function createAdditionSequenceModel() {
+  return {
+    context: { projectCode: '', analysisBatchNo: '', runId: '', plateId: '' },
+    rows: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'],
+    cells: Array.from({ length: 8 }, (_, ri) =>
+      Array.from({ length: 12 }, (_, ci) => ({
+        row: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'][ri],
+        col: ci + 1,
+        operations: [],
+        selected: false,
+      }))
+    ).flat(),
+    placementLocation: '',
+    placementTime: '',
+    signatureOperator: '',
+    signatureReviewer: '',
+    signatureAuditor: '',
+  };
+}
+
+function createLCMModel() {
+  return {
+    context: { projectCode: '', methodVersion: '', analysisBatchNo: '', runId: '' },
+    instrumentSubmission: {
+      submitType: 'first' as 'first' | 'follow',
+      instrumentId: '',
+      platePosition: '',
+      columnId: '',
+      mobilePhaseABatch: '',
+      mobilePhaseBBatch: '',
+      washPumpBatch: '',
+      washPortBatch: '',
+      isPureReagent: false,
+      isPureReagentStr: 'false',
+      reagentName: '',
+      reagentBatch: '',
+      reagentManufacturer: '',
+      reagentExpiry: '',
+      injectionVolume: 10,
+      acquisitionMethod: '',
+      followedBatchNo: '',
+    },
+    instrumentSignatures: { operator: '', reviewer: '', auditor: '' },
+    resultIntegration: {
+      disposalMethod: 'discard' as 'discard' | 'store',
+      storageLocation: '',
+      integrationMethod: '',
+      resultSaveName: '',
+    },
+    resultSignatures: { operator: '', reviewer: '', auditor: '' },
+  };
+}
+
+function createStabilityModel() {
+  return {
+    context: { projectCode: '', methodVersion: '' },
+    equipment: { incubatorId: '', centrifugeId: '', pipetteId: '' },
+    blood: {
+      rows: [
+        { sampleCode: '', sourceSolutionCode: '', sourceSolutionVolume: 0, blankBloodVolume: 0, finalVolume: 0 },
+        { sampleCode: '', sourceSolutionCode: '', sourceSolutionVolume: 0, blankBloodVolume: 0, finalVolume: 0 },
+      ],
+      sourceSolutionBatch: '',
+      blankBloodCode: '',
+      preparationTime: '',
+      lightCondition: [],
+      tempCondition: [],
+      incubationStartTime: '',
+      incubationDuration: 0,
+      incubationEndTime: '',
+      containerMaterial: '',
+      color: '',
+    },
+    stability: {
+      rows: [
+        { sampleCode: '', stabilitySampleCode: '', startTime: '', conditions: [], endTime: '' },
+        { sampleCode: '', stabilitySampleCode: '', startTime: '', conditions: [], endTime: '' },
+      ],
+      containerMaterial: '',
+      color: '',
+      storageCondition: '',
+    },
+    signatures: { operator: '', reviewer: '', auditor: '' },
   };
 }
 

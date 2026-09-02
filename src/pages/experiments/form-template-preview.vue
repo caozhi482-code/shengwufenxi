@@ -28,11 +28,14 @@
       <div v-else-if="template.templateCode === 'BA-SBR09'" class="bg-white border border-[--border] shadow-[var(--shadow-card)] p-4 overflow-x-auto max-w-[1200px] mx-auto">
         <InjectionSequenceTableBlock :model-value="injectionSequenceModel" />
       </div>
+      <div v-else-if="template.templateCode === 'BA-SBR07'" class="bg-white border border-[--border] shadow-[var(--shadow-card)] p-4 overflow-x-auto max-w-[1400px] mx-auto">
+        <AdditionSequenceTableBlock :model-value="additionSequenceModel as any" />
+      </div>
       <div v-else-if="template.templateCode === 'BA-SBR10'" class="bg-white border border-[--border] shadow-[var(--shadow-card)] p-4 overflow-x-auto max-w-[1200px] mx-auto">
-        <InjectionLCMSRecordTableBlock :model-value="injectionLCMSModel" />
+        <InjectionLCMSRecordTableBlock :model-value="injectionLCMSModel as any" />
       </div>
       <div v-else-if="template.templateCode === 'BA-SBR06'" class="bg-white border border-[--border] shadow-[var(--shadow-card)] p-4 overflow-x-auto">
-        <MatrixSampleTableBlock :model-value="matrixSampleModel" />
+        <MatrixSampleTableBlock :model-value="matrixSampleModel as any" />
       </div>
       <div v-else-if="template.group === 'work'" class="bg-white border border-[--border] shadow-[var(--shadow-card)] p-4 overflow-x-auto">
         <WorkSolutionTableBlock :model-value="workModel" />
@@ -45,6 +48,9 @@
       </div>
       <div v-else-if="template.group === 'split'" class="bg-white border border-[--border] shadow-[var(--shadow-card)] p-4 overflow-x-auto">
         <SplitRecordTableBlock :model-value="splitModel" />
+      </div>
+      <div v-else-if="template.templateCode === 'BA-SBR12'" class="bg-white border border-[--border] shadow-[var(--shadow-card)] p-4 overflow-x-auto max-w-[1400px] mx-auto">
+        <StabilitySampleTableBlock :model-value="stabilityPreviewModel" />
       </div>
       <div v-else class="grid grid-cols-4 gap-5 items-start">
         <div class="col-span-3 space-y-5">
@@ -88,6 +94,8 @@ import SolutionPrepTableBlock from '@/components/experiments/SolutionPrepTableBl
 import SplitRecordTableBlock from '@/components/experiments/SplitRecordTableBlock.vue';
 import MatrixSampleTableBlock from '@/components/experiments/MatrixSampleTableBlock.vue';
 import InjectionSequenceTableBlock from '@/components/experiments/InjectionSequenceTableBlock.vue';
+import AdditionSequenceTableBlock from '@/components/experiments/AdditionSequenceTableBlock.vue';
+import StabilitySampleTableBlock from '@/components/experiments/StabilitySampleTableBlock.vue';
 import InjectionLCMSRecordTableBlock from '@/components/experiments/InjectionLCMSRecordTableBlock.vue';
 import { getFormTemplateById } from '@/api/mock/form-templates';
 
@@ -163,15 +171,17 @@ const splitModel = computed(() => ({
 const matrixSampleModel = computed(() => ({
   context: { projectCode: '', methodVersion: '' },
   rows: [
-    { id: 'mx-1', sampleCode: '', sourceCode: '', sourceConcentration: '', sourceVolume: '', blankMatrixVolume: '', finalVolume: '', blankMatrixCode: '', finalConcentration: '' },
-    { id: 'mx-2', sampleCode: '', sourceCode: '', sourceConcentration: '', sourceVolume: '', blankMatrixVolume: '', finalVolume: '', blankMatrixCode: '', finalConcentration: '' },
+    { id: 'mx-1', sampleCode: '', sourceCode: '', sourceConcentration: '', sourceVolume: 0, blankMatrixVolume: 0, finalVolume: 0, blankMatrixCode: '', finalConcentration: '' },
+    { id: 'mx-2', sampleCode: '', sourceCode: '', sourceConcentration: '', sourceVolume: 0, blankMatrixVolume: 0, finalVolume: 0, blankMatrixCode: '', finalConcentration: '' },
   ],
   sourceBatch: '',
-  blankMatrixStatus: '',
+  blankMatrixDisposition: '',
+  blankMatrixFridgeNo: '',
   pipetteNo: '',
   containerMaterial: '',
   containerColor: '',
-  preparationCondition: '',
+  lightConditions: [],
+  tempConditions: [],
   batchLabel: '',
   completedAt: '',
   disposalMethod: '',
@@ -217,11 +227,28 @@ const injectionSequenceModel = computed(() => ({
     remark: '',
   })),
 }));
+const additionSequenceModel = computed(() => ({
+  context: { projectCode: '', analysisBatchNo: '', runId: '', plateId: '' },
+  rows: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'],
+  cells: Array.from({ length: 8 }, (_, ri) =>
+    Array.from({ length: 12 }, (_, ci) => ({
+      row: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'][ri],
+      col: ci + 1,
+      operations: [],
+      selected: false,
+    }))
+  ).flat(),
+  placementLocation: '',
+  placementTime: '',
+  signatureOperator: '',
+  signatureReviewer: '',
+  signatureAuditor: '',
+}));
 
 const injectionLCMSModel = computed(() => ({
   context: { projectCode: 'EXP-2026-013', methodVersion: 'VAL1', analysisBatchNo: 'AB-20260902-01', runId: 'RUN-20260902-001' },
   instrumentSubmission: {
-    submitType: 'first',
+    submitType: 'first' as 'first' | 'follow',
     instrumentId: 'IE-LC/MS-001',
     platePosition: 'A1',
     columnId: 'LC-COL-001',
@@ -240,8 +267,39 @@ const injectionLCMSModel = computed(() => ({
     followedBatchNo: '',
   },
   instrumentSignatures: { operator: '', reviewer: '', auditor: '' },
-  resultIntegration: { disposalMethod: 'discard', storageLocation: '', integrationMethod: 'BA-SBR10-Integration', resultSaveName: 'BA-SBR10-Result' },
+  resultIntegration: { disposalMethod: 'discard' as 'discard' | 'store', storageLocation: '', integrationMethod: 'BA-SBR10-Integration', resultSaveName: 'BA-SBR10-Result' },
   resultSignatures: { operator: '', reviewer: '', auditor: '' },
+}));
+
+const stabilityPreviewModel = computed(() => ({
+  context: { projectCode: '', methodVersion: '' },
+  equipment: { incubatorId: '', centrifugeId: '', pipetteId: '' },
+  blood: {
+    rows: [
+      { sampleCode: '', sourceSolutionCode: '', sourceSolutionVolume: 0, blankBloodVolume: 0, finalVolume: 0 },
+      { sampleCode: '', sourceSolutionCode: '', sourceSolutionVolume: 0, blankBloodVolume: 0, finalVolume: 0 },
+    ],
+    sourceSolutionBatch: '',
+    blankBloodCode: '',
+    preparationTime: '',
+    lightCondition: [],
+    tempCondition: [],
+    incubationStartTime: '',
+    incubationDuration: 0,
+    incubationEndTime: '',
+    containerMaterial: '',
+    color: '',
+  },
+  stability: {
+    rows: [
+      { sampleCode: '', stabilitySampleCode: '', startTime: '', conditions: [], endTime: '' },
+      { sampleCode: '', stabilitySampleCode: '', startTime: '', conditions: [], endTime: '' },
+    ],
+    containerMaterial: '',
+    color: '',
+    storageCondition: '',
+  },
+  signatures: { operator: '', reviewer: '', auditor: '' },
 }));
 
 function goBack() { router.push(`/experiments/form-templates/${templateId.value}`); }

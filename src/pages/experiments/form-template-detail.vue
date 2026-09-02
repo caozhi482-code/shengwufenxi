@@ -62,6 +62,9 @@
         <div v-else-if="template.templateCode === 'BA-SBR09'" class="bg-white border border-[--border] p-2 overflow-x-auto">
           <InjectionSequenceTableBlock :model-value="injectionSequenceModel" />
         </div>
+        <div v-else-if="template.templateCode === 'BA-SBR07'" class="bg-white border border-[--border] p-2 overflow-x-auto">
+          <AdditionSequenceTableBlock :model-value="additionSequenceModel as any" />
+        </div>
         <div v-else-if="template.group === 'work'" class="bg-white border border-[--border] p-2 overflow-x-auto">
           <WorkSolutionTableBlock :model-value="workModel" />
         </div>
@@ -72,7 +75,16 @@
           <SplitRecordTableBlock :model-value="splitModel" />
         </div>
         <div v-else-if="template.templateCode === 'BA-SBR06'" class="bg-white border border-[--border] p-2 overflow-x-auto">
-          <MatrixSampleTableBlock :model-value="matrixSampleModel" />
+          <MatrixSampleTableBlock :model-value="matrixSampleModel as any" />
+        </div>
+        <div v-else-if="template.templateCode === 'BA-SBR10'" class="bg-white border border-[--border] p-2 overflow-x-auto">
+          <InjectionLCMSRecordTableBlock :model-value="lcmModel" />
+        </div>
+        <div v-else-if="template.templateCode === 'BA-SBR12'" class="bg-white border border-[--border] p-2 overflow-x-auto">
+          <StabilitySampleTableBlock :model-value="stabilityModel" />
+        </div>
+        <div v-else-if="template.templateCode === 'FT-SOL-004'" class="bg-white border border-[--border] p-2 overflow-x-auto">
+          <SolutionPrepTableBlock :top-rows="solTopRows" :bottom-rows="solBottomRows" />
         </div>
         <div v-else class="rounded-xl border border-[--border] bg-[--surface-muted] p-4 text-sm text-[--muted-foreground]">
           当前模板暂无专属缩略预览。
@@ -100,6 +112,10 @@ import ReferenceStockTableBlock from '@/components/experiments/ReferenceStockTab
 import SplitRecordTableBlock from '@/components/experiments/SplitRecordTableBlock.vue';
 import MatrixSampleTableBlock from '@/components/experiments/MatrixSampleTableBlock.vue';
 import InjectionSequenceTableBlock from '@/components/experiments/InjectionSequenceTableBlock.vue';
+import AdditionSequenceTableBlock from '@/components/experiments/AdditionSequenceTableBlock.vue';
+import InjectionLCMSRecordTableBlock from '@/components/experiments/InjectionLCMSRecordTableBlock.vue';
+import StabilitySampleTableBlock from '@/components/experiments/StabilitySampleTableBlock.vue';
+import SolutionPrepTableBlock from '@/components/experiments/SolutionPrepTableBlock.vue';
 import { getFormTemplateById } from '@/api/mock/form-templates';
 
 const router = useRouter();
@@ -146,11 +162,93 @@ const workModel = computed(() => ({
   rows: [], sourceBatch: '', diluentInfo: '', pureReagentInfo: '', pipetteNo: '', containerMaterial: '', containerColor: '', lightCondition: '', batchLabel: '', completedAt: '', disposalMethod: '', controlledPaperNo: '', refrigeratorNo: '', signatures: { operator: '', reviewer: '', auditor: '' },
 }));
 const splitModel = computed(() => ({ context: { projectCode: '' }, rows: [], signatures: { packager: '', reviewer: '', auditor: '' } }));
-const matrixSampleModel = computed(() => ({ context: { projectCode: '', methodVersion: '' }, rows: [], sourceBatch: '', blankMatrixStatus: '', pipetteNo: '', containerMaterial: '', containerColor: '', preparationCondition: '', batchLabel: '', completedAt: '', disposalMethod: '', controlledPaperNo: '', refrigeratorNo: '', signatures: { operator: '', reviewer: '', auditor: '' } }));
+const matrixSampleModel = computed(() => ({ context: { projectCode: '', methodVersion: '' }, rows: [{ id: 'mx-1', sampleCode: '', sourceCode: '', sourceConcentration: '', sourceVolume: 0, blankMatrixVolume: 0, finalVolume: 0, blankMatrixCode: '', finalConcentration: '' }, { id: 'mx-2', sampleCode: '', sourceCode: '', sourceConcentration: '', sourceVolume: 0, blankMatrixVolume: 0, finalVolume: 0, blankMatrixCode: '', finalConcentration: '' }], sourceBatch: '', blankMatrixDisposition: '', blankMatrixFridgeNo: '', pipetteNo: '', containerMaterial: '', containerColor: '', lightConditions: [], tempConditions: [], batchLabel: '', completedAt: '', disposalMethod: '', controlledPaperNo: '', refrigeratorNo: '', signatures: { operator: '', reviewer: '', auditor: '' } }));
 const injectionSequenceModel = computed(() => ({
   context: { projectCode: '', methodVersion: '', analysisBatchNo: '', runId: '', operatorInfo: '', reviewerInfo: '', auditorInfo: '' },
   rows: Array.from({ length: 12 }, (_, index) => ({ seq: String(index + 1), sampleId: '', dilutionFactor: '', wellPosition: '', remark: '' })),
 }));
+const additionSequenceModel = computed(() => ({
+  context: { projectCode: '', analysisBatchNo: '', runId: '', plateId: '' },
+  rows: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'],
+  cells: Array.from({ length: 8 }, (_, ri) =>
+    Array.from({ length: 12 }, (_, ci) => ({
+      row: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'][ri],
+      col: ci + 1,
+      operations: [],
+      selected: false,
+    }))
+  ).flat(),
+  placementLocation: '',
+  placementTime: '',
+  signatureOperator: '',
+  signatureReviewer: '',
+  signatureAuditor: '',
+}));
+
+const lcmModel = computed(() => ({
+  context: { projectCode: '', methodVersion: '', analysisBatchNo: '', runId: '' },
+  instrumentSubmission: {
+    submitType: 'first' as 'first' | 'follow',
+    instrumentId: 'IE-LC/MS-001',
+    platePosition: 'A1',
+    columnId: 'LC-COL-001',
+    mobilePhaseABatch: 'MPA-20260901',
+    mobilePhaseBBatch: 'MPB-20260901',
+    washPumpBatch: 'WP-20260901',
+    washPortBatch: 'WPO-20260901',
+    isPureReagent: false,
+    isPureReagentStr: 'false',
+    reagentName: '',
+    reagentBatch: '',
+    reagentManufacturer: '',
+    reagentExpiry: '',
+    injectionVolume: 10,
+    acquisitionMethod: 'BA-SBR10-Acq',
+    followedBatchNo: '',
+  },
+  instrumentSignatures: { operator: '', reviewer: '', auditor: '' },
+  resultIntegration: { disposalMethod: 'discard' as 'discard' | 'store', storageLocation: '', integrationMethod: 'BA-SBR10-Integration', resultSaveName: 'BA-SBR10-Result' },
+  resultSignatures: { operator: '', reviewer: '', auditor: '' },
+}));
+
+const stabilityModel = computed(() => ({
+  context: { projectCode: '', methodVersion: '' },
+  equipment: { incubatorId: '', centrifugeId: '', pipetteId: '' },
+  blood: {
+    rows: [
+      { sampleCode: '', sourceSolutionCode: '', sourceSolutionVolume: 0, blankBloodVolume: 0, finalVolume: 0 },
+      { sampleCode: '', sourceSolutionCode: '', sourceSolutionVolume: 0, blankBloodVolume: 0, finalVolume: 0 },
+    ],
+    sourceSolutionBatch: '',
+    blankBloodCode: '',
+    preparationTime: '',
+    lightCondition: [],
+    tempCondition: [],
+    incubationStartTime: '',
+    incubationDuration: 0,
+    incubationEndTime: '',
+    containerMaterial: '',
+    color: '',
+  },
+  stability: {
+    rows: [
+      { sampleCode: '', stabilitySampleCode: '', startTime: '', conditions: [], endTime: '' },
+      { sampleCode: '', stabilitySampleCode: '', startTime: '', conditions: [], endTime: '' },
+    ],
+    containerMaterial: '',
+    color: '',
+    storageCondition: '',
+  },
+  signatures: { operator: '', reviewer: '', auditor: '' },
+}));
+
+const solTopRows = computed(() => [
+  ['', '', '', '', '', '', ''],
+  ['', '', '', '', '', '', ''],
+  ['', '', '', '', '', '', ''],
+  ['', '', '', '', '', '', ''],
+]);
+const solBottomRows = computed(() => Array.from({ length: 3 }, () => Array(10).fill('')));
 
 function statusLabel(status: string): string { return ({ enabled: '启用', disabled: '停用', draft: '草稿' } as Record<string, string>)[status] ?? status; }
 function statusTone(status: string): 'success' | 'danger' | 'warning' | 'neutral' { return ({ enabled: 'success', disabled: 'danger', draft: 'warning' } as Record<string, 'success' | 'danger' | 'warning' | 'neutral'>)[status] ?? 'neutral'; }

@@ -202,6 +202,8 @@ export interface FormTemplateRecord {
     tableColumns?: string[];
     plate?: { rows: string[]; cols: number };
     tableRows?: string[][];
+    stabilityTableColumns?: string[];
+    stabilityTableRows?: string[][];
     notes?: string[];
     signatureLabels?: string[];
     batchLabel?: string;
