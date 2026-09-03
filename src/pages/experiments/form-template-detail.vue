@@ -89,6 +89,30 @@
         <div v-else-if="template.templateCode === 'BA-SBR14'" class="bg-white border border-[--border] p-2 overflow-x-auto">
           <PureSolutionStabilityTableBlock :model-value="pureStabilityModel as any" />
         </div>
+        <div v-else-if="template.templateCode === 'BA-SBR15'" class="bg-white border border-[--border] p-2 overflow-x-auto">
+          <FreezeThawStabilityTableBlock :model-value="freezeThawModel as any" />
+        </div>
+        <div v-else-if="template.templateCode === 'BA-SBR16'" class="bg-white border border-[--border] p-2 overflow-x-auto">
+          <MatrixSampleStabilityTableBlock :model-value="matrixStabilityModel as any" />
+        </div>
+        <div v-else-if="template.templateCode === 'BA-SBR17'" class="bg-white border border-[--border] p-2 overflow-x-auto">
+          <MethodValidationResultBlock :model-value="validationResultModel as any" />
+        </div>
+        <div v-else-if="template.templateCode === 'BA-SBR19'" class="bg-white border border-[--border] p-2 overflow-x-auto">
+          <ReanalysisApplicationBlock :model-value="reanalysisAppModel as any" />
+        </div>
+        <div v-else-if="template.templateCode === 'BA-SBR20'" class="bg-white border border-[--border] p-2 overflow-x-auto">
+          <ISStockSolutionBlock :model-value="isStockModel as any" />
+        </div>
+        <div v-else-if="template.templateCode === 'BA-SBR21'" class="bg-white border border-[--border] p-2 overflow-x-auto">
+          <ReanalysisSummaryDoubleBlock :model-value="reanalysisDoubleModel as any" />
+        </div>
+        <div v-else-if="template.templateCode === 'BA-SBR22'" class="bg-white border border-[--border] p-2 overflow-x-auto">
+          <ReanalysisSummarySingleBlock :model-value="reanalysisSingleModel as any" />
+        </div>
+        <div v-else-if="template.templateCode === 'BA-SBR23'" class="bg-white border border-[--border] p-2 overflow-x-auto">
+          <UnconventionalStabilityTableBlock :model-value="unconventionalStabilityModel as any" />
+        </div>
         <div v-else-if="template.templateCode === 'FT-SOL-004'" class="bg-white border border-[--border] p-2 overflow-x-auto">
           <SolutionPrepTableBlock :top-rows="solTopRows" :bottom-rows="solBottomRows" />
         </div>
@@ -124,6 +148,14 @@ import StabilitySampleTableBlock from '@/components/experiments/StabilitySampleT
 import SolutionPrepTableBlock from '@/components/experiments/SolutionPrepTableBlock.vue';
 import DilutionRecordTableBlock from '@/components/experiments/DilutionRecordTableBlock.vue';
 import PureSolutionStabilityTableBlock from '@/components/experiments/PureSolutionStabilityTableBlock.vue';
+import FreezeThawStabilityTableBlock from '@/components/experiments/FreezeThawStabilityTableBlock.vue';
+import MatrixSampleStabilityTableBlock from '@/components/experiments/MatrixSampleStabilityTableBlock.vue';
+import MethodValidationResultBlock from '@/components/experiments/MethodValidationResultBlock.vue';
+import ReanalysisApplicationBlock from '@/components/experiments/ReanalysisApplicationBlock.vue';
+import ISStockSolutionBlock from '@/components/experiments/ISStockSolutionBlock.vue';
+import ReanalysisSummaryDoubleBlock from '@/components/experiments/ReanalysisSummaryDoubleBlock.vue';
+import ReanalysisSummarySingleBlock from '@/components/experiments/ReanalysisSummarySingleBlock.vue';
+import UnconventionalStabilityTableBlock from '@/components/experiments/UnconventionalStabilityBlock.vue';
 import { getFormTemplateById } from '@/api/mock/form-templates';
 
 const router = useRouter();
@@ -266,6 +298,17 @@ const dilutionModel = computed(() => ({
   signatures: { operator: '', reviewer: '', auditor: '' },
 }));
 
+const freezeThawModel = computed(() => ({
+  context: { projectCode: '' },
+  rows20: [
+    { category: '-20℃冻融稳定性', sampleCode: '', fridgeId: 'IE-FZ-20d-', removeTime: '', tempConditions: [], lightConditions: [], putBackTime: '', analysisBatch: '' },
+  ],
+  rows80: [
+    { category: '-80℃冻融稳定性', sampleCode: '', fridgeId: 'IE-FZ-80d-', removeTime: '', tempConditions: [], lightConditions: [], putBackTime: '', analysisBatch: '' },
+  ],
+  signatures: { packager: '', auditor: '' },
+}));
+
 function newStabilityRow() {
   return { sampleCode: '', position: '', startTime: '', endTime: '', duration: 0, analysisBatch: '' };
 }
@@ -284,6 +327,56 @@ const solTopRows = computed(() => [
   ['', '', '', '', '', '', ''],
 ]);
 const solBottomRows = computed(() => Array.from({ length: 3 }, () => Array(10).fill('')));
+
+const matrixStabilityModel = computed(() => ({
+  context: { projectCode: '' },
+  rowsShort: [{ category: '短期稳定性考察', sampleCode: '', position: '', startTime: '', endTime: '', duration: 0, analysisBatch: '' }],
+  rowsLong: [{ category: '长期稳定性考察', sampleCode: '', position: '', startTime: '', endTime: '', duration: 0, analysisBatch: '' }],
+  signatures: { packager: '', auditor: '' },
+}));
+const validationResultModel = computed(() => ({
+  context: { projectCode: '', analysisBatchNo: '', runId: '', analyte: '' },
+  items: [
+    { label: '系统适用性', result: '', remark: '' }, { label: '称量准确度', result: '', remark: '' },
+    { label: '标准曲线', result: '', remark: '' }, { label: '质控样品', result: '', remark: '' },
+    { label: '残留', result: '', remark: '' }, { label: '干扰', result: '', remark: '' },
+    { label: '精密度与准确度', result: '', remark: '□P&A1、□P&A2、□P&A3，其他：' },
+    { label: '稀释可靠性', result: '', remark: '' }, { label: '选择性', result: '', remark: '' },
+    { label: '基质效应', result: '', remark: '' }, { label: '高脂效应', result: '', remark: '' },
+    { label: '溶血效应', result: '', remark: '' }, { label: '回收率', result: '', remark: '' },
+    { label: '重新进样重现性', result: '', remark: '' }, { label: '耐用性', result: '', remark: '□人员 □仪器' },
+    { label: '纯溶液稳定性', result: '', remark: '' },
+  ],
+  duration: 0, passFail: '', itemPass: '', hasException: '', exceptionRemark: '',
+  signatures: { lead: '', auditor: '' },
+}));
+const reanalysisAppModel = computed(() => ({
+  context: { projectCode: '', analyteName: '', linearRange: '' }, rows: [],
+  signatures: { summarizer: '', lead: '', auditor: '' },
+}));
+const isStockModel = computed(() => ({
+  context: { projectCode: '', methodVersion: '', isName: '', isCode: '', isExpiry: '', pipetteNo: '', isMass: '', isCount: 0, totalVolume: '' },
+  rows: [{ stockCode: '', concentration: '', calculation: '' }],
+  process: { firstAddition: '', shake: false, transferVolume: '', rinseCount: 0, finalAddition: '', mix: false, completedAt: '', solventInfo: '' },
+  storage: { containerMaterial: '', color: '', lightConditions: [], disposalMethod: '', fridgeNo: '', batchLabel: '' },
+  signatures: { operator: '', reviewer: '', auditor: '' },
+}));
+const reanalysisDoubleModel = computed(() => ({
+  context: { projectCode: '', analyteName: '', linearRange: '' }, rows: [],
+  signatures: { summarizer: '', lead: '', auditor: '' },
+}));
+const reanalysisSingleModel = computed(() => ({
+  context: { projectCode: '', analyteName: '', linearRange: '' }, rows: [],
+  signatures: { summarizer: '', lead: '', qc: '' },
+}));
+const unconventionalStabilityModel = computed(() => ({
+  context: { projectCode: '', methodVersion: '' },
+  equipment: { incubatorId: '', centrifugeId: '', pipetteId: '' },
+  blood: { rows: [{ id: 'bx-1', sampleCode: '', sourceCode: '', sourceVolume: 0, blankBloodVolume: 0, finalVolume: 0 }], sourceBatch: '', blankBloodCode: '', lightConditions: [], tempConditions: [] },
+  incubation: { startTime: '', duration: 0, endTime: '', aliquotCount: 0, containerMaterial: '', color: '' },
+  stability: { rows: [{ id: 'st-1', sampleCode: '', stabilityCode: '', startTime: '', conditions: [], endTime: '' }], description: '', containerMaterial: '', color: '', storageCondition: '' },
+  signatures: { operator: '', reviewer: '', auditor: '' },
+}));
 
 function statusLabel(status: string): string { return ({ enabled: '启用', disabled: '停用', draft: '草稿' } as Record<string, string>)[status] ?? status; }
 function statusTone(status: string): 'success' | 'danger' | 'warning' | 'neutral' { return ({ enabled: 'success', disabled: 'danger', draft: 'warning' } as Record<string, 'success' | 'danger' | 'warning' | 'neutral'>)[status] ?? 'neutral'; }
