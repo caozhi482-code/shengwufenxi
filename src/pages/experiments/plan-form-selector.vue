@@ -343,11 +343,10 @@ const canContinue = computed(() => !!selectedProject.value && selectedFiles.valu
 const recommendedTemplatesForCurrent = computed(() => currentItem.value ? recommendedTemplates(currentItem.value) : []);
 
 const filteredTemplates = computed(() => {
-  const item = currentItem.value;
-  if (!item) return [];
   const q = keyword.value.trim().toLowerCase();
-  return availableTemplatesForItem(item).filter((template) => {
-    if (!q) return true;
+  const all = formTemplates.filter(t => t.status !== 'disabled');
+  if (!q) return all;
+  return all.filter((template) => {
     return [template.templateName, template.templateCode, template.version, template.description, template.itemNames.join(' / ')]
       .some(text => text.toLowerCase().includes(q));
   });
