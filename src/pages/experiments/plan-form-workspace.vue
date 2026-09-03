@@ -176,7 +176,7 @@
                 </div>
               </template>
 
-              <template v-if="isGenericPlateTemplate(activeForm.template)">
+              <template v-if="activeForm.template.previewMode === 'plate'">
                 <SequenceGrid
                   :cells="activeForm.cells"
                   :footer="activeForm.footer"
@@ -405,7 +405,7 @@
               </div>
             </BaseCard>
 
-            <BaseCard v-if="isGenericPlateTemplate(activeForm.template)">
+            <BaseCard v-if="activeForm.template.previewMode === 'plate'">
               <template #header>
                 <div class="flex items-center justify-between gap-3">
                   <div>
@@ -464,7 +464,7 @@
 
 
     <CellOpEditor
-      v-if="activeForm && (isGenericPlateTemplate(activeForm.template) || isWorkSolutionTemplate(activeForm.template))"
+      v-if="activeForm && (activeForm.template.previewMode === 'plate' || isWorkSolutionTemplate(activeForm.template))"
       :open="cellEditorOpen"
       :read-only="false"
       :cell-row="editingCell?.row ?? workSolutionDemoCell?.row ?? ''"
