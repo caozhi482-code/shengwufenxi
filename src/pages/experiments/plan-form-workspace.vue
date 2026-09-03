@@ -176,7 +176,7 @@
                 </div>
               </template>
 
-              <template v-if="activeForm.template.previewMode === 'plate'">
+              <template v-if="isGenericPlateTemplate(activeForm.template)">
                 <SequenceGrid
                   :cells="activeForm.cells"
                   :footer="activeForm.footer"
@@ -194,7 +194,7 @@
 
               <div v-else class="space-y-3">
                 <div class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[--border] bg-[--surface-muted] px-3 py-2 text-xs text-[--muted-foreground]">
-                  <span>当前模板保持自己的版式，表头不可编辑，表体格子按模板定义进入编辑态。</span>
+                  <span>{{ isWorkSolutionTemplate(activeForm.template) ? '表单已按模板中心样式展开，可直接编辑表体。' : '当前模板会按模板中心的样式直接展开，表头和结构区保持原样，只编辑表体内容。' }}</span>
                   <div class="flex flex-wrap gap-2">
                     <BaseButton variant="secondary" size="sm" @click="fillRecommended(activeForm.instanceId)">一键填充推荐</BaseButton>
                   </div>
@@ -271,13 +271,141 @@
                   editable
                   @update:model-value="updateActiveRecordModel"
                 />
-                <div v-else class="rounded-xl border border-[--border] bg-white p-4 text-sm text-[--muted-foreground]">
-                  当前模板未配置专属编辑块，暂以只读方式展示。
+                <PureSolutionStabilityTableBlock
+                  v-else-if="isPureSolutionStabilityTemplate(activeForm.template)"
+                  :model-value="activeForm.recordModel as any"
+                  editable
+                  @update:model-value="updateActiveRecordModel"
+                />
+                <FreezeThawStabilityTableBlock
+                  v-else-if="isFreezeThawTemplate(activeForm.template)"
+                  :model-value="activeForm.recordModel as any"
+                  editable
+                  @update:model-value="updateActiveRecordModel"
+                />
+                <MatrixSampleStabilityTableBlock
+                  v-else-if="isMatrixSampleStabilityTemplate(activeForm.template)"
+                  :model-value="activeForm.recordModel as any"
+                  editable
+                  @update:model-value="updateActiveRecordModel"
+                />
+                <MethodValidationResultBlock
+                  v-else-if="isMethodValidationResultTemplate(activeForm.template)"
+                  :model-value="activeForm.recordModel as any"
+                  editable
+                  @update:model-value="updateActiveRecordModel"
+                />
+                <ReanalysisApplicationBlock
+                  v-else-if="isReanalysisApplicationTemplate(activeForm.template)"
+                  :model-value="activeForm.recordModel as any"
+                  editable
+                  @update:model-value="updateActiveRecordModel"
+                />
+                <ISStockSolutionBlock
+                  v-else-if="isISStockSolutionTemplate(activeForm.template)"
+                  :model-value="activeForm.recordModel as any"
+                  editable
+                  @update:model-value="updateActiveRecordModel"
+                />
+                <ReanalysisSummaryDoubleBlock
+                  v-else-if="isReanalysisSummaryDoubleTemplate(activeForm.template)"
+                  :model-value="activeForm.recordModel as any"
+                  editable
+                  @update:model-value="updateActiveRecordModel"
+                />
+                <ReanalysisSummarySingleBlock
+                  v-else-if="isReanalysisSummarySingleTemplate(activeForm.template)"
+                  :model-value="activeForm.recordModel as any"
+                  editable
+                  @update:model-value="updateActiveRecordModel"
+                />
+                <UnconventionalStabilityBlock
+                  v-else-if="isUnconventionalStabilityTemplate(activeForm.template)"
+                  :model-value="activeForm.recordModel as any"
+                  editable
+                  @update:model-value="updateActiveRecordModel"
+                />
+                <div v-else class="space-y-4">
+                  <div class="overflow-x-auto rounded-xl border border-[--border] bg-white">
+                    <table class="min-w-[980px] w-full border-collapse text-sm text-[--text-main]">
+                      <tbody>
+                        <tr>
+                          <td class="generic-title" :colspan="genericColumnSpan(activeForm)">
+                            <div class="flex items-center justify-between gap-3">
+                              <span>{{ activeForm.template.templateName }}</span>
+                              <span class="text-sm font-medium">{{ activeForm.template.templateCode }} / {{ activeForm.template.version }}</span>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td class="generic-label">项目编号</td>
+                          <td class="generic-cell"><input :value="activeForm.recordModel.context.projectCode" class="generic-input" @input="updateGenericContext('projectCode', ($event.target as HTMLInputElement).value)" /></td>
+                          <td class="generic-label">计划编号</td>
+                          <td class="generic-cell"><input :value="activeForm.recordModel.context.planCode" class="generic-input" @input="updateGenericContext('planCode', ($event.target as HTMLInputElement).value)" /></td>
+                          <td class="generic-label">方法文件</td>
+                          <td class="generic-cell" :colspan="Math.max(1, genericColumnSpan(activeForm) - 5)"><input :value="activeForm.recordModel.context.methodCode" class="generic-input" @input="updateGenericContext('methodCode', ($event.target as HTMLInputElement).value)" /></td>
+                        </tr>
+                        <tr>
+                          <td class="generic-section" :colspan="genericColumnSpan(activeForm)">结构区域</td>
+                        </tr>
+                        <tr>
+                          <td class="generic-cell" :colspan="genericColumnSpan(activeForm)">
+                            <div class="flex flex-wrap gap-2">
+                              <BaseTag v-for="section in activeForm.template.structure.sections" :key="section" :label="section" tone="neutral" />
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td class="generic-section" :colspan="genericColumnSpan(activeForm)">关键字段</td>
+                        </tr>
+                        <tr>
+                          <td class="generic-cell" :colspan="genericColumnSpan(activeForm)">
+                            <div class="grid grid-cols-3 gap-2">
+                              <label v-for="field in activeForm.template.structure.fields" :key="field" class="rounded border border-[--border] bg-[--surface-muted] px-3 py-2">
+                                <span class="mb-1 block text-xs font-semibold text-[--muted-foreground]">{{ field }}</span>
+                                <input :value="activeForm.recordModel.fields[field]" class="generic-input rounded border border-[--border] bg-white px-2 py-1" @input="updateGenericField(field, ($event.target as HTMLInputElement).value)" />
+                              </label>
+                            </div>
+                          </td>
+                        </tr>
+                        <template v-if="activeForm.recordModel.tableColumns.length > 0">
+                          <tr>
+                            <td class="generic-section" :colspan="genericColumnSpan(activeForm)">明细表</td>
+                          </tr>
+                          <tr>
+                            <td v-for="column in activeForm.recordModel.tableColumns" :key="column" class="generic-head">{{ column }}</td>
+                          </tr>
+                          <tr v-for="(row, rowIndex) in activeForm.recordModel.rows" :key="rowIndex">
+                            <td v-for="(_, cellIndex) in activeForm.recordModel.tableColumns" :key="cellIndex" class="generic-cell">
+                              <input :value="row[Number(cellIndex)] ?? ''" class="generic-input" @input="updateGenericTableCell(Number(rowIndex), Number(cellIndex), ($event.target as HTMLInputElement).value)" />
+                            </td>
+                          </tr>
+                        </template>
+                        <tr v-if="activeForm.template.structure.notes?.length">
+                          <td class="generic-label">注意事项</td>
+                          <td class="generic-cell text-xs text-[--muted-foreground]" :colspan="Math.max(1, genericColumnSpan(activeForm) - 1)">{{ activeForm.template.structure.notes.join('；') }}</td>
+                        </tr>
+                        <tr>
+                          <td class="generic-section" :colspan="genericColumnSpan(activeForm)">签字区</td>
+                        </tr>
+                        <tr>
+                          <td v-for="label in activeForm.recordModel.signatureLabels" :key="label" class="generic-cell" :colspan="Math.max(1, Math.floor(genericColumnSpan(activeForm) / activeForm.recordModel.signatureLabels.length))">
+                            <span class="mb-1 block text-xs font-semibold text-[--muted-foreground]">{{ label }}</span>
+                            <input :value="activeForm.recordModel.signatures[label]" class="generic-input" @input="updateGenericSignature(label, ($event.target as HTMLInputElement).value)" />
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="flex justify-end gap-2">
+                    <BaseButton variant="secondary" size="sm" @click="addGenericRow">新增一行</BaseButton>
+                    <BaseButton variant="secondary" size="sm" :disabled="activeForm.recordModel.rows.length <= 1" @click="removeGenericRow">删除最后一行</BaseButton>
+                  </div>
                 </div>
               </div>
             </BaseCard>
 
-            <BaseCard v-if="activeForm.template.previewMode === 'plate'">
+            <BaseCard v-if="isGenericPlateTemplate(activeForm.template)">
               <template #header>
                 <div class="flex items-center justify-between gap-3">
                   <div>
@@ -336,7 +464,7 @@
 
 
     <CellOpEditor
-      v-if="activeForm && (activeForm.template.previewMode === 'plate' || isWorkSolutionTemplate(activeForm.template))"
+      v-if="activeForm && (isGenericPlateTemplate(activeForm.template) || isWorkSolutionTemplate(activeForm.template))"
       :open="cellEditorOpen"
       :read-only="false"
       :cell-row="editingCell?.row ?? workSolutionDemoCell?.row ?? ''"
@@ -387,6 +515,15 @@ import BaseTag from '@/components/base/BaseTag.vue';
 import StepWizard from '@/components/experiments/StepWizard.vue';
 import SequenceGrid from '@/components/experiments/SequenceGrid.vue';
 import CellOpEditor from '@/components/experiments/CellOpEditor.vue';
+import PureSolutionStabilityTableBlock from '@/components/experiments/PureSolutionStabilityTableBlock.vue';
+import FreezeThawStabilityTableBlock from '@/components/experiments/FreezeThawStabilityTableBlock.vue';
+import MatrixSampleStabilityTableBlock from '@/components/experiments/MatrixSampleStabilityTableBlock.vue';
+import MethodValidationResultBlock from '@/components/experiments/MethodValidationResultBlock.vue';
+import ReanalysisApplicationBlock from '@/components/experiments/ReanalysisApplicationBlock.vue';
+import ISStockSolutionBlock from '@/components/experiments/ISStockSolutionBlock.vue';
+import ReanalysisSummaryDoubleBlock from '@/components/experiments/ReanalysisSummaryDoubleBlock.vue';
+import ReanalysisSummarySingleBlock from '@/components/experiments/ReanalysisSummarySingleBlock.vue';
+import UnconventionalStabilityBlock from '@/components/experiments/UnconventionalStabilityBlock.vue';
 import WorkSolutionTableBlock from '@/components/experiments/WorkSolutionTableBlock.vue';
 import ReferenceStockTableBlock from '@/components/experiments/ReferenceStockTableBlock.vue';
 import SolutionPrepTableBlock from '@/components/experiments/SolutionPrepTableBlock.vue';
@@ -446,6 +583,16 @@ const msCellDrawerOpen = ref(false);
 const msEditingCell = ref<{ row: number; col: number } | null>(null);
 const msCellOperations = ref<SequenceOperation[]>([]);
 const msCellRequired = ref<string[]>([]);
+
+watch(activeFormId, () => {
+  editingCell.value = null;
+  cellEditorOpen.value = false;
+  batchPanelOpen.value = false;
+  msCellDrawerOpen.value = false;
+  msEditingCell.value = null;
+  workSolutionDemoConfigured.value = false;
+  workSolutionDemoCell.value = null;
+});
 const batchForm = reactive({
   action: '',
   substance: '',
@@ -589,13 +736,42 @@ function createWorkspaceForm(itemId: string, template: FormTemplateRecord): Work
   };
 }
 
+function isGenericPlateTemplate(template: FormTemplateRecord): boolean {
+  return template.previewMode === 'plate' && template.templateCode !== 'BA-SBR07';
+}
+
 function createCells(template: FormTemplateRecord): SequenceCell[] {
-  return template.structure.plate
+  return template.structure.plate && isGenericPlateTemplate(template)
     ? template.structure.plate.rows.flatMap(row => Array.from({ length: template.structure.plate?.cols ?? 0 }, (_, index) => ({ row, col: index + 1, operations: [], selected: false })))
     : template.structure.tableRows?.map((_, index) => ({ row: `R${index + 1}`, col: 1, operations: [], selected: false })) ?? [];
 }
 
 function createRecordModel(template: FormTemplateRecord): any {
+  if (template.templateCode === 'BA-SBR07') {
+    const rows = template.structure.plate?.rows ?? ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+    const cols = template.structure.plate?.cols ?? 12;
+    return {
+      context: {
+        projectCode: selectedProject.value?.code ?? '',
+        analysisBatchNo: '',
+        runId: '',
+        plateId: '',
+      },
+      rows,
+      cells: rows.flatMap(row => Array.from({ length: cols }, (_, index) => ({
+        row,
+        col: index + 1,
+        operations: [],
+        selected: false,
+      }))),
+      placementLocation: '',
+      placementTime: '',
+      signatureOperator: '',
+      signatureReviewer: '',
+      signatureAuditor: '',
+    };
+  }
+
   if (template.templateCode === 'BA-SBR02') {
     return {
       basic: {
@@ -819,7 +995,185 @@ function createRecordModel(template: FormTemplateRecord): any {
     };
   }
 
-  return { rows: [] };
+  if (template.templateCode === 'BA-SBR14') {
+    return {
+      context: { projectCode: selectedProject.value?.code ?? '' },
+      shortTerm: { label: '纯溶液短期稳定性考察', rows: [{ sampleCode: '', position: '', startTime: '', endTime: '', duration: 0, analysisBatch: '' }] },
+      longTerm: { label: '纯溶液长期稳定性考察', rows: [{ sampleCode: '', position: '', startTime: '', endTime: '', duration: 0, analysisBatch: '' }] },
+      signatures: { packager: '', auditor: '' },
+    };
+  }
+
+  if (template.templateCode === 'BA-SBR15') {
+    return {
+      context: { projectCode: selectedProject.value?.code ?? '' },
+      rows20: [{ category: '-20℃冻融稳定性', sampleCode: '', fridgeId: '', removeTime: '', tempConditions: [], lightConditions: [], putBackTime: '', analysisBatch: '' }],
+      rows80: [{ category: '-80℃冻融稳定性', sampleCode: '', fridgeId: '', removeTime: '', tempConditions: [], lightConditions: [], putBackTime: '', analysisBatch: '' }],
+      signatures: { packager: '', auditor: '' },
+    };
+  }
+
+  if (template.templateCode === 'BA-SBR16') {
+    return {
+      context: { projectCode: selectedProject.value?.code ?? '' },
+      rowsShort: [{ category: '短期稳定性考察', sampleCode: '', position: '', startTime: '', endTime: '', duration: 0, analysisBatch: '' }],
+      rowsLong: [{ category: '长期稳定性考察', sampleCode: '', position: '', startTime: '', endTime: '', duration: 0, analysisBatch: '' }],
+      signatures: { packager: '', auditor: '' },
+    };
+  }
+
+  if (template.templateCode === 'BA-SBR17') {
+    return {
+      context: { projectCode: selectedProject.value?.code ?? '', analysisBatchNo: '', runId: '', analyte: '' },
+      items: [
+        { label: '系统适用性', result: '', remark: '' },
+        { label: '称量准确度', result: '', remark: '' },
+        { label: '标准曲线', result: '', remark: '' },
+        { label: '质控样品', result: '', remark: '' },
+        { label: '残留', result: '', remark: '' },
+        { label: '干扰', result: '', remark: '' },
+        { label: '精密度与准确度', result: '', remark: '□P&A1、□P&A2、□P&A3，其他：', partialAllowed: true },
+        { label: '稀释可靠性', result: '', remark: '' },
+        { label: '选择性', result: '', remark: '' },
+        { label: '基质效应', result: '', remark: '' },
+        { label: '高脂效应', result: '', remark: '' },
+        { label: '溶血效应', result: '', remark: '' },
+        { label: '回收率', result: '', remark: '' },
+        { label: '重新进样重现性', result: '', remark: '' },
+        { label: '耐用性', result: '', remark: '□人员 □仪器' },
+        { label: '纯溶液稳定性', result: '', remark: '' },
+      ],
+      duration: 0,
+      passFail: '',
+      itemPass: '',
+      hasException: '',
+      exceptionRemark: '',
+      signatures: { lead: '', auditor: '' },
+    };
+  }
+
+  if (template.templateCode === 'BA-SBR19') {
+    return {
+      context: { projectCode: selectedProject.value?.code ?? '', analyteName: '', linearRange: '' },
+      rows: [{ id: 'ra-1', sampleId: '', initialResult: '', initialBatch: '', reason: '', count: 0, reBatch: '' }],
+      signatures: { summarizer: '', lead: '', auditor: '' },
+    };
+  }
+
+  if (template.templateCode === 'BA-SBR20') {
+    return {
+      context: { projectCode: selectedProject.value?.code ?? '', methodVersion: '', isName: '', isCode: '', isExpiry: '', pipetteNo: '', isMass: '', isCount: 0, totalVolume: '' },
+      rows: [{ stockCode: '', concentration: '', calculation: '' }],
+      process: { firstAddition: '', shake: false, transferVolume: '', rinseCount: 0, finalAddition: '', mix: false, completedAt: '', solventInfo: '' },
+      storage: { containerMaterial: '', color: '', lightConditions: [], disposalMethod: '', fridgeNo: '', batchLabel: '' },
+      signatures: { operator: '', reviewer: '', auditor: '' },
+    };
+  }
+
+  if (template.templateCode === 'BA-SBR21') {
+    return {
+      context: { projectCode: selectedProject.value?.code ?? '', analyteName: '', linearRange: '' },
+      rows: [{ id: 'sr-1', sampleId: '', initialResult: '', initialBatch: '', reason: '', reResult: '', reBatch: '' }],
+      signatures: { summarizer: '', lead: '', auditor: '' },
+    };
+  }
+
+  if (template.templateCode === 'BA-SBR22') {
+    return {
+      context: { projectCode: selectedProject.value?.code ?? '', analyteName: '', linearRange: '' },
+      rows: [{ id: 'sr-1', sampleId: '', initialResult: '', initialBatch: '', reason: '', reResult: '', reBatch: '' }],
+      signatures: { summarizer: '', lead: '', qc: '' },
+    };
+  }
+
+  if (template.templateCode === 'BA-SBR23') {
+    return {
+      context: { projectCode: selectedProject.value?.code ?? '', methodVersion: '' },
+      equipment: { incubatorId: '', centrifugeId: '', pipetteId: '' },
+      blood: { rows: [{ id: 'bx-1', sampleCode: '', sourceCode: '', sourceVolume: 0, blankBloodVolume: 0, finalVolume: 0 }], sourceBatch: '', blankBloodCode: '', lightConditions: [], tempConditions: [] },
+      incubation: { startTime: '', duration: 0, endTime: '', aliquotCount: 0, containerMaterial: '', color: '' },
+      stability: { rows: [{ id: 'st-1', sampleCode: '', stabilityCode: '', startTime: '', conditions: [], endTime: '' }], description: '', containerMaterial: '', color: '', storageCondition: '' },
+      signatures: { operator: '', reviewer: '', auditor: '' },
+    };
+  }
+
+  return createGenericRecordModel(template);
+}
+
+function createGenericRecordModel(template: FormTemplateRecord) {
+  const signatureLabels = template.structure.signatureLabels?.length
+    ? template.structure.signatureLabels
+    : ['操作人 / 日期', '现场复核人 / 日期', '审核人 / 日期'];
+  const tableColumns = template.structure.tableColumns?.length
+    ? template.structure.tableColumns
+    : template.structure.fields;
+  const sourceRows = template.structure.tableRows?.length
+    ? template.structure.tableRows
+    : [Array.from({ length: tableColumns.length || 1 }, () => '')];
+
+  return {
+    context: {
+      projectCode: selectedProject.value?.code ?? '',
+      planCode: planCode.value,
+      methodCode: template.context.methodCode,
+    },
+    fields: Object.fromEntries(template.structure.fields.map(field => [field, ''])),
+    tableColumns,
+    rows: sourceRows.map(row => [...row, ...Array(Math.max(0, tableColumns.length - row.length)).fill('')].slice(0, Math.max(1, tableColumns.length))),
+    signatureLabels,
+    signatures: Object.fromEntries(signatureLabels.map(label => [label, ''])),
+  };
+}
+
+function isPureSolutionStabilityTemplate(template: FormTemplateRecord): boolean { return template.templateCode === 'BA-SBR14'; }
+function isFreezeThawTemplate(template: FormTemplateRecord): boolean { return template.templateCode === 'BA-SBR15'; }
+function isMatrixSampleStabilityTemplate(template: FormTemplateRecord): boolean { return template.templateCode === 'BA-SBR16'; }
+function isMethodValidationResultTemplate(template: FormTemplateRecord): boolean { return template.templateCode === 'BA-SBR17'; }
+function isReanalysisApplicationTemplate(template: FormTemplateRecord): boolean { return template.templateCode === 'BA-SBR19'; }
+function isISStockSolutionTemplate(template: FormTemplateRecord): boolean { return template.templateCode === 'BA-SBR20'; }
+function isReanalysisSummaryDoubleTemplate(template: FormTemplateRecord): boolean { return template.templateCode === 'BA-SBR21'; }
+function isReanalysisSummarySingleTemplate(template: FormTemplateRecord): boolean { return template.templateCode === 'BA-SBR22'; }
+function isUnconventionalStabilityTemplate(template: FormTemplateRecord): boolean { return template.templateCode === 'BA-SBR23'; }
+
+function genericColumnSpan(form: WorkspaceForm): number {
+  return Math.max(6, form.template.structure.tableColumns?.length ?? form.template.structure.fields.length ?? 6);
+}
+
+function updateGenericContext(key: string, value: string) {
+  if (!activeForm.value) return;
+  activeForm.value.recordModel.context = { ...activeForm.value.recordModel.context, [key]: value };
+  activeForm.value.status = 'editing';
+}
+
+function updateGenericField(field: string, value: string) {
+  if (!activeForm.value) return;
+  activeForm.value.recordModel.fields = { ...activeForm.value.recordModel.fields, [field]: value };
+  activeForm.value.status = 'editing';
+}
+
+function updateGenericTableCell(rowIndex: number, cellIndex: number, value: string) {
+  if (!activeForm.value) return;
+  activeForm.value.recordModel.rows = activeForm.value.recordModel.rows.map((row: string[], idx: number) => idx === rowIndex ? row.map((cell, ci) => ci === cellIndex ? value : cell) : [...row]);
+  activeForm.value.status = 'editing';
+}
+
+function updateGenericSignature(label: string, value: string) {
+  if (!activeForm.value) return;
+  activeForm.value.recordModel.signatures = { ...activeForm.value.recordModel.signatures, [label]: value };
+  activeForm.value.status = 'editing';
+}
+
+function addGenericRow() {
+  if (!activeForm.value) return;
+  const width = activeForm.value.recordModel.tableColumns?.length ?? activeForm.value.template.structure.fields.length ?? 1;
+  activeForm.value.recordModel.rows = [...activeForm.value.recordModel.rows, Array.from({ length: width }, () => '')];
+  activeForm.value.status = 'editing';
+}
+
+function removeGenericRow() {
+  if (!activeForm.value || activeForm.value.recordModel.rows.length <= 1) return;
+  activeForm.value.recordModel.rows = activeForm.value.recordModel.rows.slice(0, -1);
+  activeForm.value.status = 'editing';
 }
 
 function createSolutionTopRows(template: FormTemplateRecord): string[][] {
@@ -1133,3 +1487,42 @@ function backToItems() {
   });
 }
 </script>
+
+<style scoped>
+.generic-cell,
+.generic-label,
+.generic-head,
+.generic-section,
+.generic-title {
+  border: 1px solid #222;
+  padding: 9px 10px;
+  vertical-align: middle;
+  background: #fff;
+}
+
+.generic-title {
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.generic-label,
+.generic-head,
+.generic-section {
+  font-weight: 600;
+  background: #f7f5ee;
+}
+
+.generic-section {
+  font-size: 16px;
+  text-align: left;
+}
+
+.generic-input {
+  width: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text-main);
+}
+</style>
