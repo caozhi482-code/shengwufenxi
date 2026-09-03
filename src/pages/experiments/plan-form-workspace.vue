@@ -247,6 +247,24 @@
                   editable
                   @update:model-value="updateActiveRecordModel"
                 />
+                <InjectionLCMSRecordTableBlock
+                  v-else-if="isInjectionLCMSTemplate(activeForm.template)"
+                  :model-value="activeForm.recordModel"
+                  editable
+                  @update:model-value="updateActiveRecordModel"
+                />
+                <StabilitySampleTableBlock
+                  v-else-if="isStabilityTemplate(activeForm.template)"
+                  :model-value="activeForm.recordModel"
+                  editable
+                  @update:model-value="updateActiveRecordModel"
+                />
+                <DilutionRecordTableBlock
+                  v-else-if="isDilutionTemplate(activeForm.template)"
+                  :model-value="activeForm.recordModel as any"
+                  editable
+                  @update:model-value="updateActiveRecordModel"
+                />
                 <div v-else class="rounded-xl border border-[--border] bg-white p-4 text-sm text-[--muted-foreground]">
                   当前模板未配置专属编辑块，暂以只读方式展示。
                 </div>
@@ -370,6 +388,9 @@ import MSSolutionTableBlock from '@/components/experiments/MSSolutionTableBlock.
 import SplitRecordTableBlock from '@/components/experiments/SplitRecordTableBlock.vue';
 import MatrixSampleTableBlock from '@/components/experiments/MatrixSampleTableBlock.vue';
 import InjectionSequenceTableBlock from '@/components/experiments/InjectionSequenceTableBlock.vue';
+import InjectionLCMSRecordTableBlock from '@/components/experiments/InjectionLCMSRecordTableBlock.vue';
+import StabilitySampleTableBlock from '@/components/experiments/StabilitySampleTableBlock.vue';
+import DilutionRecordTableBlock from '@/components/experiments/DilutionRecordTableBlock.vue';
 import { evaluationItems } from '@/api/mock/evaluation';
 import { files, getFilesByProject } from '@/api/mock/files';
 import { projects } from '@/api/mock/projects';
@@ -700,6 +721,90 @@ function createRecordModel(template: FormTemplateRecord): any {
     };
   }
 
+  if (template.templateCode === 'BA-SBR10') {
+    return {
+      context: { projectCode: selectedProject.value?.code ?? '', methodVersion: '', analysisBatchNo: '', runId: '' },
+      instrumentSubmission: {
+        submitType: 'first' as 'first' | 'follow',
+        instrumentId: '',
+        platePosition: '',
+        columnId: '',
+        mobilePhaseABatch: '',
+        mobilePhaseBBatch: '',
+        washPumpBatch: '',
+        washPortBatch: '',
+        isPureReagent: false,
+        isPureReagentStr: 'false',
+        reagentName: '',
+        reagentBatch: '',
+        reagentManufacturer: '',
+        reagentExpiry: '',
+        injectionVolume: 10,
+        acquisitionMethod: '',
+        followedBatchNo: '',
+      },
+      instrumentSignatures: { operator: '', reviewer: '', auditor: '' },
+      resultIntegration: {
+        disposalMethod: 'discard' as 'discard' | 'store',
+        storageLocation: '',
+        integrationMethod: '',
+        resultSaveName: '',
+      },
+      resultSignatures: { operator: '', reviewer: '', auditor: '' },
+    };
+  }
+
+  if (template.templateCode === 'BA-SBR12') {
+    return {
+      context: { projectCode: selectedProject.value?.code ?? '', methodVersion: '' },
+      equipment: { incubatorId: '', centrifugeId: '', pipetteId: '' },
+      blood: {
+        rows: [
+          { sampleCode: '', sourceSolutionCode: '', sourceSolutionVolume: 0, blankBloodVolume: 0, finalVolume: 0 },
+          { sampleCode: '', sourceSolutionCode: '', sourceSolutionVolume: 0, blankBloodVolume: 0, finalVolume: 0 },
+        ],
+        sourceSolutionBatch: '',
+        blankBloodCode: '',
+        preparationTime: '',
+        lightCondition: [],
+        tempCondition: [],
+        incubationStartTime: '',
+        incubationDuration: 0,
+        incubationEndTime: '',
+        containerMaterial: '',
+        color: '',
+      },
+      stability: {
+        rows: [
+          { sampleCode: '', stabilitySampleCode: '', startTime: '', conditions: [], endTime: '' },
+          { sampleCode: '', stabilitySampleCode: '', startTime: '', conditions: [], endTime: '' },
+        ],
+        containerMaterial: '',
+        color: '',
+        storageCondition: '',
+      },
+      signatures: { operator: '', reviewer: '', auditor: '' },
+    };
+  }
+
+  if (template.templateCode === 'BA-SBR13') {
+    return {
+      context: { projectCode: selectedProject.value?.code ?? '', analysisBatchNo: '', runId: '' },
+      rows: [
+        { id: 'dil-1', sampleId: '', sourceVolume: 0, blankMatrixVolume: 0, totalVolume: 0, dilutionFactor: 0 },
+        { id: 'dil-2', sampleId: '', sourceVolume: 0, blankMatrixVolume: 0, totalVolume: 0, dilutionFactor: 0 },
+      ],
+      blankMatrixCode: '',
+      pipetteNo: '',
+      containerMaterial: '',
+      containerColor: '',
+      lightConditions: [],
+      tempConditions: [],
+      completionTime: '',
+      signatures: { operator: '', reviewer: '', auditor: '' },
+    };
+  }
+
   return { rows: [] };
 }
 
@@ -890,6 +995,18 @@ function isSplitTemplate(template: FormTemplateRecord): boolean {
 
 function isMatrixSampleTemplate(template: FormTemplateRecord): boolean {
   return template.templateCode === 'BA-SBR06';
+}
+
+function isInjectionLCMSTemplate(template: FormTemplateRecord): boolean {
+  return template.templateCode === 'BA-SBR10';
+}
+
+function isStabilityTemplate(template: FormTemplateRecord): boolean {
+  return template.templateCode === 'BA-SBR12';
+}
+
+function isDilutionTemplate(template: FormTemplateRecord): boolean {
+  return template.templateCode === 'BA-SBR13';
 }
 
 function formTypeLabel(form: WorkspaceForm): string {

@@ -58,6 +58,14 @@
       <StabilitySampleTableBlock v-model:model-value="stabilityModel" editable />
     </div>
 
+    <div v-else-if="template?.templateCode === 'BA-SBR13'" class="bg-white border border-[--border] shadow-[var(--shadow-card)] p-4 overflow-x-auto max-w-[1200px] mx-auto">
+      <DilutionRecordTableBlock :model-value="dilutionModel as any" editable />
+    </div>
+
+    <div v-else-if="template?.templateCode === 'BA-SBR14'" class="bg-white border border-[--border] shadow-[var(--shadow-card)] p-4 overflow-x-auto max-w-[1400px] mx-auto">
+      <PureSolutionStabilityTableBlock :model-value="pureStabilityModel as any" editable />
+    </div>
+
     <div v-else-if="template?.templateCode === 'FT-SOL-004'" class="bg-white border border-[--border] shadow-[var(--shadow-card)] p-4 overflow-x-auto max-w-[1400px] mx-auto">
       <SolutionPrepTableBlock v-model:top-rows="solTopRows" v-model:bottom-rows="solBottomRows" editable />
     </div>
@@ -114,6 +122,8 @@ import SplitRecordTableBlock from '@/components/experiments/SplitRecordTableBloc
 import ReferenceStockTableBlock from '@/components/experiments/ReferenceStockTableBlock.vue';
 import InjectionSequenceTableBlock from '@/components/experiments/InjectionSequenceTableBlock.vue';
 import AdditionSequenceTableBlock from '@/components/experiments/AdditionSequenceTableBlock.vue';
+import DilutionRecordTableBlock from '@/components/experiments/DilutionRecordTableBlock.vue';
+import PureSolutionStabilityTableBlock from '@/components/experiments/PureSolutionStabilityTableBlock.vue';
 import InjectionLCMSRecordTableBlock from '@/components/experiments/InjectionLCMSRecordTableBlock.vue';
 import StabilitySampleTableBlock from '@/components/experiments/StabilitySampleTableBlock.vue';
 import SolutionPrepTableBlock from '@/components/experiments/SolutionPrepTableBlock.vue';
@@ -134,6 +144,8 @@ const injectionSequenceModel = ref(createInjectionSequenceModel());
 const additionSequenceModel = ref(createAdditionSequenceModel());
 const lcmModel = ref(createLCMModel());
 const stabilityModel = ref(createStabilityModel());
+const dilutionModel = ref(createDilutionModel());
+const pureStabilityModel = ref(createPureStabilityModel());
 const solTopRows = ref<string[][]>([
   ['', '', '', '', '', '', ''],
   ['', '', '', '', '', '', ''],
@@ -334,6 +346,40 @@ function createStabilityModel() {
     },
     signatures: { operator: '', reviewer: '', auditor: '' },
   };
+}
+
+function createDilutionModel() {
+  return {
+    context: { projectCode: '', analysisBatchNo: '', runId: '' },
+    rows: [],
+    blankMatrixCode: '',
+    pipetteNo: '',
+    containerMaterial: '',
+    containerColor: '',
+    lightConditions: [],
+    tempConditions: [],
+    completionTime: '',
+    signatures: { operator: '', reviewer: '', auditor: '' },
+  };
+}
+
+function createPureStabilityModel() {
+  return {
+    context: { projectCode: '' },
+    shortTerm: {
+      label: '纯溶液短期稳定性考察',
+      rows: [newStabilityRow()],
+    },
+    longTerm: {
+      label: '纯溶液长期稳定性考察',
+      rows: [newStabilityRow()],
+    },
+    signatures: { packager: '', auditor: '' },
+  };
+}
+
+function newStabilityRow() {
+  return { sampleCode: '', position: '', startTime: '', endTime: '', duration: 0, analysisBatch: '' };
 }
 
 function addRow() { if (!model.value.rows.length) return; model.value.rows.push({ ...model.value.rows[model.value.rows.length - 1], solutionCode: `MS-${String(model.value.rows.length + 1).padStart(2, '0')}` }); }

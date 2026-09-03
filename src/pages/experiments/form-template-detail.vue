@@ -83,6 +83,12 @@
         <div v-else-if="template.templateCode === 'BA-SBR12'" class="bg-white border border-[--border] p-2 overflow-x-auto">
           <StabilitySampleTableBlock :model-value="stabilityModel" />
         </div>
+        <div v-else-if="template.templateCode === 'BA-SBR13'" class="bg-white border border-[--border] p-2 overflow-x-auto">
+          <DilutionRecordTableBlock :model-value="dilutionModel as any" />
+        </div>
+        <div v-else-if="template.templateCode === 'BA-SBR14'" class="bg-white border border-[--border] p-2 overflow-x-auto">
+          <PureSolutionStabilityTableBlock :model-value="pureStabilityModel as any" />
+        </div>
         <div v-else-if="template.templateCode === 'FT-SOL-004'" class="bg-white border border-[--border] p-2 overflow-x-auto">
           <SolutionPrepTableBlock :top-rows="solTopRows" :bottom-rows="solBottomRows" />
         </div>
@@ -116,6 +122,8 @@ import AdditionSequenceTableBlock from '@/components/experiments/AdditionSequenc
 import InjectionLCMSRecordTableBlock from '@/components/experiments/InjectionLCMSRecordTableBlock.vue';
 import StabilitySampleTableBlock from '@/components/experiments/StabilitySampleTableBlock.vue';
 import SolutionPrepTableBlock from '@/components/experiments/SolutionPrepTableBlock.vue';
+import DilutionRecordTableBlock from '@/components/experiments/DilutionRecordTableBlock.vue';
+import PureSolutionStabilityTableBlock from '@/components/experiments/PureSolutionStabilityTableBlock.vue';
 import { getFormTemplateById } from '@/api/mock/form-templates';
 
 const router = useRouter();
@@ -240,6 +248,33 @@ const stabilityModel = computed(() => ({
     storageCondition: '',
   },
   signatures: { operator: '', reviewer: '', auditor: '' },
+}));
+
+const dilutionModel = computed(() => ({
+  context: { projectCode: '', analysisBatchNo: '', runId: '' },
+  rows: [
+    { id: 'dil-1', sampleId: '', sourceVolume: 0, blankMatrixVolume: 0, totalVolume: 0, dilutionFactor: 0 },
+    { id: 'dil-2', sampleId: '', sourceVolume: 0, blankMatrixVolume: 0, totalVolume: 0, dilutionFactor: 0 },
+  ],
+  blankMatrixCode: '',
+  pipetteNo: '',
+  containerMaterial: '',
+  containerColor: '',
+  lightConditions: [],
+  tempConditions: [],
+  completionTime: '',
+  signatures: { operator: '', reviewer: '', auditor: '' },
+}));
+
+function newStabilityRow() {
+  return { sampleCode: '', position: '', startTime: '', endTime: '', duration: 0, analysisBatch: '' };
+}
+
+const pureStabilityModel = computed(() => ({
+  context: { projectCode: '' },
+  shortTerm: { label: '纯溶液短期稳定性考察', rows: [newStabilityRow()] },
+  longTerm: { label: '纯溶液长期稳定性考察', rows: [newStabilityRow()] },
+  signatures: { packager: '', auditor: '' },
 }));
 
 const solTopRows = computed(() => [
