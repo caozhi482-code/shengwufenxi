@@ -127,6 +127,7 @@
               <div class="flex flex-wrap items-center gap-2">
                 <BaseFormField v-model="keyword" label="搜索模板" placeholder="模板名称 / 编号 / 场景" class="min-w-[260px]" />
                 <BaseButton variant="secondary" size="sm" @click="useRecommendedForCurrent">使用推荐模板</BaseButton>
+                <BaseButton variant="secondary" size="sm" @click="selectAllTemplates">全选模板</BaseButton>
               </div>
             </div>
           </template>
@@ -455,6 +456,12 @@ function clearCurrentSelection() {
   const item = currentItem.value;
   if (!item) return;
   selectedTemplateIds[item.id] = [];
+}
+
+function selectAllTemplates() {
+  const item = currentItem.value;
+  if (!item) return;
+  selectedTemplateIds[item.id] = filteredTemplates.value.map(t => t.id);
 }
 
 function openPreview(template: FormTemplateRecord) {
