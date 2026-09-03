@@ -14,9 +14,7 @@
           <BaseButton variant="secondary" size="sm" @click="goTemplateCenter">打开模板中心</BaseButton>
           <BaseButton variant="secondary" size="sm" @click="backToItems">上一步</BaseButton>
           <BaseButton variant="secondary" size="sm" @click="useRecommendedForAll">全部使用推荐模板</BaseButton>
-          <BaseButton variant="secondary" size="sm" @click="clearCurrentSelection">清空当前考察项</BaseButton>
           <BaseButton variant="primary" size="sm" :disabled="!canContinue" @click="openTemplateEditor">下一步：编辑模版表单内容</BaseButton>
-          <BaseButton variant="secondary" size="sm" @click="selectAllTemplates">全选当前考察项</BaseButton>
         </div>
       </div>
 
