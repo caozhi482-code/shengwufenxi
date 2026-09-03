@@ -227,6 +227,12 @@
                   editable
                   @update:model-value="updateActiveRecordModel"
                 />
+                <AdditionSequenceTableBlock
+                  v-else-if="isAdditionSequenceTemplate(activeForm.template)"
+                  :model-value="activeForm.recordModel as any"
+                  editable
+                  @update:model-value="updateActiveRecordModel"
+                />
                 <WorkSolutionTableBlock
                   v-else-if="isWorkSolutionTemplate(activeForm.template)"
                   :model-value="activeForm.recordModel"
@@ -388,6 +394,7 @@ import MSSolutionTableBlock from '@/components/experiments/MSSolutionTableBlock.
 import SplitRecordTableBlock from '@/components/experiments/SplitRecordTableBlock.vue';
 import MatrixSampleTableBlock from '@/components/experiments/MatrixSampleTableBlock.vue';
 import InjectionSequenceTableBlock from '@/components/experiments/InjectionSequenceTableBlock.vue';
+import AdditionSequenceTableBlock from '@/components/experiments/AdditionSequenceTableBlock.vue';
 import InjectionLCMSRecordTableBlock from '@/components/experiments/InjectionLCMSRecordTableBlock.vue';
 import StabilitySampleTableBlock from '@/components/experiments/StabilitySampleTableBlock.vue';
 import DilutionRecordTableBlock from '@/components/experiments/DilutionRecordTableBlock.vue';
@@ -626,8 +633,8 @@ function createRecordModel(template: FormTemplateRecord): any {
     return {
       context: { projectCode: selectedProject.value?.code ?? '', methodVersion: '' },
       rows: [
-        { solutionCode: '', sourceCode: '', sourceConcentration: '', sourceVolume: '', sourceMerge: '', diluentVolume: '', finalVolume: '', finalConcentration: '' },
-        { solutionCode: '', sourceCode: '', sourceConcentration: '', sourceVolume: '', sourceMerge: '', diluentVolume: '', finalVolume: '', finalConcentration: '' },
+        { solutionCode: '', sourceCode: '', sourceConcentration: '', sourceVolume: 0, sourceMerge: '', diluentVolume: '', finalVolume: '', finalConcentration: '' },
+        { solutionCode: '', sourceCode: '', sourceConcentration: '', sourceVolume: 0, sourceMerge: '', diluentVolume: '', finalVolume: '', finalConcentration: '' },
       ],
       sourceBatch: '',
       diluentInfo: '',
@@ -695,6 +702,11 @@ function createRecordModel(template: FormTemplateRecord): any {
         { id: 'split-1', sourceCode: '', splitCount: '', volumePerPortion: '', splitCode: '', splitBy: '', storageLocation: '', storageStartedAt: '' },
         { id: 'split-2', sourceCode: '', splitCount: '', volumePerPortion: '', splitCode: '', splitBy: '', storageLocation: '', storageStartedAt: '' },
       ],
+      sourceBatch: '',
+      containerMaterial: '',
+      color: '',
+      lightCondition: '',
+      disposalMethod: '',
       signatures: { packager: '', reviewer: '', auditor: '' },
     };
   }
@@ -703,15 +715,17 @@ function createRecordModel(template: FormTemplateRecord): any {
     return {
       context: { projectCode: selectedProject.value?.code ?? '', methodVersion: '' },
       rows: [
-        { id: 'mx-1', sampleCode: '', sourceCode: '', sourceConcentration: '', sourceVolume: '', blankMatrixVolume: '', finalVolume: '', blankMatrixCode: '', finalConcentration: '' },
-        { id: 'mx-2', sampleCode: '', sourceCode: '', sourceConcentration: '', sourceVolume: '', blankMatrixVolume: '', finalVolume: '', blankMatrixCode: '', finalConcentration: '' },
+        { id: 'mx-1', sampleCode: '', sourceCode: '', sourceConcentration: '', sourceVolume: 0, blankMatrixVolume: 0, finalVolume: 0, blankMatrixCode: '', finalConcentration: '' },
+        { id: 'mx-2', sampleCode: '', sourceCode: '', sourceConcentration: '', sourceVolume: 0, blankMatrixVolume: 0, finalVolume: 0, blankMatrixCode: '', finalConcentration: '' },
       ],
       sourceBatch: '',
-      blankMatrixStatus: '',
+      blankMatrixDisposition: '',
+      blankMatrixFridgeNo: '',
       pipetteNo: '',
       containerMaterial: '',
       containerColor: '',
-      preparationCondition: '',
+      lightConditions: [],
+      tempConditions: [],
       batchLabel: '',
       completedAt: '',
       disposalMethod: '',
@@ -989,6 +1003,10 @@ function isInjectionSequenceTemplate(template: FormTemplateRecord): boolean {
   return template.templateCode === 'BA-SBR09';
 }
 
+function isAdditionSequenceTemplate(template: FormTemplateRecord): boolean {
+  return template.templateCode === 'BA-SBR07';
+}
+
 function isSplitTemplate(template: FormTemplateRecord): boolean {
   return template.templateCode === 'BA-SBR04';
 }
@@ -1018,6 +1036,9 @@ function formTypeLabel(form: WorkspaceForm): string {
   if (isInjectionSequenceTemplate(form.template)) return '进样序列表';
   if (isSplitTemplate(form.template)) return '分装记录表';
   if (isMatrixSampleTemplate(form.template)) return '含基质样品配制表';
+  if (isInjectionLCMSTemplate(form.template)) return '液质联用仪提交及结果定量记录表';
+  if (isStabilityTemplate(form.template)) return '采集稳定性样品制备表';
+  if (isDilutionTemplate(form.template)) return '样品稀释过程记录表';
   return `${form.template.templateName} · 记录表模板`;
 }
 
