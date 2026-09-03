@@ -17,35 +17,6 @@ export const formTemplateStatuses = [
 
 export const formTemplates: FormTemplateRecord[] = [
   {
-    id: 'TPL-001',
-    templateName: '加样序列表',
-    templateCode: 'FT-AS-001',
-    version: 'V1.2',
-    itemNames: ['系统适用性', '残留检查', '标准曲线'],
-    sourceFile: '线下原始记录-加样序列表-2025Q4.xlsx',
-    status: 'enabled',
-    updatedAt: '2026-08-18 15:20:00',
-    isDefault: true,
-    description: '适用于 96 孔板加样、进样和批量记录，保留孔位、样品、体积、扫码状态等上下文。',
-    previewMode: 'plate',
-    group: 'process',
-    context: {
-      projectCode: 'EXP-2026-001',
-      planCode: 'PLAN-EXP-2026-001-DRAFT',
-      methodCode: 'BRH-MN-202506059',
-      methodVersion: 'VAL1',
-      fileCode: 'FILE-PLATE-001',
-    },
-    structure: {
-      sections: ['顶部上下文区', '表头信息区', '96 孔板区', '签字区', '备注区', '页脚说明'],
-      fields: ['项目编号', '计划编号', '方法版本', '孔位', '样品编号', '体积', '扫码状态', '签字'],
-      plate: { rows: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'], cols: 12 },
-      highlights: ['A1', 'B1', 'C1', 'D1', 'H12'],
-      summary: '用于标准化记录每个孔位的加样顺序，支持项目编号与来源文件追溯。',
-    },
-  },
-
-  {
     id: 'TPL-006',
     templateName: '对照品称量及储备液配制记录表',
     templateCode: 'BA-SBR02',
