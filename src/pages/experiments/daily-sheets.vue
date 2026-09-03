@@ -23,7 +23,7 @@
           class="flex items-center gap-4 p-3 border border-[--border] rounded-md cursor-pointer hover:bg-[--surface-muted] transition-colors"
           :class="selectedTasks.includes(task.id) ? 'border-[--primary-border] bg-[--primary-soft]' : ''"
           @click="toggleTask(task.id)">
-          <input type="checkbox" :checked="selectedTasks.includes(task.id)" class="accent-[--primary]" @click.stop="toggleTask(task.id)" />
+          <BaseCheckbox :checked="selectedTasks.includes(task.id)" @update:checked="toggleTask(task.id)" />
           <div class="flex-1 grid grid-cols-6 gap-4 text-sm">
             <div>
               <div class="text-[--muted-foreground] text-xs">考察项</div>
@@ -68,6 +68,7 @@ import BasePageHeader from '@/components/base/BasePageHeader.vue';
 import BaseCard from '@/components/base/BaseCard.vue';
 import BaseFormField from '@/components/base/BaseFormField.vue';
 import BaseButton from '@/components/base/BaseButton.vue';
+import BaseCheckbox from '@/components/base/BaseCheckbox.vue';
 import { tasks } from '@/api/mock/tasks';
 
 const selectedDate = ref(dayjs().add(1, 'day').format('YYYY-MM-DD'));

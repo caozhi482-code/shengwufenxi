@@ -4,7 +4,7 @@
       <thead>
         <tr class="border-b border-[--border] bg-[--surface-muted]">
           <th v-if="showCheckbox" class="w-10 px-4 py-3 text-center">
-            <input type="checkbox" :checked="allSelected" @change="$emit('toggle-all', ($event.target as HTMLInputElement).checked)" />
+            <BaseCheckbox :checked="allSelected" @update:checked="$emit('toggle-all', $event)" />
           </th>
           <th v-for="col in columns" :key="col.key"
             class="px-4 py-3 text-left text-xs font-semibold text-[--muted-foreground] uppercase tracking-wide cursor-pointer select-none whitespace-nowrap"
@@ -32,7 +32,7 @@
           :class="['border-b border-[--border] transition-colors cursor-pointer', selectedRows?.includes(row.id) ? 'bg-[--primary-soft]' : 'hover:bg-[--surface-muted]']"
           @click="$emit('row-click', row)">
           <td v-if="showCheckbox" class="px-4 py-3 text-center">
-            <input type="checkbox" :checked="selectedRows?.includes(row.id)" @change.stop="$emit('select-row', row.id)" />
+            <BaseCheckbox :checked="selectedRows?.includes(row.id)" @update:checked="$emit('select-row', row.id)" />
           </td>
           <td v-for="col in columns" :key="col.key" class="px-4 py-3 text-[--text-main]">
             <slot :name="`cell-${col.key}`" :row="row" :value="row[col.key]">
@@ -74,4 +74,5 @@ const emit = defineEmits<{
 }>();
 const colspan = computed(() => (props.showCheckbox ? 1 : 0) + props.columns.length);
 import { computed } from 'vue';
+import BaseCheckbox from './BaseCheckbox.vue';
 </script>

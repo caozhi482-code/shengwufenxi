@@ -150,12 +150,7 @@
             >
               <div class="flex flex-wrap items-start justify-between gap-3">
                 <label class="flex min-w-0 flex-1 cursor-pointer items-start gap-3">
-                  <input
-                    type="checkbox"
-                    class="mt-1 h-4 w-4 accent-[--primary]"
-                    :checked="isSelected(template.id)"
-                    @change="toggleTemplate(template.id)"
-                  />
+                  <BaseCheckbox :checked="isSelected(template.id)" @update:checked="toggleTemplate(template.id)" />
                   <div class="min-w-0 space-y-2">
                     <div class="flex flex-wrap items-center gap-2">
                       <span class="font-semibold text-[--text-main]">{{ template.templateName }}</span>
@@ -283,6 +278,7 @@ import BaseButton from '@/components/base/BaseButton.vue';
 import BaseFormField from '@/components/base/BaseFormField.vue';
 import BaseTag from '@/components/base/BaseTag.vue';
 import BaseDrawer from '@/components/base/BaseDrawer.vue';
+import BaseCheckbox from '@/components/base/BaseCheckbox.vue';
 import StepWizard from '@/components/experiments/StepWizard.vue';
 import { evaluationItems } from '@/api/mock/evaluation';
 import { files, getFilesByProject } from '@/api/mock/files';
@@ -403,14 +399,12 @@ function itemSelectionCount(itemId: string): number {
 function availableTemplatesForItem(item: EvaluationItem): FormTemplateRecord[] {
   const byName = formTemplates.filter(template => template.itemNames.includes(item.name));
   const byLegacyName = formTemplates.filter(template => item.formTemplates.includes(template.templateName) || item.formTemplate === template.templateName);
-  const byDefault = formTemplates.filter(template => template.isDefault || template.status === 'enabled');
-  return uniqueTemplates([...byName, ...byLegacyName, ...byDefault]).filter(template => template.status !== 'disabled');
+  return uniqueTemplates([...byName, ...byLegacyName]).filter(template => template.status !== 'disabled');
 }
 
 function recommendedTemplates(item: EvaluationItem): FormTemplateRecord[] {
   const exact = formTemplates.filter(template => template.itemNames.includes(item.name) || item.formTemplates.includes(template.templateName) || item.formTemplate === template.templateName);
-  const defaults = formTemplates.filter(template => template.isDefault);
-  return uniqueTemplates([...exact, ...defaults]).filter(template => template.status === 'enabled').slice(0, 2);
+  return uniqueTemplates(exact).filter(template => template.status === 'enabled').slice(0, 2);
 }
 
 function uniqueTemplates(list: FormTemplateRecord[]): FormTemplateRecord[] {

@@ -179,11 +179,11 @@
           <td class="mx-cell" colspan="2">
             <div v-if="editable" class="flex items-center gap-3 flex-wrap">
               <label class="inline-flex items-center gap-1">
-                <input type="checkbox" :checked="props.modelValue.lightConditions.includes('黄光灯')" :disabled="!editable" @change="toggleLightCondition('黄光灯')" />
+                <BaseCheckbox :checked="props.modelValue.lightConditions.includes('黄光灯')" :disabled="!editable" @update:checked="toggleLightCondition('黄光灯')" />
                 <span>黄光灯</span>
               </label>
               <label class="inline-flex items-center gap-1">
-                <input type="checkbox" :checked="props.modelValue.lightConditions.includes('白色荧光灯')" :disabled="!editable" @change="toggleLightCondition('白色荧光灯')" />
+                <BaseCheckbox :checked="props.modelValue.lightConditions.includes('白色荧光灯')" :disabled="!editable" @update:checked="toggleLightCondition('白色荧光灯')" />
                 <span>白色荧光灯</span>
               </label>
             </div>
@@ -195,11 +195,11 @@
           <td class="mx-cell" colspan="7">
             <div v-if="editable" class="flex items-center gap-3 flex-wrap">
               <label class="inline-flex items-center gap-1">
-                <input type="checkbox" :checked="props.modelValue.tempConditions.includes('RT')" :disabled="!editable" @change="toggleTempCondition('RT')" />
+                <BaseCheckbox :checked="props.modelValue.tempConditions.includes('RT')" :disabled="!editable" @update:checked="toggleTempCondition('RT')" />
                 <span>RT</span>
               </label>
               <label class="inline-flex items-center gap-1">
-                <input type="checkbox" :checked="props.modelValue.tempConditions.includes('WI')" :disabled="!editable" @change="toggleTempCondition('WI')" />
+                <BaseCheckbox :checked="props.modelValue.tempConditions.includes('WI')" :disabled="!editable" @update:checked="toggleTempCondition('WI')" />
                 <span>WI</span>
               </label>
             </div>
@@ -284,6 +284,7 @@
 
 <script setup lang="ts">
 import { computed, defineComponent, h } from 'vue';
+import BaseCheckbox from '@/components/base/BaseCheckbox.vue';
 
 interface MatrixSampleRow {
   id: string;

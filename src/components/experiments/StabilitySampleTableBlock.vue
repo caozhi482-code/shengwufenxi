@@ -64,19 +64,19 @@
           <td class="stab-cell" colspan="2">
             <div class="flex items-center gap-4">
               <label class="inline-flex items-center gap-1">
-                <input type="checkbox" :checked="model.blood.lightCondition?.includes('黄光灯')" :disabled="!editable" @change="toggleLightCondition('黄光灯')" />
+                <BaseCheckbox :checked="model.blood.lightCondition?.includes('黄光灯')" :disabled="!editable" @update:checked="toggleLightCondition('黄光灯')" />
                 <span>黄光灯</span>
               </label>
               <label class="inline-flex items-center gap-1">
-                <input type="checkbox" :checked="model.blood.lightCondition?.includes('白色荧光灯')" :disabled="!editable" @change="toggleLightCondition('白色荧光灯')" />
+                <BaseCheckbox :checked="model.blood.lightCondition?.includes('白色荧光灯')" :disabled="!editable" @update:checked="toggleLightCondition('白色荧光灯')" />
                 <span>白色荧光灯</span>
               </label>
               <label class="inline-flex items-center gap-1">
-                <input type="checkbox" :checked="model.blood.tempCondition?.includes('RT')" :disabled="!editable" @change="toggleTempCondition('RT')" />
+                <BaseCheckbox :checked="model.blood.tempCondition?.includes('RT')" :disabled="!editable" @update:checked="toggleTempCondition('RT')" />
                 <span>RT</span>
               </label>
               <label class="inline-flex items-center gap-1">
-                <input type="checkbox" :checked="model.blood.tempCondition?.includes('WI')" :disabled="!editable" @change="toggleTempCondition('WI')" />
+                <BaseCheckbox :checked="model.blood.tempCondition?.includes('WI')" :disabled="!editable" @update:checked="toggleTempCondition('WI')" />
                 <span>WI</span>
               </label>
             </div>
@@ -130,19 +130,19 @@
           <td class="stab-cell">
             <div class="flex flex-col gap-1 text-[11px]">
               <label class="inline-flex items-center gap-1">
-                <input type="checkbox" :checked="row.conditions?.includes('黄光灯')" :disabled="!editable" @change="toggleStabilityLight(rowIndex, '黄光灯')" />
+                <BaseCheckbox :checked="row.conditions?.includes('黄光灯')" :disabled="!editable" @update:checked="toggleStabilityLight(rowIndex, '黄光灯')" />
                 <span>黄光灯</span>
               </label>
               <label class="inline-flex items-center gap-1">
-                <input type="checkbox" :checked="row.conditions?.includes('白色荧光灯')" :disabled="!editable" @change="toggleStabilityLight(rowIndex, '白色荧光灯')" />
+                <BaseCheckbox :checked="row.conditions?.includes('白色荧光灯')" :disabled="!editable" @update:checked="toggleStabilityLight(rowIndex, '白色荧光灯')" />
                 <span>白色荧光灯</span>
               </label>
               <label class="inline-flex items-center gap-1">
-                <input type="checkbox" :checked="row.conditions?.includes('RT')" :disabled="!editable" @change="toggleStabilityTemp(rowIndex, 'RT')" />
+                <BaseCheckbox :checked="row.conditions?.includes('RT')" :disabled="!editable" @update:checked="toggleStabilityTemp(rowIndex, 'RT')" />
                 <span>RT</span>
               </label>
               <label class="inline-flex items-center gap-1">
-                <input type="checkbox" :checked="row.conditions?.includes('WI')" :disabled="!editable" @change="toggleStabilityTemp(rowIndex, 'WI')" />
+                <BaseCheckbox :checked="row.conditions?.includes('WI')" :disabled="!editable" @update:checked="toggleStabilityTemp(rowIndex, 'WI')" />
                 <span>WI</span>
               </label>
             </div>
@@ -193,6 +193,7 @@
 
 <script setup lang="ts">
 import { computed, defineComponent, h } from 'vue';
+import BaseCheckbox from '@/components/base/BaseCheckbox.vue';
 
 interface BloodRow {
   sampleCode: string;

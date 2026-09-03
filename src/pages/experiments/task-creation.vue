@@ -104,7 +104,7 @@
                     <div class="text-xs text-[--muted-foreground] mb-1">{{ objTypeLabels[objType] }}</div>
                     <div class="flex flex-wrap gap-1.5">
                       <label v-for="opt in scanOptions[objType]" :key="opt.value" class="inline-flex items-center gap-1 px-2 py-1 border border-[--border] rounded text-xs cursor-pointer hover:bg-[--surface-muted]">
-                        <input type="checkbox" :value="opt.value" v-model="step.scanObjects" class="accent-[--primary]" />
+                        <BaseCheckbox :checked="step.scanObjects.some(s => s.type === opt.value)" @update:checked="step.scanObjects = step.scanObjects.some(s => s.type === opt.value) ? step.scanObjects.filter(s => s.type !== opt.value) : [...step.scanObjects, { type: opt.value as any, name: opt.label }]" />
                         {{ opt.label }}
                       </label>
                     </div>
@@ -134,7 +134,7 @@
               <div class="flex flex-wrap gap-2">
                 <label v-for="p in personOptions" :key="p.value" class="inline-flex items-center gap-1.5 px-3 py-1.5 border rounded-md text-sm cursor-pointer transition-colors hover:bg-[--surface-muted]"
                   :class="formRef.investigators.includes(p.value) ? 'border-[--primary] bg-[--primary-soft] text-[--primary]' : 'border-[--border]'">
-                  <input type="checkbox" :value="p.value" v-model="formRef.investigators" class="accent-[--primary]" />
+                  <BaseCheckbox :checked="formRef.investigators.includes(p.value)" @update:checked="toggleField('investigators', p.value)" />
                   {{ p.label }}
                 </label>
               </div>
@@ -147,7 +147,7 @@
               <div class="flex flex-wrap gap-2">
                 <label v-for="inst in instrumentOptions" :key="inst.value" class="inline-flex items-center gap-1.5 px-3 py-1.5 border rounded-md text-sm cursor-pointer transition-colors hover:bg-[--surface-muted]"
                   :class="formRef.instruments.includes(inst.value) ? 'border-[--primary] bg-[--primary-soft] text-[--primary]' : 'border-[--border]'">
-                  <input type="checkbox" :value="inst.value" v-model="formRef.instruments" class="accent-[--primary]" />
+                  <BaseCheckbox :checked="formRef.instruments.includes(inst.value)" @update:checked="toggleField('instruments', inst.value)" />
                   {{ inst.label }}
                 </label>
               </div>
@@ -218,6 +218,7 @@ import BaseCard from '@/components/base/BaseCard.vue';
 import BaseFormField from '@/components/base/BaseFormField.vue';
 import BaseButton from '@/components/base/BaseButton.vue';
 import BaseTag from '@/components/base/BaseTag.vue';
+import BaseCheckbox from '@/components/base/BaseCheckbox.vue';
 import { methods, formTemplates, scanObjectOptions, taskTypeOptions, personOptions, instrumentOptions } from '@/api/mock/methods';
 import { evaluationItems } from '@/api/mock/evaluation';
 import type { TaskStep, FormCell } from '@/types/experiments';
@@ -311,7 +312,7 @@ function editFormCard(card: any) {
 
 function addStep() {
   const newId = `S${Date.now()}`;
-  steps.value.push({ id: newId, seq: steps.value.length + 1, action: '', expected: [], scanObjects: [], requiredFields: ['actualVolume', 'time'], notes: '' });
+  steps.value.push({ id: newId, seq: steps.value.length + 1, action: '', expected: [], scanObjects: [] as any, requiredFields: ['actualVolume', 'time'], notes: '' });
 }
 function deleteStep(id: string) {
   if (steps.value.length <= 1) return;
@@ -323,6 +324,14 @@ function moveStep(index: number, dir: number) {
   if (newIndex < 0 || newIndex >= steps.value.length) return;
   [steps.value[index], steps.value[newIndex]] = [steps.value[newIndex], steps.value[index]];
   steps.value = steps.value.map((s, i) => ({ ...s, seq: i + 1 }));
+}
+
+function toggleField(field: 'investigators' | 'instruments', value: string) {
+  const arr = (formRef.value as any)[field];
+  const idx = arr.indexOf(value);
+  if (idx >= 0) arr.splice(idx, 1);
+  else arr.push(value);
+  (formRef.value as any)[field] = arr;
 }
 
 const editingStepId = ref<string | null>(null);
