@@ -30,6 +30,7 @@
               @dblclick.stop="handleCellDblClick(row, col)"
               @mouseenter="hoverKey = `${row}-${col}`"
               @mouseleave="hoverKey = null"
+              :title="getCell(row, col).operations.length > 0 ? getCell(row, col).operations.map(op => op.action || op.substance).join(', ') : ''"
             >
               <div v-if="getCell(row, col).operations.length === 0" class="text-[--danger] text-[10px] font-semibold">未配置</div>
               <template v-for="op in getCell(row, col).operations" :key="op.id">
@@ -81,6 +82,7 @@ const emit = defineEmits<{
   'batch': [];
   'import': [];
   'edit-cell': [row: string, col: number];
+  'cell-select': [row: string, col: number];
   'update:footer': [footer: { location?: string; time?: string; owner?: string; reviewer?: string }];
 }>();
 
@@ -122,7 +124,6 @@ function cellHasWarning(row: string, col: number) {
 }
 
 function handleCellClick(row: string, col: number) {
-  if (readOnly.value) return;
   if (pendingClick) {
     clearTimeout(pendingClick);
     pendingClick = null;
@@ -132,8 +133,11 @@ function handleCellClick(row: string, col: number) {
   pendingCell = { row, col };
   pendingClick = setTimeout(() => {
     if (pendingCell) {
-      const cell = getCell(pendingCell.row, pendingCell.col);
-      cell.selected = !cell.selected;
+      if (!readOnly.value) {
+        const cell = getCell(pendingCell.row, pendingCell.col);
+        cell.selected = !cell.selected;
+      }
+      emit('cell-select', pendingCell.row, pendingCell.col);
     }
     pendingClick = null;
     pendingCell = null;
