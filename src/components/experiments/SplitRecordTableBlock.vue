@@ -48,13 +48,27 @@
           <td class="sp-label text-center">操作</td>
         </tr>
         <tr v-for="(row, rowIndex) in model.rows" :key="row.id" class="h-[58px]">
-          <td class="sp-cell bg-[#f3efe0]"><CellEditor :value="row.sourceCode" :editable="editable" @update="updateRow(rowIndex, 'sourceCode', $event)" /></td>
-          <td class="sp-cell"><CellEditor :value="row.splitCount" :editable="editable" type="number" @update="updateRow(rowIndex, 'splitCount', $event)" /></td>
-          <td class="sp-cell"><CellEditor :value="row.volumePerPortion" :editable="editable" type="number" @update="updateRow(rowIndex, 'volumePerPortion', $event)" /></td>
-          <td class="sp-cell"><CellEditor :value="row.splitCode" :editable="editable" @update="updateRow(rowIndex, 'splitCode', $event)" /></td>
-          <td class="sp-cell"><CellEditor :value="row.splitBy" :editable="editable" @update="updateRow(rowIndex, 'splitBy', $event)" /></td>
-          <td class="sp-cell"><CellEditor :value="row.storageLocation" :editable="editable" @update="updateRow(rowIndex, 'storageLocation', $event)" /></td>
-          <td class="sp-cell"><CellEditor :value="row.storageStartedAt" :editable="editable" type="datetime-local" @update="updateRow(rowIndex, 'storageStartedAt', $event)" /></td>
+          <td class="sp-cell bg-[#f3efe0]">
+            <div class="space-y-1"><CellEditor :value="row.sourceCode" :editable="editable" @update="updateRow(rowIndex, 'sourceCode', $event)" /><button v-if="editable && !row.sourceCode" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( rowIndex, 0)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div>
+          </td>
+          <td class="sp-cell">
+            <div class="space-y-1"><CellEditor :value="row.splitCount" :editable="editable" type="number" @update="updateRow(rowIndex, 'splitCount', $event)" /><button v-if="editable && !row.splitCount" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( rowIndex, 1)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div>
+          </td>
+          <td class="sp-cell">
+            <div class="space-y-1"><CellEditor :value="row.volumePerPortion" :editable="editable" type="number" @update="updateRow(rowIndex, 'volumePerPortion', $event)" /><button v-if="editable && !row.volumePerPortion" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( rowIndex, 2)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div>
+          </td>
+          <td class="sp-cell">
+            <div class="space-y-1"><CellEditor :value="row.splitCode" :editable="editable" @update="updateRow(rowIndex, 'splitCode', $event)" /><button v-if="editable && !row.splitCode" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( rowIndex, 3)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div>
+          </td>
+          <td class="sp-cell">
+            <div class="space-y-1"><CellEditor :value="row.splitBy" :editable="editable" @update="updateRow(rowIndex, 'splitBy', $event)" /><button v-if="editable && !row.splitBy" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( rowIndex, 4)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div>
+          </td>
+          <td class="sp-cell">
+            <div class="space-y-1"><CellEditor :value="row.storageLocation" :editable="editable" @update="updateRow(rowIndex, 'storageLocation', $event)" /><button v-if="editable && !row.storageLocation" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( rowIndex, 5)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div>
+          </td>
+          <td class="sp-cell">
+            <div class="space-y-1"><CellEditor :value="row.storageStartedAt" :editable="editable" type="datetime-local" @update="updateRow(rowIndex, 'storageStartedAt', $event)" /><button v-if="editable && !row.storageStartedAt" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( rowIndex, 6)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div>
+          </td>
           <td class="sp-cell">
             <div v-if="editable" class="flex flex-col items-center gap-1 text-[11px]">
               <button class="text-[--primary] hover:underline" @click="copyRow(rowIndex)">复制</button>
@@ -95,10 +109,15 @@
       </tbody>
     </table>
   </div>
+
+  <CellOpEditor v-if="drawerOpen" :open="drawerOpen" :read-only="!props.editable" :cell-row="String(activeCellRow)" :cell-col="activeCellCol" :operations="cellOperations" @close="drawerOpen=false" @save="saveDrawer" />
 </template>
 
 <script setup lang="ts">
-import { computed, defineComponent, h } from 'vue';
+import { computed, defineComponent, h, ref } from 'vue';
+import { Settings2 } from 'lucide-vue-next';
+import CellOpEditor from './CellOpEditor.vue';
+import type { SequenceOperation } from '@/types/experiments';
 import BaseButton from '@/components/base/BaseButton.vue';
 
 interface SplitRow {
@@ -134,6 +153,24 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   'update:modelValue': [value: ModelValue];
 }>();
+
+const drawerOpen = ref(false);
+const activeCellRow = ref(0);
+const activeCellCol = ref(0);
+const cellOperations = ref<SequenceOperation[]>([]);
+
+function handleConfigureCell(rowIndex: number, colIndex: number) {
+  activeCellRow.value = rowIndex;
+  activeCellCol.value = colIndex;
+  cellOperations.value = (props.modelValue as any).cellOperations || [];
+  drawerOpen.value = true;
+}
+
+function saveDrawer(ops: SequenceOperation[]) {
+  cellOperations.value = ops;
+  (props.modelValue as any).cellOperations = ops;
+  emit('update:modelValue', props.modelValue);
+}
 
 const model = computed(() => props.modelValue);
 

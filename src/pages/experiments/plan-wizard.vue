@@ -24,25 +24,22 @@
               <div
                 v-for="proj in filteredProjects"
                 :key="proj.id"
-                class="flex items-center gap-4 p-4 border rounded-lg cursor-pointer transition-all"
+                class="flex items-start gap-4 p-4 border rounded-lg cursor-pointer transition-all"
                 :class="selectedProject?.id === proj.id ? 'border-[--primary] bg-[--primary-soft]' : 'border-[--border] hover:border-[--border-strong]'"
                 @click="selectProject(proj)"
               >
-                <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0"
+                <div class="w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 mt-0.5"
                   :class="selectedProject?.id === proj.id ? 'border-[--primary] bg-[--primary] text-white' : 'border-[--border]'"
                 >
                   <span v-if="selectedProject?.id === proj.id" class="text-xs">✓</span>
                 </div>
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center gap-2">
-                    <span class="text-sm font-semibold text-[--text-main]">{{ proj.name }}</span>
-                    <BaseTag :tone="proj.status === 'active' ? 'success' : 'neutral'" :label="proj.status === 'active' ? '进行中' : '已归档'" />
+                    <span class="text-sm font-medium text-[--text-main]">{{ proj.name }}</span>
+                    <BaseTag :tone="proj.status === 'active' ? 'success' : 'neutral'" :label="proj.status === 'active' ? '现行' : '已归档'" />
                   </div>
-                  <div class="text-xs text-[--muted-foreground] mt-0.5">{{ proj.code }} · {{ proj.department }} · {{ proj.manager }}</div>
-                </div>
-                <div class="text-xs text-[--muted-foreground] text-right shrink-0">
-                  <div>研究方向</div>
-                  <div class="font-medium text-[--text-main]">{{ proj.researchArea }}</div>
+                  <div class="text-xs text-[--muted-foreground] mt-0.5">{{ proj.code }}</div>
+                  <div class="text-xs text-[--muted-foreground] mt-0.5">{{ proj.department }} · {{ proj.manager }} · {{ proj.researchArea }}</div>
                 </div>
               </div>
             </div>

@@ -68,13 +68,48 @@
         </tr>
         <tr v-for="(row, rowIndex) in model.rows" :key="rowIndex" class="h-[58px]">
           <td class="ref-cell bg-[#f3efe0] text-center">储备液{{ rowIndex + 1 }}</td>
-          <td class="ref-cell" colspan="2"><CellEditor :value="row.stockCode" :editable="editable" @update="updateRow(rowIndex, 'stockCode', $event)" /></td>
-          <td class="ref-cell"><CellEditor :value="row.concentration" :editable="editable" @update="updateRow(rowIndex, 'concentration', $event)" /></td>
-          <td class="ref-cell"><CellEditor :value="row.weight" :editable="editable" @update="updateRow(rowIndex, 'weight', $event)" /></td>
-          <td class="ref-cell"><CellEditor :value="row.volume" :editable="editable" @update="updateRow(rowIndex, 'volume', $event)" /></td>
-          <td class="ref-cell" colspan="2"><CellEditor :value="row.calc" :editable="editable" @update="updateRow(rowIndex, 'calc', $event)" /></td>
-          <td class="ref-cell" colspan="2"><CellEditor :value="row.container" :editable="editable" @update="updateRow(rowIndex, 'container', $event)" /></td>
-          <td class="ref-cell" colspan="2"><CellEditor :value="row.finishedAt" :editable="editable" @update="updateRow(rowIndex, 'finishedAt', $event)" /></td>
+          <td class="ref-cell">
+            <div class="space-y-1">
+              <CellEditor :value="row.stockCode" :editable="editable" @update="updateRow(rowIndex, 'stockCode', $event)" />
+              <button v-if="editable && !row.stockCode" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( rowIndex, 0)"><Settings2 class="h-3.5 w-3.5" />配置格子</button>
+            </div>
+          </td>
+          <td class="ref-cell">
+            <div class="space-y-1">
+              <CellEditor :value="row.concentration" :editable="editable" @update="updateRow(rowIndex, 'concentration', $event)" />
+              <button v-if="editable && !row.concentration" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( rowIndex, 1)"><Settings2 class="h-3.5 w-3.5" />配置格子</button>
+            </div>
+          </td>
+          <td class="ref-cell">
+            <div class="space-y-1">
+              <CellEditor :value="row.weight" :editable="editable" @update="updateRow(rowIndex, 'weight', $event)" />
+              <button v-if="editable && !row.weight" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( rowIndex, 2)"><Settings2 class="h-3.5 w-3.5" />配置格子</button>
+            </div>
+          </td>
+          <td class="ref-cell">
+            <div class="space-y-1">
+              <CellEditor :value="row.volume" :editable="editable" @update="updateRow(rowIndex, 'volume', $event)" />
+              <button v-if="editable && !row.volume" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( rowIndex, 3)"><Settings2 class="h-3.5 w-3.5" />配置格子</button>
+            </div>
+          </td>
+          <td class="ref-cell" colspan="2">
+            <div class="space-y-1">
+              <CellEditor :value="row.calc" :editable="editable" @update="updateRow(rowIndex, 'calc', $event)" />
+              <button v-if="editable && !row.calc" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( rowIndex, 4)"><Settings2 class="h-3.5 w-3.5" />配置格子</button>
+            </div>
+          </td>
+          <td class="ref-cell" colspan="2">
+            <div class="space-y-1">
+              <CellEditor :value="row.container" :editable="editable" @update="updateRow(rowIndex, 'container', $event)" />
+              <button v-if="editable && !row.container" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( rowIndex, 5)"><Settings2 class="h-3.5 w-3.5" />配置格子</button>
+            </div>
+          </td>
+          <td class="ref-cell" colspan="2">
+            <div class="space-y-1">
+              <CellEditor :value="row.finishedAt" :editable="editable" @update="updateRow(rowIndex, 'finishedAt', $event)" />
+              <button v-if="editable && !row.finishedAt" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( rowIndex, 6)"><Settings2 class="h-3.5 w-3.5" />配置格子</button>
+            </div>
+          </td>
         </tr>
 
         <tr>
@@ -130,10 +165,15 @@
       </tbody>
     </table>
   </div>
+
+  <CellOpEditor v-if="drawerOpen" :open="drawerOpen" :read-only="!props.editable" :cell-row="String(activeCellRow)" :cell-col="activeCellCol" :operations="cellOperations" @close="drawerOpen=false" @save="saveDrawer" />
 </template>
 
 <script setup lang="ts">
-import { computed, defineComponent, h } from 'vue';
+import { computed, defineComponent, h, ref } from 'vue';
+import { Settings2 } from 'lucide-vue-next';
+import CellOpEditor from './CellOpEditor.vue';
+import type { SequenceOperation } from '@/types/experiments';
 
 interface RowModel {
   stockCode: string;
@@ -184,6 +224,24 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   'update:modelValue': [value: ModelValue];
 }>();
+
+const drawerOpen = ref(false);
+const activeCellRow = ref(0);
+const activeCellCol = ref(0);
+const cellOperations = ref<SequenceOperation[]>([]);
+
+function handleConfigureCell(rowIndex: number, colIndex: number) {
+  activeCellRow.value = rowIndex;
+  activeCellCol.value = colIndex;
+  cellOperations.value = (props.modelValue as any).cellOperations || [];
+  drawerOpen.value = true;
+}
+
+function saveDrawer(ops: SequenceOperation[]) {
+  cellOperations.value = ops;
+  (props.modelValue as any).cellOperations = ops;
+  emit('update:modelValue', props.modelValue);
+}
 
 const model = computed(() => props.modelValue);
 

@@ -107,6 +107,11 @@ const filteredPlans = computed(() =>
   })
 );
 
-function viewPlan(row: Plan) { router.push(`/experiments/plans/${row.id}/tasks`); }
+function viewPlan(row: Plan) {
+  router.push({
+    path: `/experiments/plans/${row.id}/tasks`,
+    query: { planCode: row.code, projectId: '' },
+  });
+}
 function reset() { search.value = ''; statusFilter.value = ''; }
 </script>

@@ -2,16 +2,6 @@
   <div class="space-y-5">
     <BasePageHeader title="表单模板中心" subtitle="沉淀实验室线下原始记录模板，供计划流程选择、查看和复用">
       <template #extra>
-        <BaseButton variant="secondary" @click="goBack">返回计划流程</BaseButton>
-        <BaseButton variant="secondary" @click="goReferenceStockTemplate">对照品模板</BaseButton>
-        <BaseButton variant="secondary" @click="goWorkSolutionTemplate">工作溶液模板</BaseButton>
-        <BaseButton variant="secondary" @click="goSplitTemplate">分装记录模板</BaseButton>
-        <BaseButton variant="secondary" @click="goMatrixSampleTemplate">含基质样品模板</BaseButton>
-        <BaseButton variant="secondary" @click="goMSTemplate">MS 溶液模板</BaseButton>
-        <BaseButton variant="secondary" @click="goSequenceTemplate">进样序列表</BaseButton>
-        <BaseButton variant="secondary" @click="goInjectionLCMSPreview">液质联用模板预览</BaseButton>
-        <BaseButton variant="secondary" @click="goInjectionLCMSTemplate">液质联用模板</BaseButton>
-        <BaseButton variant="primary" @click="createTemplateEntry">新建模板草稿</BaseButton>
       </template>
     </BasePageHeader>
 
@@ -200,53 +190,5 @@ function setDefault(row: FormTemplateRecord) {
 
 function disableTemplate(row: FormTemplateRecord) {
   alert(`已停用模板：${row.templateName}（模拟）`);
-}
-
-function createTemplateEntry() {
-  router.push('/experiments/form-templates/TPL-001/editor');
-}
-
-function goReferencePreview() {
-  router.push('/experiments/form-templates/TPL-006/preview');
-}
-
-function goReferenceStockTemplate() {
-  router.push('/experiments/form-templates/TPL-006');
-}
-
-function goWorkSolutionTemplate() {
-  router.push('/experiments/form-templates/TPL-007');
-}
-
-function goSplitTemplate() {
-  router.push('/experiments/form-templates/TPL-008');
-}
-
-function goMatrixSampleTemplate() {
-  router.push('/experiments/form-templates/TPL-009');
-}
-
-function goWorkSolutionPreview() {
-  router.push('/experiments/form-templates/TPL-007/preview');
-}
-
-function goMSTemplate() {
-  router.push('/experiments/form-templates/TPL-010');
-}
-
-function goSequenceTemplate() {
-  router.push('/experiments/form-templates/TPL-011');
-}
-
-function goInjectionLCMSTemplate() {
-  router.push('/experiments/form-templates/TPL-012');
-}
-
-function goInjectionLCMSPreview() {
-  router.push('/experiments/form-templates/TPL-012/preview');
-}
-
-function goBack() {
-  router.push('/experiments/plans/new/forms');
 }
 </script>

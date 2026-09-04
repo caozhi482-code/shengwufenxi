@@ -71,7 +71,7 @@
                 type="button"
                 class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline"
                 title="配置格子"
-                @click.stop="emit('configure-demo-cell', `R${rowIndex + 1}`, cellIndex + 1)"
+                @click.stop="handleConfigureCell(rowIndex, cellIndex)"
               >
                 <Settings2 class="h-3.5 w-3.5" />
                 配置格子
@@ -81,7 +81,7 @@
           <td class="ws-cell text-center align-top">
             <div class="space-y-1">
               <div class="font-medium leading-5">配置</div>
-              <button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="emit('configure-demo-cell', `R${rowIndex + 1}`, 9)">
+              <button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(rowIndex, 9)">
                 <Settings2 class="h-3.5 w-3.5" />
                 配置格子
               </button>
@@ -172,12 +172,24 @@
         </tr>
       </tbody>
     </table>
+    <CellOpEditor
+      v-if="drawerOpen"
+      :open="drawerOpen"
+      :read-only="!props.editable"
+      :cell-row="String(activeCellRow)"
+      :cell-col="activeCellCol"
+      :operations="cellOperations"
+      @close="drawerOpen = false"
+      @save="saveDrawer"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, defineComponent, h } from 'vue';
+import { computed, defineComponent, h, ref } from 'vue';
 import { Settings2 } from 'lucide-vue-next';
+import CellOpEditor from './CellOpEditor.vue';
+import type { SequenceOperation } from '@/types/experiments';
 
 interface WorkRow {
   solutionCode: string;
@@ -224,11 +236,28 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   'update:modelValue': [value: ModelValue];
-  'configure-demo-cell': [row: string, col: number];
 }>();
 
 const model = computed(() => props.modelValue);
 const disposalOptions = ['DAU', '进行分装后储存', '直接储存于冰箱'];
+const drawerOpen = ref(false);
+const activeCellRow = ref(0);
+const activeCellCol = ref(0);
+const cellOperations = ref<SequenceOperation[]>([]);
+
+function handleConfigureCell(rowIndex: number, colIndex: number) {
+  const key = `${rowIndex}-${colIndex}`;
+  cellOperations.value = (props.modelValue as any).cellOperations?.[key] ?? [];
+  activeCellRow.value = rowIndex;
+  activeCellCol.value = colIndex;
+  drawerOpen.value = true;
+}
+
+function saveDrawer(ops: SequenceOperation[]) {
+  const cellOps = (props.modelValue as any).cellOperations ?? {};
+  const key = `${activeCellRow.value}-${activeCellCol.value}`;
+  patch({ ...(props.modelValue as any), cellOperations: { ...cellOps, [key]: ops } });
+}
 
 const CellEditor = defineComponent({
   props: {
@@ -247,7 +276,7 @@ const CellEditor = defineComponent({
   },
 });
 
-function patch(next: Partial<ModelValue>) {
+function patch(next: Partial<ModelValue> & Record<string, any>) {
   emit('update:modelValue', { ...props.modelValue, ...next });
 }
 

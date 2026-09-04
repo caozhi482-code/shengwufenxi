@@ -67,7 +67,7 @@
                 v-if="editable"
                 type="button"
                 class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline"
-                @click.stop="emit('configure-cell', rowIndex, cellIndex)"
+                @click.stop="handleConfigureCell(rowIndex, cellIndex)"
               >
                 <Settings2 class="h-3.5 w-3.5" />
                 配置格子
@@ -77,7 +77,7 @@
           <td class="ms-cell text-center align-top" :class="cellClass(rowIndex, 6)" @click="handleCellClick(rowIndex, 6)">
             <div class="space-y-1">
               <div class="font-medium leading-5">配置</div>
-              <button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="emit('configure-cell', rowIndex, 6)">
+              <button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(rowIndex, 6)">
                 <Settings2 class="h-3.5 w-3.5" />
                 配置格子
               </button>
@@ -156,11 +156,23 @@
       </tbody>
     </table>
   </div>
+
+  <CellOpEditor
+    v-if="drawerOpen"
+    :open="drawerOpen"
+    :read-only="!editable"
+    :cell-row="activeCellRow"
+    :cell-col="activeCellCol"
+    :operations="cellOperations"
+    @close="drawerOpen = false"
+    @save="saveDrawer"
+  />
 </template>
 
 <script setup lang="ts">
-import { computed, defineComponent, h } from 'vue';
+import { computed, defineComponent, h, ref } from 'vue';
 import { Settings2 } from 'lucide-vue-next';
+import CellOpEditor from './CellOpEditor.vue';
 import type { SequenceOperation } from '@/types/experiments';
 
 interface MSRow {
@@ -202,10 +214,14 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   'update:modelValue': [value: ModelValue];
-  'configure-cell': [rowIndex: number, colIndex: number];
 }>();
 
 const model = computed(() => props.modelValue);
+
+const drawerOpen = ref(false);
+const activeCellRow = ref(0);
+const activeCellCol = ref(0);
+const cellOperations = ref<SequenceOperation[]>([]);
 
 const CellEditor = defineComponent({
   props: {
@@ -298,7 +314,21 @@ function cellClass(rowIndex: number, colIndex: number) {
 
 function handleCellClick(rowIndex: number, colIndex: number) {
   if (!props.editable) return;
-  emit('configure-cell', rowIndex, colIndex);
+  handleConfigureCell(rowIndex, colIndex);
+}
+
+function handleConfigureCell(rowIndex: number, colIndex: number) {
+  activeCellRow.value = rowIndex;
+  activeCellCol.value = colIndex;
+  const key = cellKey(rowIndex, colIndex);
+  cellOperations.value = props.modelValue.cellOperations?.[key]?.map(op => ({ ...op })) ?? [];
+  drawerOpen.value = true;
+}
+
+function saveDrawer(ops: SequenceOperation[]) {
+  const key = cellKey(activeCellRow.value, activeCellCol.value);
+  patch({ cellOperations: { ...(props.modelValue.cellOperations ?? {}), [key]: ops } });
+  drawerOpen.value = false;
 }
 </script>
 

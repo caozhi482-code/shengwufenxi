@@ -9,7 +9,10 @@
       :subtitle="`${selectedProject?.name ?? '—'} · ${planCode} · ${currentItem?.name ?? '当前考察项'}`"
     >
       <template #extra>
+        <BaseButton variant="secondary" size="sm" @click="addStepDescription">新增步骤说明</BaseButton>
+        <BaseButton variant="secondary" size="sm" @click="backToForms">上一步</BaseButton>
         <BaseButton variant="secondary" size="sm" @click="backToItems">返回考察项</BaseButton>
+        <BaseButton variant="primary" size="sm" :disabled="workspaceForms.length === 0" @click="goToPublish">下一步：确认创建</BaseButton>
       </template>
     </BasePageHeader>
 
@@ -114,13 +117,45 @@
           选择的模板会生成计划下的模板实例，返回该页面时会根据路由和上下文恢复当前考察项与已选表单。
         </div>
 
+        <BaseCard class="mb-4">
+          <template #header>
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <div class="text-sm font-bold text-[--foreground]">新增步骤说明</div>
+                <div class="text-xs text-[--muted-foreground] mt-0.5">从源文件新增步骤文本到当前模板实例，作为整张表的执行说明。</div>
+              </div>
+              <BaseButton variant="secondary" size="sm" @click="addStepDescription">新增步骤说明</BaseButton>
+            </div>
+          </template>
+
+          <div v-if="activeForm?.stepBlocks?.length" class="space-y-3">
+            <div
+              v-for="block in activeForm.stepBlocks"
+              :key="block.id"
+              class="rounded-lg border border-[--border] bg-white p-3"
+            >
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="min-w-0">
+                  <div class="text-sm font-semibold text-[--text-main]">步骤 {{ block.seq }} · {{ block.title }}</div>
+                </div>
+                <button class="text-xs text-[--danger] hover:underline" @click="removeStepBlock(block.id)">删除步骤</button>
+              </div>
+              <div class="mt-3 grid grid-cols-2 gap-3 text-sm">
+                <BaseFormField v-model="block.editedText" label="步骤文字" type="textarea" />
+                <BaseFormField v-model="block.notes" label="补充说明" type="textarea" />
+              </div>
+            </div>
+          </div>
+          <div v-else class="py-8 text-center text-sm text-[--muted-foreground]">当前模板实例还没有步骤说明，点击右上角新增步骤说明。</div>
+        </BaseCard>
+
         <div class="grid grid-cols-[240px_1fr] gap-4">
-          <div class="space-y-2">
+          <div class="space-y-2 overflow-y-auto max-h-[calc(100vh-280px)] pr-1">
             <button
               v-for="form in currentForms"
               :key="form.instanceId"
               type="button"
-              class="w-full rounded-xl border p-3 text-left transition-all"
+              class="w-full rounded-xl border p-3 text-left transition-all shrink-0"
               :class="activeFormId === form.instanceId ? 'border-[--primary] bg-[--primary-soft]' : 'border-[--border] bg-white hover:border-[--primary-border]'"
               @click="activeFormId = form.instanceId"
             >
@@ -443,23 +478,6 @@
         </div>
       </BaseCard>
 
-      <BaseCard>
-        <template #header>
-          <span class="text-sm font-bold text-[--foreground]">所有已选表单</span>
-        </template>
-        <div class="grid grid-cols-2 gap-3">
-          <div v-for="form in currentForms" :key="form.instanceId" class="rounded-xl border border-[--border] bg-[--surface-muted] p-3 space-y-2">
-            <div class="flex items-start justify-between gap-2">
-              <div>
-                <div class="text-sm font-semibold text-[--text-main]">{{ form.template.templateName }}</div>
-                <div class="font-mono text-[10px] text-[--primary]">{{ form.instanceId }}</div>
-              </div>
-              <BaseTag :label="statusLabel(form.status)" :tone="statusTone(form.status)" />
-            </div>
-            <div class="text-xs text-[--muted-foreground]">{{ form.template.templateCode }} · {{ form.template.version }}</div>
-          </div>
-        </div>
-      </BaseCard>
     </div>
 
 
@@ -512,6 +530,7 @@ import BaseCard from '@/components/base/BaseCard.vue';
 import BaseButton from '@/components/base/BaseButton.vue';
 import BaseFormField from '@/components/base/BaseFormField.vue';
 import BaseTag from '@/components/base/BaseTag.vue';
+import BaseDrawer from '@/components/base/BaseDrawer.vue';
 import StepWizard from '@/components/experiments/StepWizard.vue';
 import SequenceGrid from '@/components/experiments/SequenceGrid.vue';
 import CellOpEditor from '@/components/experiments/CellOpEditor.vue';
@@ -539,12 +558,24 @@ import { evaluationItems } from '@/api/mock/evaluation';
 import { files, getFilesByProject } from '@/api/mock/files';
 import { projects } from '@/api/mock/projects';
 import { formTemplates } from '@/api/mock/form-templates';
+import { methods as methodFiles } from '@/api/mock/methods';
 import type { EvaluationItem } from '@/api/mock/evaluation';
 import type { FileItem } from '@/api/mock/files';
 import type { SequenceCell, SequenceOperation, FormTemplateRecord } from '@/types/experiments';
+import type { MethodStep } from '@/types/experiments';
 
 type FormStatus = 'unedited' | 'editing' | 'done';
 type TemplateFooter = { location?: string; time?: string; owner?: string; reviewer?: string };
+type FormStepBlock = {
+  id: string;
+  seq: number;
+  title: string;
+  sourceText: string;
+  editedText: string;
+  expectedText: string;
+  notes: string;
+  sourceMethodCode: string;
+};
 type WorkspaceForm = {
   itemId: string;
   templateId: string;
@@ -556,6 +587,8 @@ type WorkspaceForm = {
   recordModel: any;
   solutionTopRows: string[][];
   solutionBottomRows: string[][];
+  stepBlocks: FormStepBlock[];
+  sourceMethodCode: string;
 };
 
 const router = useRouter();
@@ -583,6 +616,7 @@ const msCellDrawerOpen = ref(false);
 const msEditingCell = ref<{ row: number; col: number } | null>(null);
 const msCellOperations = ref<SequenceOperation[]>([]);
 const msCellRequired = ref<string[]>([]);
+const workspaceBootstrapped = ref(false);
 
 watch(activeFormId, () => {
   editingCell.value = null;
@@ -622,6 +656,7 @@ const fileIds = computed(() => parseList(route.query.fileIds));
 const itemIds = computed(() => parseList(route.query.itemIds));
 const templateIds = computed(() => parseTemplatePairs(route.query.templateIds));
 const planCode = computed(() => parseSingle(route.query.planCode) || 'PLAN-DRAFT');
+const workspaceStateKey = computed(() => ['plan-workspace', planCode.value, projectId.value || ''].join('::'));
 
 const selectedProject = computed(() => {
   const id = projectId.value;
@@ -647,6 +682,12 @@ const msEditingLabel = computed(() => msEditingCell.value ? `${String.fromCharCo
 const activeCellKey = computed(() => editingCell.value ? `${editingCell.value.row}-${editingCell.value.col}` : null);
 const selectedCellCount = computed(() => activeForm.value?.cells.filter(cell => cell.selected).length ?? 0);
 const hasAnySelection = computed(() => currentForms.value.length > 0);
+const selectedMethod = computed(() => {
+  const currentMethodFile = selectedFiles.value.find(file => file.type === 'method');
+  if (!currentMethodFile) return null;
+  return methodFiles.find(method => method.code === currentMethodFile.code) ?? null;
+});
+const sourceSteps = computed<MethodStep[]>(() => selectedMethod.value?.steps ?? []);
 
 watch(
   [selectedItems, templateIds],
@@ -654,6 +695,15 @@ watch(
     hydrateWorkspace();
   },
   { immediate: true, deep: true },
+);
+
+watch(
+  [currentItemId, activeFormId, preferredTemplateId, workspaceForms],
+  () => {
+    if (!workspaceBootstrapped.value) return;
+    persistWorkspaceState();
+  },
+  { deep: true },
 );
 
 watch(
@@ -697,6 +747,49 @@ function parseTemplatePairs(value: unknown): Array<{ itemId: string; templateId:
   }).filter(pair => pair.itemId && pair.templateId);
 }
 
+function buildStepBlocks(steps: MethodStep[], sourceMethodCode = ''): FormStepBlock[] {
+  return steps.map(step => ({
+    id: `${sourceMethodCode || 'MANUAL'}-${step.seq}`,
+    seq: step.seq,
+    title: `步骤 ${step.seq}`,
+    sourceText: step.action,
+    editedText: step.action,
+    expectedText: step.expected.map(item => `${item.value}${item.unit}`).join('、'),
+    notes: step.notes ?? '',
+    sourceMethodCode,
+  }));
+}
+
+function cloneStepBlocks(blocks: FormStepBlock[]): FormStepBlock[] {
+  return blocks.map(block => ({ ...block }));
+}
+
+function addStepDescription() {
+  if (!activeForm.value) return;
+  const nextSeq = (activeForm.value.stepBlocks?.length ?? 0) + 1;
+  const sourceStep = sourceSteps.value[nextSeq - 1];
+  activeForm.value.stepBlocks = [...(activeForm.value.stepBlocks ?? []), {
+    id: `${selectedMethod.value?.code || 'MANUAL'}-${nextSeq}-${Date.now()}`,
+    seq: nextSeq,
+    title: `步骤 ${nextSeq}`,
+    sourceText: sourceStep?.action ?? '',
+    editedText: sourceStep?.action ?? '',
+    expectedText: sourceStep?.expected.map(item => `${item.value}${item.unit}`).join('、') ?? '',
+    notes: sourceStep?.notes ?? '',
+    sourceMethodCode: selectedMethod.value?.code ?? '',
+  }];
+  activeForm.value.sourceMethodCode = selectedMethod.value?.code ?? activeForm.value.sourceMethodCode;
+  activeForm.value.status = 'editing';
+  persistWorkspaceState();
+}
+
+function removeStepBlock(blockId: string) {
+  if (!activeForm.value) return;
+  activeForm.value.stepBlocks = (activeForm.value.stepBlocks ?? []).filter(block => block.id !== blockId).map((block, index) => ({ ...block, seq: index + 1, title: `步骤 ${index + 1}` }));
+  activeForm.value.status = 'editing';
+  persistWorkspaceState();
+}
+
 function hydrateWorkspace() {
   const existing = new Map(workspaceForms.value.map(form => [form.instanceId, form] as const));
   const nextForms: WorkspaceForm[] = [];
@@ -719,6 +812,79 @@ function hydrateWorkspace() {
       ?? currentForms.value[0]?.instanceId
       ?? '';
   }
+
+}
+
+function persistWorkspaceState() {
+  if (!workspaceBootstrapped.value) return;
+  if (typeof window === 'undefined') return;
+  const payload = {
+    planCode: planCode.value,
+    projectId: selectedProject.value?.id ?? '',
+    fileIds: fileIds.value,
+    itemIds: itemIds.value,
+    currentItemId: currentItemId.value,
+    activeFormId: activeFormId.value,
+    preferredTemplateId: preferredTemplateId.value,
+    templateIds: templateIds.value,
+    workspaceForms: workspaceForms.value.map(form => ({
+      itemId: form.itemId,
+      templateId: form.templateId,
+      instanceId: form.instanceId,
+      status: form.status,
+      cells: form.cells,
+      footer: form.footer,
+      recordModel: form.recordModel,
+      solutionTopRows: form.solutionTopRows,
+      solutionBottomRows: form.solutionBottomRows,
+      stepBlocks: form.stepBlocks,
+      sourceMethodCode: form.sourceMethodCode,
+    })),
+  };
+  window.localStorage.setItem(workspaceStateKey.value, JSON.stringify(payload));
+}
+
+function restoreWorkspaceState() {
+  if (typeof window === 'undefined') return;
+  const raw = window.localStorage.getItem(workspaceStateKey.value);
+  if (!raw) {
+    workspaceBootstrapped.value = true;
+    return;
+  }
+  try {
+    const cached = JSON.parse(raw) as {
+      currentItemId?: string;
+      activeFormId?: string;
+      preferredTemplateId?: string;
+      workspaceForms?: Array<Partial<WorkspaceForm>>;
+    };
+    if (cached.currentItemId) currentItemId.value = cached.currentItemId;
+    if (cached.activeFormId) activeFormId.value = cached.activeFormId;
+    if (cached.preferredTemplateId) preferredTemplateId.value = cached.preferredTemplateId;
+    if (Array.isArray(cached.workspaceForms)) {
+      const restored = new Map(cached.workspaceForms.map(form => [form.instanceId, form] as const));
+      workspaceForms.value = workspaceForms.value.map(form => {
+        const next = restored.get(form.instanceId);
+        return next
+          ? {
+              ...form,
+              status: (next.status as FormStatus) ?? form.status,
+              cells: Array.isArray(next.cells) ? next.cells as SequenceCell[] : form.cells,
+              footer: (next.footer as TemplateFooter) ?? form.footer,
+              recordModel: next.recordModel ?? form.recordModel,
+              solutionTopRows: Array.isArray(next.solutionTopRows) ? next.solutionTopRows as string[][] : form.solutionTopRows,
+              solutionBottomRows: Array.isArray(next.solutionBottomRows) ? next.solutionBottomRows as string[][] : form.solutionBottomRows,
+              stepBlocks: Array.isArray(next.stepBlocks) ? cloneStepBlocks(next.stepBlocks as FormStepBlock[]) : form.stepBlocks,
+              sourceMethodCode: typeof next.sourceMethodCode === 'string' ? next.sourceMethodCode : form.sourceMethodCode,
+            }
+          : form;
+      });
+    }
+    workspaceBootstrapped.value = true;
+  } catch {
+    workspaceBootstrapped.value = true;
+    // ignore malformed cache
+  }
 }
 
 function createWorkspaceForm(itemId: string, template: FormTemplateRecord): WorkspaceForm {
@@ -733,6 +899,8 @@ function createWorkspaceForm(itemId: string, template: FormTemplateRecord): Work
     recordModel: createRecordModel(template),
     solutionTopRows: createSolutionTopRows(template),
     solutionBottomRows: createSolutionBottomRows(template),
+    stepBlocks: [],
+    sourceMethodCode: '',
   };
 }
 
@@ -809,8 +977,8 @@ function createRecordModel(template: FormTemplateRecord): any {
     return {
       context: { projectCode: selectedProject.value?.code ?? '', methodVersion: '' },
       rows: [
-        { solutionCode: '', sourceCode: '', sourceConcentration: '', sourceVolume: 0, sourceMerge: '', diluentVolume: '', finalVolume: '', finalConcentration: '' },
-        { solutionCode: '', sourceCode: '', sourceConcentration: '', sourceVolume: 0, sourceMerge: '', diluentVolume: '', finalVolume: '', finalConcentration: '' },
+        { solutionCode: '', sourceCode: '', sourceConcentration: '', sourceVolume: '', sourceMerge: '', diluentVolume: '', finalVolume: '', finalConcentration: '' },
+        { solutionCode: '', sourceCode: '', sourceConcentration: '', sourceVolume: '', sourceMerge: '', diluentVolume: '', finalVolume: '', finalConcentration: '' },
       ],
       sourceBatch: '',
       diluentInfo: '',
@@ -1231,12 +1399,14 @@ function saveCurrent() {
   if (!activeForm.value) return;
   activeForm.value.status = 'done';
   activeFormId.value = activeForm.value.instanceId;
+  persistWorkspaceState();
 }
 
 function saveAll() {
   workspaceForms.value.forEach(form => {
     form.status = 'done';
   });
+  persistWorkspaceState();
 }
 
 function fillRecommended(instanceId: string) {
@@ -1266,12 +1436,14 @@ function fillRecommended(instanceId: string) {
     return cell;
   });
   form.status = 'editing';
+  persistWorkspaceState();
 }
 
 function updateActiveRecordModel(nextModel: any) {
   if (!activeForm.value) return;
   activeForm.value.recordModel = { ...nextModel };
   activeForm.value.status = 'editing';
+  persistWorkspaceState();
 }
 
 function openMsCellDrawer(rowIndex: number, colIndex: number) {
@@ -1319,6 +1491,7 @@ function saveMsCellDrawer() {
   activeForm.value.recordModel.cellOperations[key] = msCellOperations.value.map((op, index) => ({ ...op, required: msCellRequired.value[index] === 'true' }));
   activeForm.value.status = 'editing';
   msCellDrawerOpen.value = false;
+  persistWorkspaceState();
 }
 
 function closeMsCellDrawer() {
@@ -1329,12 +1502,14 @@ function updateSolutionTopRows(nextRows: string[][]) {
   if (!activeForm.value) return;
   activeForm.value.solutionTopRows = nextRows;
   activeForm.value.status = 'editing';
+  persistWorkspaceState();
 }
 
 function updateSolutionBottomRows(nextRows: string[][]) {
   if (!activeForm.value) return;
   activeForm.value.solutionBottomRows = nextRows;
   activeForm.value.status = 'editing';
+  persistWorkspaceState();
 }
 
 function isSolutionPrepTemplate(template: FormTemplateRecord): boolean {
@@ -1437,6 +1612,7 @@ function applyBatch() {
   });
   activeForm.value.status = 'editing';
   batchPanelOpen.value = false;
+  persistWorkspaceState();
 }
 
 function openCellEditor(row: string, col: number) {
@@ -1463,22 +1639,26 @@ function saveCellOps(ops: SequenceOperation[]) {
   cell.selected = true;
   activeForm.value.status = 'editing';
   cellEditorOpen.value = false;
+  persistWorkspaceState();
 }
 
 function updateFooter(nextFooter: TemplateFooter) {
   if (!activeForm.value) return;
   activeForm.value.footer = { ...nextFooter };
   if (activeForm.value.status === 'unedited') activeForm.value.status = 'editing';
+  persistWorkspaceState();
 }
 
-function backToItems() {
+function backToForms() {
+  persistWorkspaceState();
   router.push({
-    path: '/experiments/plans/new/items',
+    path: '/experiments/plans/new/forms',
     query: {
       planCode: planCode.value,
       projectId: selectedProject.value?.id ?? '',
       fileIds: fileIds.value.join(','),
       itemIds: itemIds.value.join(','),
+      activeItemId: currentItem.value?.id ?? currentItemId.value,
       ...(currentItem.value?.id ? { activeItemId: currentItem.value.id } : {}),
       ...(preferredTemplateId.value ? { currentTemplateId: preferredTemplateId.value } : {}),
       ...(activeFormId.value ? { instanceId: activeFormId.value } : {}),
@@ -1486,6 +1666,41 @@ function backToItems() {
     },
   });
 }
+function backToItems() {
+  persistWorkspaceState();
+  router.push({
+    path: '/experiments/plans/new/items',
+    query: {
+      planCode: planCode.value,
+      projectId: selectedProject.value?.id ?? '',
+      fileIds: fileIds.value.join(','),
+      itemIds: itemIds.value.join(','),
+      activeItemId: currentItem.value?.id ?? currentItemId.value,
+      ...(currentItem.value?.id ? { activeItemId: currentItem.value.id } : {}),
+      ...(preferredTemplateId.value ? { currentTemplateId: preferredTemplateId.value } : {}),
+      ...(activeFormId.value ? { instanceId: activeFormId.value } : {}),
+      ...(templateIds.value.length > 0 ? { templateIds: templateIds.value.map(pair => `${pair.itemId}:${pair.templateId}`).join(',') } : {}),
+    },
+  });
+}
+function goToPublish() {
+  persistWorkspaceState();
+  router.push({
+    path: '/experiments/plans/new/publish',
+    query: {
+      planCode: planCode.value,
+      projectId: selectedProject.value?.id ?? '',
+      fileIds: fileIds.value.join(','),
+      itemIds: itemIds.value.join(','),
+      activeItemId: currentItem.value?.id ?? currentItemId.value,
+      instanceId: activeFormId.value,
+      currentTemplateId: preferredTemplateId.value,
+      ...(templateIds.value.length > 0 ? { templateIds: templateIds.value.map(pair => `${pair.itemId}:${pair.templateId}`).join(',') } : {}),
+    },
+  });
+}
+
+restoreWorkspaceState();
 </script>
 
 <style scoped>

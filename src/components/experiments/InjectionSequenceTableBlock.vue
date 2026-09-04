@@ -46,11 +46,36 @@
           <td class="seq-head text-center">备注</td>
         </tr>
         <tr v-for="(row, rowIndex) in model.rows" :key="rowIndex" class="h-[58px]">
-          <td class="seq-cell bg-[#f3efe0]"><CellEditor :value="row.seq" :editable="editable" @update="updateRow(rowIndex, 'seq', $event)" /></td>
-          <td class="seq-cell"><CellEditor :value="row.sampleId" :editable="editable" @update="updateRow(rowIndex, 'sampleId', $event)" /></td>
-          <td class="seq-cell"><CellEditor :value="row.dilutionFactor" :editable="editable" @update="updateRow(rowIndex, 'dilutionFactor', $event)" /></td>
-          <td class="seq-cell"><CellEditor :value="row.wellPosition" :editable="editable" @update="updateRow(rowIndex, 'wellPosition', $event)" /></td>
-          <td class="seq-cell"><CellEditor :value="row.remark" :editable="editable" @update="updateRow(rowIndex, 'remark', $event)" /></td>
+          <td class="seq-cell bg-[#f3efe0]">
+            <div class="space-y-1">
+              <CellEditor :value="row.seq" :editable="editable" @update="updateRow(rowIndex, 'seq', $event)" />
+              <button v-if="editable && !row.seq" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( rowIndex, 0)"><Settings2 class="h-3.5 w-3.5" />配置格子</button>
+            </div>
+          </td>
+          <td class="seq-cell">
+            <div class="space-y-1">
+              <CellEditor :value="row.sampleId" :editable="editable" @update="updateRow(rowIndex, 'sampleId', $event)" />
+              <button v-if="editable && !row.sampleId" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( rowIndex, 1)"><Settings2 class="h-3.5 w-3.5" />配置格子</button>
+            </div>
+          </td>
+          <td class="seq-cell">
+            <div class="space-y-1">
+              <CellEditor :value="row.dilutionFactor" :editable="editable" @update="updateRow(rowIndex, 'dilutionFactor', $event)" />
+              <button v-if="editable && !row.dilutionFactor" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( rowIndex, 2)"><Settings2 class="h-3.5 w-3.5" />配置格子</button>
+            </div>
+          </td>
+          <td class="seq-cell">
+            <div class="space-y-1">
+              <CellEditor :value="row.wellPosition" :editable="editable" @update="updateRow(rowIndex, 'wellPosition', $event)" />
+              <button v-if="editable && !row.wellPosition" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( rowIndex, 3)"><Settings2 class="h-3.5 w-3.5" />配置格子</button>
+            </div>
+          </td>
+          <td class="seq-cell">
+            <div class="space-y-1">
+              <CellEditor :value="row.remark" :editable="editable" @update="updateRow(rowIndex, 'remark', $event)" />
+              <button v-if="editable && !row.remark" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( rowIndex, 4)"><Settings2 class="h-3.5 w-3.5" />配置格子</button>
+            </div>
+          </td>
         </tr>
         <tr v-if="model.rows.length === 0">
           <td class="seq-cell text-center text-[--muted-foreground]" colspan="5">暂无序列数据</td>
@@ -77,10 +102,15 @@
       </tbody>
     </table>
   </div>
+
+  <CellOpEditor v-if="drawerOpen" :open="drawerOpen" :read-only="!props.editable" :cell-row="String(activeCellRow)" :cell-col="activeCellCol" :operations="cellOperations" @close="drawerOpen=false" @save="saveDrawer" />
 </template>
 
 <script setup lang="ts">
-import { computed, defineComponent, h } from 'vue';
+import { computed, defineComponent, h, ref } from 'vue';
+import { Settings2 } from 'lucide-vue-next';
+import CellOpEditor from './CellOpEditor.vue';
+import type { SequenceOperation } from '@/types/experiments';
 
 interface SequenceRow {
   seq: string;
@@ -113,6 +143,24 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   'update:modelValue': [value: ModelValue];
 }>();
+
+const drawerOpen = ref(false);
+const activeCellRow = ref(0);
+const activeCellCol = ref(0);
+const cellOperations = ref<SequenceOperation[]>([]);
+
+function handleConfigureCell(rowIndex: number, colIndex: number) {
+  activeCellRow.value = rowIndex;
+  activeCellCol.value = colIndex;
+  cellOperations.value = (props.modelValue as any).cellOperations || [];
+  drawerOpen.value = true;
+}
+
+function saveDrawer(ops: SequenceOperation[]) {
+  cellOperations.value = ops;
+  (props.modelValue as any).cellOperations = ops;
+  emit('update:modelValue', props.modelValue);
+}
 
 const model = computed(() => props.modelValue);
 

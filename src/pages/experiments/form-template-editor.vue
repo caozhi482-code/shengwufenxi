@@ -22,7 +22,7 @@
         </div>
       </div>
       <div class="bg-white border border-[--border] shadow-[var(--shadow-card)] p-4 overflow-x-auto max-w-[1200px] mx-auto">
-        <MSSolutionTableBlock v-model:model-value="model" editable @configure-cell="openCellDrawer" />
+        <MSSolutionTableBlock v-model:model-value="model" editable />
       </div>
     </div>
 
@@ -108,35 +108,6 @@
       <BaseButton class="mt-4" variant="secondary" @click="goBack">返回详情</BaseButton>
     </div>
 
-    <BaseDrawer v-if="drawerOpen" :open="drawerOpen" :title="drawerTitle" @close="closeCellDrawer">
-      <div class="space-y-4">
-        <div class="text-xs text-[--muted-foreground]">格子位置：{{ activeCellLabel }}</div>
-        <div v-for="(op, index) in cellOperations" :key="op.id" class="border border-[--border] rounded-lg p-3 space-y-3">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold text-[--muted-foreground]">执行说明 {{ index + 1 }}</span>
-            <button class="text-xs text-[--danger] hover:underline" @click="removeOperation(op.id)">删除</button>
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <BaseFormField v-model="op.action" label="执行说明" placeholder="如：加内标工作液" />
-            <BaseFormField v-model="op.substance" label="样品 / 溶液名称" placeholder="如：IS-WS" />
-            <BaseFormField v-model="op.sampleId" label="样品编号" placeholder="如：STD8" />
-            <BaseFormField v-model="op.equipment" label="设备" placeholder="如：移液器-001" />
-            <BaseFormField v-model="op.volume" label="加入量" type="number" placeholder="如：30" />
-            <BaseFormField v-model="op.unit" label="单位" placeholder="如：μL" />
-            <BaseFormField v-model="op.scanObject" label="扫码对象" type="select" :options="scanObjectOptions" />
-            <BaseFormField v-model="requiredValue[index]" label="是否必填" type="select" :options="requiredOptions" />
-            <BaseFormField v-model="op.step" label="关联步骤" placeholder="如：第 1 步" />
-            <BaseFormField v-model="op.note" label="备注" type="textarea" class="col-span-2" placeholder="可选备注" />
-          </div>
-        </div>
-
-        <button class="text-sm text-[--primary] hover:underline font-medium" @click="addOperation">+ 新增步骤</button>
-      </div>
-      <template #footer>
-        <BaseButton variant="secondary" @click="closeCellDrawer">取消</BaseButton>
-        <BaseButton variant="primary" @click="saveCellDrawer">保存</BaseButton>
-      </template>
-    </BaseDrawer>
   </div>
 </template>
 
@@ -145,8 +116,6 @@ import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import BasePageHeader from '@/components/base/BasePageHeader.vue';
 import BaseButton from '@/components/base/BaseButton.vue';
-import BaseDrawer from '@/components/base/BaseDrawer.vue';
-import BaseFormField from '@/components/base/BaseFormField.vue';
 import WorkSolutionTableBlock from '@/components/experiments/WorkSolutionTableBlock.vue';
 import MSSolutionTableBlock from '@/components/experiments/MSSolutionTableBlock.vue';
 import MatrixSampleTableBlock from '@/components/experiments/MatrixSampleTableBlock.vue';
@@ -168,7 +137,6 @@ import ReanalysisSummaryDoubleBlock from '@/components/experiments/ReanalysisSum
 import ReanalysisSummarySingleBlock from '@/components/experiments/ReanalysisSummarySingleBlock.vue';
 import UnconventionalStabilityBlock from '@/components/experiments/UnconventionalStabilityBlock.vue';
 import { getFormTemplateById } from '@/api/mock/form-templates';
-import type { SequenceOperation } from '@/types/experiments';
 
 const router = useRouter();
 const route = useRoute();
@@ -202,80 +170,6 @@ const solTopRows = ref<string[][]>([
 ]);
 const solBottomRows = ref<string[][]>(Array.from({ length: 3 }, () => Array(10).fill('')));
 
-const drawerOpen = ref(false);
-const activeRowIndex = ref(0);
-const activeColIndex = ref(0);
-const scanObjectOptions = [
-  { label: '设备', value: 'device' },
-  { label: '试剂', value: 'reagent' },
-  { label: '样品', value: 'sample' },
-  { label: '耗材', value: 'consumable' },
-];
-const requiredOptions = [
-  { label: '必填', value: 'true' },
-  { label: '选填', value: 'false' },
-];
-
-const cellOperations = ref<SequenceOperation[]>([]);
-const requiredValue = ref<string[]>([]);
-const drawerTitle = computed(() => `编辑格子执行说明`);
-const activeCellLabel = computed(() => `${String.fromCharCode(65 + activeRowIndex.value)}${activeColIndex.value + 1}`);
-
-function openCellDrawer(rowIndex: number, colIndex: number) {
-  activeRowIndex.value = rowIndex;
-  activeColIndex.value = colIndex;
-  ensureOperations();
-  const key = `${activeRowIndex.value}-${activeColIndex.value}`;
-  cellOperations.value = model.value.cellOperations![key].map(op => ({ ...op }));
-  requiredValue.value = cellOperations.value.map(op => op.required ? 'true' : 'false');
-  drawerOpen.value = true;
-}
-
-function ensureOperations() {
-  const key = `${activeRowIndex.value}-${activeColIndex.value}`;
-  if (!model.value.cellOperations) model.value.cellOperations = {};
-  if (!model.value.cellOperations[key]) {
-    model.value.cellOperations[key] = [newOperation()];
-  }
-}
-
-function newOperation(): SequenceOperation {
-  return {
-    id: `op-${Date.now()}`,
-    action: '',
-    substance: '',
-    sampleId: '',
-    equipment: '',
-    volume: 0,
-    unit: 'μL',
-    scanObject: '',
-    required: false,
-    step: '',
-    note: '',
-    scanned: false,
-  };
-}
-
-function addOperation() {
-  cellOperations.value.push(newOperation());
-  requiredValue.value.push('false');
-}
-
-function removeOperation(id: string) {
-  cellOperations.value = cellOperations.value.filter(op => op.id !== id);
-  requiredValue.value = cellOperations.value.map(op => op.required ? 'true' : 'false');
-}
-
-function saveCellDrawer() {
-  const key = `${activeRowIndex.value}-${activeColIndex.value}`;
-  model.value.cellOperations![key] = cellOperations.value.map((op, index) => ({ ...op, required: requiredValue.value[index] === 'true' }));
-  drawerOpen.value = false;
-}
-
-function closeCellDrawer() {
-  drawerOpen.value = false;
-}
-
 function createMsModel() {
   return {
     context: { projectCode: '', methodVersion: '' },
@@ -295,7 +189,7 @@ function createMsModel() {
     completedAt: '',
     storageCondition: '',
     signatures: { operator: '', reviewer: '', auditor: '' },
-    cellOperations: {},
+    cellOperations: {} as Record<string, any>,
   };
 }
 

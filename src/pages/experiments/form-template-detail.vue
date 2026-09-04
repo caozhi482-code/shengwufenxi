@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-5">
-    <BasePageHeader :title="template?.templateName ?? '模板详情'" subtitle="查看模板元信息、结构概览和追溯上下文">
+    <BasePageHeader :title="template?.templateName ?? '模板详情'" subtitle="查看模板元信息和追溯上下文">
       <template #extra>
         <BaseButton variant="secondary" @click="goBack">返回列表</BaseButton>
         <BaseButton variant="secondary" @click="openPreview">预览</BaseButton>
@@ -12,7 +12,7 @@
     <div v-if="loading" class="bg-white border border-[--border] rounded-[--radius-lg] shadow-[var(--shadow-card)] p-10 text-center text-[--muted-foreground]">详情加载中...</div>
 
     <template v-else-if="template">
-      <div class="grid grid-cols-3 gap-5">
+      <div class="grid grid-cols-2 gap-5">
         <BaseCard class="col-span-2">
           <template #header>
             <div class="flex items-center justify-between w-full">
@@ -31,25 +31,6 @@
           </div>
         </BaseCard>
 
-        <BaseCard>
-          <template #header>
-            <span class="text-base font-bold text-[--foreground]">结构概览</span>
-          </template>
-          <div class="space-y-3 text-sm">
-            <div>
-              <div class="text-xs text-[--muted-foreground] mb-2">结构区域</div>
-              <div class="flex flex-wrap gap-2">
-                <BaseTag v-for="section in template.structure.sections" :key="section" tone="neutral">{{ section }}</BaseTag>
-              </div>
-            </div>
-            <div>
-              <div class="text-xs text-[--muted-foreground] mb-2">关键字段</div>
-              <div class="space-y-2">
-                <div v-for="field in template.structure.fields" :key="field" class="rounded-lg border border-[--border] px-3 py-2 bg-white">{{ field }}</div>
-              </div>
-            </div>
-          </div>
-        </BaseCard>
       </div>
 
       <BaseCard>

@@ -50,9 +50,9 @@
               <CellEditor v-if="ri === 0" :value="row.category" :editable="editable" @update="update20(ri, 'category', $event)" />
               <span v-else class="text-[--muted-foreground]">—</span>
             </td>
-            <td class="fz-cell"><CellEditor :value="row.sampleCode" :editable="editable" @update="update20(ri, 'sampleCode', $event)" /></td>
-            <td class="fz-cell"><CellEditor :value="row.fridgeId" :editable="editable" @update="update20(ri, 'fridgeId', $event)" /></td>
-            <td class="fz-cell"><CellEditor :value="row.removeTime" :editable="editable" type="datetime-local" @update="update20(ri, 'removeTime', $event)" /></td>
+            <td class="fz-cell"><div class="space-y-1"><CellEditor :value="row.sampleCode" :editable="editable" @update="update20(ri, 'sampleCode', $event)" /><button v-if="editable && !row.sampleCode" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( ri, 1)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div></td>
+            <td class="fz-cell"><div class="space-y-1"><CellEditor :value="row.fridgeId" :editable="editable" @update="update20(ri, 'fridgeId', $event)" /><button v-if="editable && !row.fridgeId" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( ri, 2)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div></td>
+            <td class="fz-cell"><div class="space-y-1"><CellEditor :value="row.removeTime" :editable="editable" type="datetime-local" @update="update20(ri, 'removeTime', $event)" /><button v-if="editable && !row.removeTime" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( ri, 3)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div></td>
             <td class="fz-cell">
               <div v-if="editable" class="flex items-center gap-3 text-[11px] flex-wrap">
                 <span class="text-[--muted-foreground]">温度：</span>
@@ -76,8 +76,8 @@
               </div>
               <span v-else class="text-[11px]">{{ buildConditionDisplay(row) }}</span>
             </td>
-            <td class="fz-cell"><CellEditor :value="row.putBackTime" :editable="editable" type="datetime-local" @update="update20(ri, 'putBackTime', $event)" /></td>
-            <td class="fz-cell"><CellEditor :value="row.analysisBatch" :editable="editable" @update="update20(ri, 'analysisBatch', $event)" /></td>
+            <td class="fz-cell"><div class="space-y-1"><CellEditor :value="row.putBackTime" :editable="editable" type="datetime-local" @update="update20(ri, 'putBackTime', $event)" /><button v-if="editable && !row.putBackTime" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( ri, 5)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div></td>
+            <td class="fz-cell"><div class="space-y-1"><CellEditor :value="row.analysisBatch" :editable="editable" @update="update20(ri, 'analysisBatch', $event)" /><button v-if="editable && !row.analysisBatch" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( ri, 6)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div></td>
           </tr>
         </template>
 
@@ -88,9 +88,9 @@
               <CellEditor v-if="ri === 0" :value="row.category" :editable="editable" @update="update80(ri, 'category', $event)" />
               <span v-else class="text-[--muted-foreground]">—</span>
             </td>
-            <td class="fz-cell"><CellEditor :value="row.sampleCode" :editable="editable" @update="update80(ri, 'sampleCode', $event)" /></td>
-            <td class="fz-cell"><CellEditor :value="row.fridgeId" :editable="editable" @update="update80(ri, 'fridgeId', $event)" /></td>
-            <td class="fz-cell"><CellEditor :value="row.removeTime" :editable="editable" type="datetime-local" @update="update80(ri, 'removeTime', $event)" /></td>
+            <td class="fz-cell"><div class="space-y-1"><CellEditor :value="row.sampleCode" :editable="editable" @update="update80(ri, 'sampleCode', $event)" /><button v-if="editable && !row.sampleCode" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( ri, 1)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div></td>
+            <td class="fz-cell"><div class="space-y-1"><CellEditor :value="row.fridgeId" :editable="editable" @update="update80(ri, 'fridgeId', $event)" /><button v-if="editable && !row.fridgeId" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( ri, 2)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div></td>
+            <td class="fz-cell"><div class="space-y-1"><CellEditor :value="row.removeTime" :editable="editable" type="datetime-local" @update="update80(ri, 'removeTime', $event)" /><button v-if="editable && !row.removeTime" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( ri, 3)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div></td>
             <td class="fz-cell">
               <div v-if="editable" class="flex items-center gap-3 text-[11px] flex-wrap">
                 <span class="text-[--muted-foreground]">温度：</span>
@@ -114,8 +114,8 @@
               </div>
               <span v-else class="text-[11px]">{{ buildConditionDisplay(row) }}</span>
             </td>
-            <td class="fz-cell"><CellEditor :value="row.putBackTime" :editable="editable" type="datetime-local" @update="update80(ri, 'putBackTime', $event)" /></td>
-            <td class="fz-cell"><CellEditor :value="row.analysisBatch" :editable="editable" @update="update80(ri, 'analysisBatch', $event)" /></td>
+            <td class="fz-cell"><div class="space-y-1"><CellEditor :value="row.putBackTime" :editable="editable" type="datetime-local" @update="update80(ri, 'putBackTime', $event)" /><button v-if="editable && !row.putBackTime" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( ri, 5)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div></td>
+            <td class="fz-cell"><div class="space-y-1"><CellEditor :value="row.analysisBatch" :editable="editable" @update="update80(ri, 'analysisBatch', $event)" /><button v-if="editable && !row.analysisBatch" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( ri, 6)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div></td>
           </tr>
         </template>
       </tbody>
@@ -152,10 +152,15 @@
       </tbody>
     </table>
   </div>
+
+  <CellOpEditor v-if="drawerOpen" :open="drawerOpen" :read-only="!props.editable" :cell-row="String(activeCellRow)" :cell-col="activeCellCol" :operations="cellOperations" @close="drawerOpen=false" @save="saveDrawer" />
 </template>
 
 <script setup lang="ts">
-import { computed, defineComponent, h } from 'vue';
+import { computed, defineComponent, h, ref } from 'vue';
+import { Settings2 } from 'lucide-vue-next';
+import CellOpEditor from './CellOpEditor.vue';
+import type { SequenceOperation } from '@/types/experiments';
 import BaseCheckbox from '@/components/base/BaseCheckbox.vue';
 
 interface FreezeThawRow {
@@ -186,6 +191,24 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   'update:modelValue': [value: ModelValue];
 }>();
+
+const drawerOpen = ref(false);
+const activeCellRow = ref(0);
+const activeCellCol = ref(0);
+const cellOperations = ref<SequenceOperation[]>([]);
+
+function handleConfigureCell(rowIndex: number, colIndex: number) {
+  activeCellRow.value = rowIndex;
+  activeCellCol.value = colIndex;
+  cellOperations.value = (props.modelValue as any).cellOperations || [];
+  drawerOpen.value = true;
+}
+
+function saveDrawer(ops: SequenceOperation[]) {
+  cellOperations.value = ops;
+  (props.modelValue as any).cellOperations = ops;
+  emit('update:modelValue', props.modelValue);
+}
 
 const model = computed(() => props.modelValue);
 

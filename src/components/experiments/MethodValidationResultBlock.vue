@@ -50,7 +50,7 @@
             <span v-else :class="resultTone(item.result)">{{ resultLabel(item.result) }}</span>
           </td>
           <td class="mt-cell">
-            <CellEditor :value="item.remark" :editable="editable" @update="updateItem(i, 'remark', $event)" />
+            <div class="space-y-1"><CellEditor :value="item.remark" :editable="editable" @update="updateItem(i, 'remark', $event)" /><button v-if="editable && !item.remark" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(i, 2)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div>
           </td>
         </tr>
         <tr>
@@ -114,11 +114,15 @@
         <tr><td class="mt-label">审核人 / 日期</td><td class="mt-cell"><CellEditor :value="model.signatures.auditor" :editable="editable" @update="updateSignature('auditor', $event)" /></td></tr>
       </tbody>
     </table>
+    <CellOpEditor v-if="drawerOpen" :open="drawerOpen" :read-only="!props.editable" :cell-row="activeCellRow" :cell-col="activeCellCol" :operations="cellOperations" @close="drawerOpen=false" @save="saveDrawer" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, defineComponent, h } from 'vue';
+import { computed, defineComponent, h, ref } from 'vue';
+import { Settings2 } from 'lucide-vue-next';
+import CellOpEditor from './CellOpEditor.vue';
+import type { SequenceOperation } from '@/types/experiments';
 interface Item { label: string; result: 'pass'|'fail'|'partial'|''; remark: string; partialAllowed?: boolean; }
 interface ModelValue {
   context: { projectCode?: string; analysisBatchNo?: string; runId?: string; analyte?: string };
@@ -131,8 +135,12 @@ interface ModelValue {
   signatures: { lead: string; auditor: string };
 }
 const props = withDefaults(defineProps<{ modelValue: ModelValue; editable?: boolean }>(), { editable: false });
-const emit = defineEmits<{ 'update:modelValue': [value: ModelValue] }>();
+const emit = defineEmits<{ 'update:modelValue': [value: ModelValue]; }>()();
 const model = computed(() => props.modelValue);
+const drawerOpen = ref(false);
+const activeCellRow = ref(0);
+const activeCellCol = ref(0);
+const cellOperations = ref<SequenceOperation[]>([]);
 const CellEditor = defineComponent({
   props: { value: { type: [String, Number], default: '' }, editable: { type: Boolean, default: false }, type: { type: String, default: 'text' } },
   emits: ['update'],
@@ -150,6 +158,20 @@ function updateItem(i: number, k: keyof Item, v: any) { const items = [...props.
 function resultLabel(r: string) { return { pass: '是', fail: '否', partial: '部分满足' }[r] || '—'; }
 function resultTone(r: string) { return { pass: 'text-[--primary] font-semibold', fail: 'text-[--danger] font-semibold', partial: 'text-[--warning] font-semibold' }[r] || 'text-[--muted-foreground]'; }
 function itemPassLabel(v: string) { return { pass: '是', fail: '否', partial: '部分通过' }[v] || '—'; }
+
+function handleConfigureCell(rowIndex: number, colIndex: number) {
+  activeCellRow.value = rowIndex;
+  activeCellCol.value = colIndex;
+  const key = `${rowIndex}-${colIndex}`;
+  cellOperations.value = (props.modelValue as any).cellOperations?.[key] ?? [];
+  drawerOpen.value = true;
+}
+function saveDrawer(ops: SequenceOperation[]) {
+  const key = `${activeCellRow.value}-${activeCellCol.value}`;
+  const next = { ...props.modelValue, cellOperations: { ...(props.modelValue as any).cellOperations ?? {}, [key]: ops } };
+  emit('update:modelValue', next);
+  drawerOpen.value = false;
+}
 </script>
 <style scoped>
 .mt-cell, .mt-label, .mt-section, .mt-title, .mt-head { border: 1px solid #222; padding: 9px 10px; vertical-align: middle; background: #fff; }

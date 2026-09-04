@@ -27,6 +27,7 @@
                     ? 'border-[--border-strong] bg-white hover:border-[--primary-border]'
                     : 'border-[--border] bg-[--surface-muted] hover:border-[--border-strong]']"
               @click="handleCellClick(row, col)"
+              @dblclick.stop="handleCellDblClick(row, col)"
               @mouseenter="hoverKey = `${row}-${col}`"
               @mouseleave="hoverKey = null"
             >
@@ -85,6 +86,8 @@ const emit = defineEmits<{
 
 const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 const hoverKey = ref<string | null>(null);
+let pendingClick: ReturnType<typeof setTimeout> | null = null;
+let pendingCell: { row: string; col: number } | null = null;
 const footer = ref({ location: '', time: '', owner: '', reviewer: '' });
 
 watch(
@@ -120,6 +123,30 @@ function cellHasWarning(row: string, col: number) {
 
 function handleCellClick(row: string, col: number) {
   if (readOnly.value) return;
+  if (pendingClick) {
+    clearTimeout(pendingClick);
+    pendingClick = null;
+    pendingCell = null;
+    return;
+  }
+  pendingCell = { row, col };
+  pendingClick = setTimeout(() => {
+    if (pendingCell) {
+      const cell = getCell(pendingCell.row, pendingCell.col);
+      cell.selected = !cell.selected;
+    }
+    pendingClick = null;
+    pendingCell = null;
+  }, 250);
+}
+
+function handleCellDblClick(row: string, col: number) {
+  if (readOnly.value) return;
+  if (pendingClick) {
+    clearTimeout(pendingClick);
+    pendingClick = null;
+    pendingCell = null;
+  }
   emit('edit-cell', row, col);
 }
 

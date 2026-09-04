@@ -44,11 +44,21 @@
           <td class="stab-head"></td>
         </tr>
         <tr v-for="(row, rowIndex) in model.blood.rows" :key="rowIndex" class="h-[42px]">
-          <td class="stab-cell bg-[#f3efe0]"><CellEditor :value="row.sampleCode" :editable="editable" @update="updateBloodRow(rowIndex, 'sampleCode', $event)" /></td>
-          <td class="stab-cell"><CellEditor :value="row.sourceSolutionCode" :editable="editable" @update="updateBloodRow(rowIndex, 'sourceSolutionCode', $event)" /></td>
-          <td class="stab-cell"><CellEditor :value="String(row.sourceSolutionVolume)" :editable="editable" type="number" @update="updateBloodRow(rowIndex, 'sourceSolutionVolume', Number($event) || 0)" /></td>
-          <td class="stab-cell"><CellEditor :value="String(row.blankBloodVolume)" :editable="editable" type="number" @update="updateBloodRow(rowIndex, 'blankBloodVolume', Number($event) || 0)" /></td>
-          <td class="stab-cell"><CellEditor :value="String(row.finalVolume)" :editable="editable" type="number" @update="updateBloodRow(rowIndex, 'finalVolume', Number($event) || 0)" /></td>
+          <td class="stab-cell bg-[#f3efe0]">
+            <div class="space-y-1"><CellEditor :value="row.sampleCode" :editable="editable" @update="updateBloodRow(rowIndex, 'sampleCode', $event)" /><button v-if="editable && !row.sampleCode" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(rowIndex, 0)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div>
+          </td>
+          <td class="stab-cell">
+            <div class="space-y-1"><CellEditor :value="row.sourceSolutionCode" :editable="editable" @update="updateBloodRow(rowIndex, 'sourceSolutionCode', $event)" /><button v-if="editable && !row.sourceSolutionCode" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(rowIndex, 1)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div>
+          </td>
+          <td class="stab-cell">
+            <div class="space-y-1"><CellEditor :value="String(row.sourceSolutionVolume)" :editable="editable" type="number" @update="updateBloodRow(rowIndex, 'sourceSolutionVolume', Number($event) || 0)" /><button v-if="editable && !row.sourceSolutionVolume" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(rowIndex, 2)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div>
+          </td>
+          <td class="stab-cell">
+            <div class="space-y-1"><CellEditor :value="String(row.blankBloodVolume)" :editable="editable" type="number" @update="updateBloodRow(rowIndex, 'blankBloodVolume', Number($event) || 0)" /><button v-if="editable && !row.blankBloodVolume" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(rowIndex, 3)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div>
+          </td>
+          <td class="stab-cell">
+            <div class="space-y-1"><CellEditor :value="String(row.finalVolume)" :editable="editable" type="number" @update="updateBloodRow(rowIndex, 'finalVolume', Number($event) || 0)" /><button v-if="editable && !row.finalVolume" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(rowIndex, 4)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div>
+          </td>
           <td class="stab-cell"></td>
         </tr>
         <tr>
@@ -124,30 +134,26 @@
           <td class="stab-head"></td>
         </tr>
         <tr v-for="(row, rowIndex) in model.stability.rows" :key="rowIndex" class="h-[42px]">
-          <td class="stab-cell bg-[#f3efe0]"><CellEditor :value="row.sampleCode" :editable="editable" @update="updateStabilityRow(rowIndex, 'sampleCode', $event)" /></td>
-          <td class="stab-cell"><CellEditor :value="row.stabilitySampleCode" :editable="editable" @update="updateStabilityRow(rowIndex, 'stabilitySampleCode', $event)" /></td>
-          <td class="stab-cell"><CellEditor :value="row.startTime" :editable="editable" @update="updateStabilityRow(rowIndex, 'startTime', $event)" /></td>
+          <td class="stab-cell bg-[#f3efe0]">
+            <div class="space-y-1"><CellEditor :value="row.sampleCode" :editable="editable" @update="updateStabilityRow(rowIndex, 'sampleCode', $event)" /><button v-if="editable && !row.sampleCode" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(rowIndex, 0)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div>
+          </td>
+          <td class="stab-cell">
+            <div class="space-y-1"><CellEditor :value="row.stabilitySampleCode" :editable="editable" @update="updateStabilityRow(rowIndex, 'stabilitySampleCode', $event)" /><button v-if="editable && !row.stabilitySampleCode" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(rowIndex, 1)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div>
+          </td>
+          <td class="stab-cell">
+            <div class="space-y-1"><CellEditor :value="row.startTime" :editable="editable" @update="updateStabilityRow(rowIndex, 'startTime', $event)" /><button v-if="editable && !row.startTime" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(rowIndex, 2)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div>
+          </td>
           <td class="stab-cell">
             <div class="flex flex-col gap-1 text-[11px]">
-              <label class="inline-flex items-center gap-1">
-                <BaseCheckbox :checked="row.conditions?.includes('黄光灯')" :disabled="!editable" @update:checked="toggleStabilityLight(rowIndex, '黄光灯')" />
-                <span>黄光灯</span>
-              </label>
-              <label class="inline-flex items-center gap-1">
-                <BaseCheckbox :checked="row.conditions?.includes('白色荧光灯')" :disabled="!editable" @update:checked="toggleStabilityLight(rowIndex, '白色荧光灯')" />
-                <span>白色荧光灯</span>
-              </label>
-              <label class="inline-flex items-center gap-1">
-                <BaseCheckbox :checked="row.conditions?.includes('RT')" :disabled="!editable" @update:checked="toggleStabilityTemp(rowIndex, 'RT')" />
-                <span>RT</span>
-              </label>
-              <label class="inline-flex items-center gap-1">
-                <BaseCheckbox :checked="row.conditions?.includes('WI')" :disabled="!editable" @update:checked="toggleStabilityTemp(rowIndex, 'WI')" />
-                <span>WI</span>
-              </label>
+              <label class="inline-flex items-center gap-1"><BaseCheckbox :checked="row.conditions?.includes('黄光灯')" :disabled="!editable" @update:checked="toggleStabilityLight(rowIndex, '黄光灯')" /><span>黄光灯</span></label>
+              <label class="inline-flex items-center gap-1"><BaseCheckbox :checked="row.conditions?.includes('白色荧光灯')" :disabled="!editable" @update:checked="toggleStabilityLight(rowIndex, '白色荧光灯')" /><span>白色荧光灯</span></label>
+              <label class="inline-flex items-center gap-1"><BaseCheckbox :checked="row.conditions?.includes('RT')" :disabled="!editable" @update:checked="toggleStabilityTemp(rowIndex, 'RT')" /><span>RT</span></label>
+              <label class="inline-flex items-center gap-1"><BaseCheckbox :checked="row.conditions?.includes('WI')" :disabled="!editable" @update:checked="toggleStabilityTemp(rowIndex, 'WI')" /><span>WI</span></label>
             </div>
           </td>
-          <td class="stab-cell"><CellEditor :value="row.endTime" :editable="editable" @update="updateStabilityRow(rowIndex, 'endTime', $event)" /></td>
+          <td class="stab-cell">
+            <div class="space-y-1"><CellEditor :value="row.endTime" :editable="editable" @update="updateStabilityRow(rowIndex, 'endTime', $event)" /><button v-if="editable && !row.endTime" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(rowIndex, 4)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div>
+          </td>
           <td class="stab-cell"></td>
         </tr>
         <tr>
@@ -188,12 +194,16 @@
         </tr>
       </tbody>
     </table>
+    <CellOpEditor v-if="drawerOpen" :open="drawerOpen" :read-only="!props.editable" :cell-row="activeCellRow" :cell-col="activeCellCol" :operations="cellOperations" @close="drawerOpen=false" @save="saveDrawer" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, defineComponent, h } from 'vue';
+import { computed, defineComponent, h, ref } from 'vue';
+import { Settings2 } from 'lucide-vue-next';
 import BaseCheckbox from '@/components/base/BaseCheckbox.vue';
+import CellOpEditor from './CellOpEditor.vue';
+import type { SequenceOperation } from '@/types/experiments';
 
 interface BloodRow {
   sampleCode: string;
@@ -239,6 +249,10 @@ interface ModelValue {
 const props = withDefaults(defineProps<{ modelValue: ModelValue; editable?: boolean }>(), { editable: false });
 const emit = defineEmits<{ 'update:modelValue': [value: ModelValue] }>();
 const model = computed(() => props.modelValue);
+const drawerOpen = ref(false);
+const activeCellRow = ref(0);
+const activeCellCol = ref(0);
+const cellOperations = ref<SequenceOperation[]>([]);
 
 const CellEditor = defineComponent({
   props: { value: { type: [String, Number], default: '' }, editable: { type: Boolean, default: false }, type: { type: String, default: 'text' } },
@@ -261,6 +275,19 @@ function toggleStabilityLight(rowIndex: number, condition: string) { const nextR
 function toggleStabilityTemp(rowIndex: number, condition: string) { const nextRows = [...model.value.stability.rows]; const current = [...(nextRows[rowIndex].conditions || [])]; const index = current.indexOf(condition); if (index >= 0) current.splice(index, 1); else current.push(condition); nextRows[rowIndex] = { ...nextRows[rowIndex], conditions: current }; patch({ stability: { ...model.value.stability, rows: nextRows } }); }
 function updateStabilityModel(key: keyof typeof model.value.stability, value: any) { patch({ stability: { ...model.value.stability, [key]: value } }); }
 function updateSignature(key: keyof typeof model.value.signatures, value: string) { patch({ signatures: { ...model.value.signatures, [key]: value } }); }
+function handleConfigureCell(rowIndex: number, colIndex: number) {
+  activeCellRow.value = rowIndex;
+  activeCellCol.value = colIndex;
+  const key = `${rowIndex}-${colIndex}`;
+  cellOperations.value = (props.modelValue as any).cellOperations?.[key] ?? [];
+  drawerOpen.value = true;
+}
+function saveDrawer(ops: SequenceOperation[]) {
+  const key = `${activeCellRow.value}-${activeCellCol.value}`;
+  const next = { ...props.modelValue, cellOperations: { ...(props.modelValue as any).cellOperations ?? {}, [key]: ops } };
+  emit('update:modelValue', next);
+  drawerOpen.value = false;
+}
 </script>
 
 <style scoped>

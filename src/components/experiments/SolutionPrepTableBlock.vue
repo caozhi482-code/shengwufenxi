@@ -19,6 +19,9 @@
             class="border border-[#222] px-2 py-3 align-middle"
             :class="editable ? 'bg-white' : 'bg-[#f3efe0]'"
           >
+            <div v-if="editable && !cell" class="space-y-1">
+              <button type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(rowIndex, cellIndex)"><Settings2 class="h-3.5 w-3.5" />配置格子</button>
+            </div>
             <input
               v-if="editable"
               :value="cell"
@@ -54,11 +57,15 @@
         </tr>
       </tbody>
     </table>
+    <CellOpEditor v-if="drawerOpen" :open="drawerOpen" :read-only="!props.editable" :cell-row="activeCellRow" :cell-col="activeCellCol" :operations="cellOperations" @close="drawerOpen=false" @save="saveDrawer" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
+import { Settings2 } from 'lucide-vue-next';
+import CellOpEditor from './CellOpEditor.vue';
+import type { SequenceOperation } from '@/types/experiments';
 
 const props = defineProps<{
   topRows: string[][];
@@ -80,6 +87,10 @@ const topLabels = [
 
 const topRowsProxy = computed(() => props.topRows);
 const bottomRowsProxy = computed(() => props.bottomRows);
+const drawerOpen = ref(false);
+const activeCellRow = ref(0);
+const activeCellCol = ref(0);
+const cellOperations = ref<SequenceOperation[]>([]);
 
 function updateTopCell(rowIndex: number, cellIndex: number, value: string) {
   const next = props.topRows.map((row, index) => index === rowIndex ? row.map((cell, idx) => (idx === cellIndex ? value : cell)) : [...row]);
@@ -89,5 +100,14 @@ function updateTopCell(rowIndex: number, cellIndex: number, value: string) {
 function updateBottomCell(rowIndex: number, cellIndex: number, value: string) {
   const next = props.bottomRows.map((row, index) => index === rowIndex ? row.map((cell, idx) => (idx === cellIndex ? value : cell)) : [...row]);
   emit('update:bottomRows', next);
+}
+
+function handleConfigureCell(rowIndex: number, colIndex: number) {
+  activeCellRow.value = rowIndex;
+  activeCellCol.value = colIndex;
+  drawerOpen.value = true;
+}
+function saveDrawer(ops: SequenceOperation[]) {
+  drawerOpen.value = false;
 }
 </script>

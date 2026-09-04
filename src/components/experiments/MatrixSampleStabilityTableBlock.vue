@@ -40,29 +40,27 @@
         <template v-for="(row, ri) in model.rowsShort" :key="`short-${ri}`">
           <tr class="h-[42px]">
             <td class="ms-cell bg-[#f3efe0]">
-              <CellEditor v-if="ri === 0" :value="row.category" :editable="editable" @update="updateShort(ri, 'category', $event)" />
-              <span v-else class="text-[--muted-foreground]">—</span>
+              <div class="space-y-1"><CellEditor v-if="ri === 0" :value="row.category" :editable="editable" @update="updateShort(ri, 'category', $event)" /><span v-else class="text-[--muted-foreground]">—</span><button v-if="editable && ri > 0 && !row.category" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( ri, 0)"><Settings2 class="h-3.5 w-3.5" />配置格子</button><button v-if="editable && ri === 0 && !row.category" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( ri, 0)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div>
             </td>
-            <td class="ms-cell"><CellEditor :value="row.sampleCode" :editable="editable" @update="updateShort(ri, 'sampleCode', $event)" /></td>
-            <td class="ms-cell"><CellEditor :value="row.position" :editable="editable" @update="updateShort(ri, 'position', $event)" /></td>
-            <td class="ms-cell"><CellEditor :value="row.startTime" :editable="editable" type="datetime-local" @update="updateShort(ri, 'startTime', $event)" /></td>
-            <td class="ms-cell"><CellEditor :value="row.endTime" :editable="editable" type="datetime-local" @update="updateShort(ri, 'endTime', $event)" /></td>
-            <td class="ms-cell"><CellEditor :value="String(row.duration)" :editable="editable" type="number" @update="updateShort(ri, 'duration', Number($event) || 0)" /></td>
-            <td class="ms-cell"><CellEditor :value="row.analysisBatch" :editable="editable" @update="updateShort(ri, 'analysisBatch', $event)" /></td>
+            <td class="ms-cell"><div class="space-y-1"><CellEditor :value="row.sampleCode" :editable="editable" @update="updateShort(ri, 'sampleCode', $event)" /><button v-if="editable && !row.sampleCode" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( ri, 1)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div></td>
+            <td class="ms-cell"><div class="space-y-1"><CellEditor :value="row.position" :editable="editable" @update="updateShort(ri, 'position', $event)" /><button v-if="editable && !row.position" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( ri, 2)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div></td>
+            <td class="ms-cell"><div class="space-y-1"><CellEditor :value="row.startTime" :editable="editable" type="datetime-local" @update="updateShort(ri, 'startTime', $event)" /><button v-if="editable && !row.startTime" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( ri, 3)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div></td>
+            <td class="ms-cell"><div class="space-y-1"><CellEditor :value="row.endTime" :editable="editable" type="datetime-local" @update="updateShort(ri, 'endTime', $event)" /><button v-if="editable && !row.endTime" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( ri, 4)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div></td>
+            <td class="ms-cell"><div class="space-y-1"><CellEditor :value="String(row.duration)" :editable="editable" type="number" @update="updateShort(ri, 'duration', Number($event) || 0)" /><button v-if="editable && !row.duration" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( ri, 5)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div></td>
+            <td class="ms-cell"><div class="space-y-1"><CellEditor :value="row.analysisBatch" :editable="editable" @update="updateShort(ri, 'analysisBatch', $event)" /><button v-if="editable && !row.analysisBatch" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( ri, 6)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div></td>
           </tr>
         </template>
         <template v-for="(row, ri) in model.rowsLong" :key="`long-${ri}`">
           <tr class="h-[42px]">
             <td class="ms-cell bg-[#f3efe0]">
-              <CellEditor v-if="ri === 0" :value="row.category" :editable="editable" @update="updateLong(ri, 'category', $event)" />
-              <span v-else class="text-[--muted-foreground]">—</span>
+              <div class="space-y-1"><CellEditor v-if="ri === 0" :value="row.category" :editable="editable" @update="updateLong(ri, 'category', $event)" /><span v-else class="text-[--muted-foreground]">—</span><button v-if="editable && ri > 0 && !row.category" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( model.rowsShort.length + ri, 0)"><Settings2 class="h-3.5 w-3.5" />配置格子</button><button v-if="editable && ri === 0 && !row.category" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( model.rowsShort.length + ri, 0)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div>
             </td>
-            <td class="ms-cell"><CellEditor :value="row.sampleCode" :editable="editable" @update="updateLong(ri, 'sampleCode', $event)" /></td>
-            <td class="ms-cell"><CellEditor :value="row.position" :editable="editable" @update="updateLong(ri, 'position', $event)" /></td>
-            <td class="ms-cell"><CellEditor :value="row.startTime" :editable="editable" type="datetime-local" @update="updateLong(ri, 'startTime', $event)" /></td>
-            <td class="ms-cell"><CellEditor :value="row.endTime" :editable="editable" type="datetime-local" @update="updateLong(ri, 'endTime', $event)" /></td>
-            <td class="ms-cell"><CellEditor :value="String(row.duration)" :editable="editable" type="number" @update="updateLong(ri, 'duration', Number($event) || 0)" /></td>
-            <td class="ms-cell"><CellEditor :value="row.analysisBatch" :editable="editable" @update="updateLong(ri, 'analysisBatch', $event)" /></td>
+            <td class="ms-cell"><div class="space-y-1"><CellEditor :value="row.sampleCode" :editable="editable" @update="updateLong(ri, 'sampleCode', $event)" /><button v-if="editable && !row.sampleCode" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( model.rowsShort.length + ri, 1)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div></td>
+            <td class="ms-cell"><div class="space-y-1"><CellEditor :value="row.position" :editable="editable" @update="updateLong(ri, 'position', $event)" /><button v-if="editable && !row.position" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( model.rowsShort.length + ri, 2)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div></td>
+            <td class="ms-cell"><div class="space-y-1"><CellEditor :value="row.startTime" :editable="editable" type="datetime-local" @update="updateLong(ri, 'startTime', $event)" /><button v-if="editable && !row.startTime" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( model.rowsShort.length + ri, 3)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div></td>
+            <td class="ms-cell"><div class="space-y-1"><CellEditor :value="row.endTime" :editable="editable" type="datetime-local" @update="updateLong(ri, 'endTime', $event)" /><button v-if="editable && !row.endTime" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( model.rowsShort.length + ri, 4)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div></td>
+            <td class="ms-cell"><div class="space-y-1"><CellEditor :value="String(row.duration)" :editable="editable" type="number" @update="updateLong(ri, 'duration', Number($event) || 0)" /><button v-if="editable && !row.duration" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( model.rowsShort.length + ri, 5)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div></td>
+            <td class="ms-cell"><div class="space-y-1"><CellEditor :value="row.analysisBatch" :editable="editable" @update="updateLong(ri, 'analysisBatch', $event)" /><button v-if="editable && !row.analysisBatch" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell( model.rowsShort.length + ri, 6)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div></td>
           </tr>
         </template>
       </tbody>
@@ -87,16 +85,24 @@
         </tr>
       </tbody>
     </table>
+    <CellOpEditor v-if="drawerOpen" :open="drawerOpen" :read-only="!props.editable" :cell-row="activeCellRow" :cell-col="activeCellCol" :operations="cellOperations" @close="drawerOpen=false" @save="saveDrawer" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, defineComponent, h } from 'vue';
+import { computed, defineComponent, h, ref } from 'vue';
+import { Settings2 } from 'lucide-vue-next';
+import CellOpEditor from './CellOpEditor.vue';
+import type { SequenceOperation } from '@/types/experiments';
 interface Row { category: string; sampleCode: string; position: string; startTime: string; endTime: string; duration: number; analysisBatch: string; }
 interface ModelValue { context: { projectCode?: string }; rowsShort: Row[]; rowsLong: Row[]; signatures: { packager: string; auditor: string }; }
 const props = withDefaults(defineProps<{ modelValue: ModelValue; editable?: boolean }>(), { editable: false });
 const emit = defineEmits<{ 'update:modelValue': [value: ModelValue] }>();
 const model = computed(() => props.modelValue);
+const drawerOpen = ref(false);
+const activeCellRow = ref(0);
+const activeCellCol = ref(0);
+const cellOperations = ref<SequenceOperation[]>([]);
 const CellEditor = defineComponent({
   props: { value: { type: [String, Number], default: '' }, editable: { type: Boolean, default: false }, type: { type: String, default: 'text' } },
   emits: ['update'],
@@ -117,6 +123,19 @@ function updateLong(i: number, k: keyof Row, v: any) { updateRows('rowsLong', i,
 function newRow(cat: string): Row { return { category: cat, sampleCode: '', position: '', startTime: '', endTime: '', duration: 0, analysisBatch: '' }; }
 function addShortRow() { patch({ rowsShort: [...props.modelValue.rowsShort, newRow('短期稳定性考察')] }); }
 function addLongRow() { patch({ rowsLong: [...props.modelValue.rowsLong, newRow('长期稳定性考察')] }); }
+function handleConfigureCell(rowIndex: number, colIndex: number) {
+  activeCellRow.value = rowIndex;
+  activeCellCol.value = colIndex;
+  const key = `${rowIndex}-${colIndex}`;
+  cellOperations.value = (props.modelValue as any).cellOperations?.[key] ?? [];
+  drawerOpen.value = true;
+}
+function saveDrawer(ops: SequenceOperation[]) {
+  const key = `${activeCellRow.value}-${activeCellCol.value}`;
+  const next = { ...props.modelValue, cellOperations: { ...(props.modelValue as any).cellOperations ?? {}, [key]: ops } };
+  emit('update:modelValue', next);
+  drawerOpen.value = false;
+}
 </script>
 <style scoped>
 .ms-cell, .ms-label, .ms-section, .ms-title, .ms-head { border: 1px solid #222; padding: 9px 10px; vertical-align: middle; background: #fff; }

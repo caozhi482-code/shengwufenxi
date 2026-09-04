@@ -10,18 +10,18 @@
 
     <div class="bg-white border border-[--border] rounded-[--radius-lg] shadow-[var(--shadow-card)] p-4 flex items-center gap-6 flex-wrap">
       <div>
-        <div class="text-xs text-[--muted-foreground] mb-0.5">任务</div>
-        <div class="text-sm font-bold text-[--foreground]">{{ task.taskName }}</div>
-      </div>
-      <div class="w-px h-10 bg-[--border]" />
-      <div>
-        <div class="text-xs text-[--muted-foreground] mb-0.5">考察项</div>
-        <div class="text-sm font-medium text-[--text-main]">{{ task.itemCode }} {{ task.itemName }}</div>
-      </div>
-      <div class="w-px h-10 bg-[--border]" />
-      <div>
         <div class="text-xs text-[--muted-foreground] mb-0.5">表单模板</div>
-        <div class="text-sm font-medium text-[--text-main]">{{ currentForm?.name ?? '模板不存在' }}</div>
+        <div class="text-sm font-bold text-[--foreground]">{{ currentForm?.templateName ?? '模板不存在' }}</div>
+      </div>
+      <div class="w-px h-10 bg-[--border]" />
+      <div>
+        <div class="text-xs text-[--muted-foreground] mb-0.5">模板编号</div>
+        <div class="text-sm font-mono text-[--primary]">{{ currentForm?.templateCode ?? '—' }}</div>
+      </div>
+      <div class="w-px h-10 bg-[--border]" />
+      <div>
+        <div class="text-xs text-[--muted-foreground] mb-0.5">版本</div>
+        <div class="text-sm font-medium text-[--text-main]">{{ currentForm?.version ?? '—' }}</div>
       </div>
       <div class="w-px h-10 bg-[--border]" />
       <div>
@@ -43,7 +43,7 @@
       </template>
       <div class="py-12 text-center space-y-3">
         <div class="text-sm font-medium text-[--text-main]">未找到与当前模板 ID 匹配的模板</div>
-        <div class="text-xs text-[--muted-foreground]">请返回模板选择页重新选择模板表单，不要继续使用默认模板兜底。</div>
+        <div class="text-xs text-[--muted-foreground]">请返回模板选择页重新选择模板表单。</div>
         <BaseButton variant="primary" @click="goBack">返回</BaseButton>
       </div>
     </BaseCard>
@@ -52,17 +52,17 @@
       <BaseCard v-if="isPlateTemplate">
         <template #header>
           <span class="text-base font-bold text-[--foreground]">
-            {{ currentForm.name }} — 格子编辑器
+            {{ currentForm.templateName }} — 格子编辑器
             <span class="text-xs font-normal text-[--muted-foreground] ml-2">
               点击格子编辑操作 · 每条操作可自由填写
             </span>
           </span>
         </template>
         <FormGridEditor
-          :rows="currentForm.grid.rows"
-          :cols="currentForm.grid.cols"
+          :rows="plateRows"
+          :cols="plateCols"
           :cells="currentCells"
-          :cell-label="(currentForm.cellLabel as 'well' | 'none')"
+          cell-label="well"
           @select-all="selectAll"
           @invert="invertSelect"
           @clear="clearSelect"
@@ -71,10 +71,21 @@
         />
       </BaseCard>
 
+      <BaseCard v-else-if="isWorkSolutionTemplate">
+        <template #header>
+          <span class="text-base font-bold text-[--foreground]">
+            {{ currentForm.templateName }} — 工作溶液配制记录
+          </span>
+        </template>
+        <div class="overflow-x-auto">
+          <WorkSolutionTableBlock v-model:model-value="workModel" editable @configure-demo-cell="openWorkSolutionDemoCell" />
+        </div>
+      </BaseCard>
+
       <BaseCard v-else>
         <template #header>
           <span class="text-base font-bold text-[--foreground]">
-            {{ currentForm.name }} — 记录表编辑
+            {{ currentForm.templateName }} — 记录表编辑
             <span class="text-xs font-normal text-[--muted-foreground] ml-2">
               表格化记录区 · 直接编辑每个字段
             </span>
@@ -85,19 +96,19 @@
           <table class="min-w-full border-collapse text-sm">
             <thead class="bg-[--surface-muted]">
               <tr>
-                <th v-for="field in currentForm.fields" :key="field" class="border-b border-[--border] px-3 py-2 text-left text-xs font-semibold text-[--muted-foreground]">
+                <th v-for="field in tableFields" :key="field" class="border-b border-[--border] px-3 py-2 text-left text-xs font-semibold text-[--muted-foreground]">
                   {{ field }}
                 </th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="(row, rowIndex) in recordRows" :key="rowIndex" class="border-b border-[--border] last:border-b-0">
-                <td v-for="(_, cellIndex) in currentForm.fields" :key="cellIndex" class="border-r border-[--border] last:border-r-0 px-2 py-2 align-top">
+                <td v-for="(_, cellIndex) in tableFields" :key="cellIndex" class="border-r border-[--border] last:border-r-0 px-2 py-2 align-top">
                   <input
                     v-model="recordRows[rowIndex][cellIndex]"
                     type="text"
                     class="w-full rounded-md border border-[--border] bg-white px-2 py-2 text-sm text-[--text-main] outline-none transition focus:border-[--primary]"
-                    :placeholder="`${currentForm.name} 第 ${rowIndex + 1} 行`"
+                    :placeholder="`${currentForm.templateName} 第 ${rowIndex + 1} 行`"
                   />
                 </td>
               </tr>
@@ -116,10 +127,10 @@
     </template>
 
     <CellOpEditor
-      v-if="currentForm && isPlateTemplate"
+      v-if="currentForm && (isPlateTemplate || isWorkSolutionTemplate)"
       :open="cellEditorOpen"
-      :cell-row="editingCell?.row ?? ''"
-      :cell-col="editingCell?.col ?? 1"
+      :cell-row="editingCell?.row ?? workSolutionDemoCell?.row ?? ''"
+      :cell-col="editingCell?.col ?? workSolutionDemoCell?.col ?? 1"
       :operations="currentOps"
       @close="closeCellEditor"
       @save="saveCellOps"
@@ -135,36 +146,100 @@ import BaseCard from '@/components/base/BaseCard.vue';
 import BaseButton from '@/components/base/BaseButton.vue';
 import FormGridEditor from '@/components/experiments/FormGridEditor.vue';
 import CellOpEditor from '@/components/experiments/CellOpEditor.vue';
-import { tasks } from '@/api/mock/tasks';
-import { formTemplates } from '@/api/mock/methods';
-import type { Task, FormCell, CellOperation, SequenceOperation } from '@/types/experiments';
+import WorkSolutionTableBlock from '@/components/experiments/WorkSolutionTableBlock.vue';
+import { formTemplates, getFormTemplateById } from '@/api/mock/form-templates';
+import type { FormTemplateRecord } from '@/types/experiments';
+
+interface FormCell {
+  row: string;
+  col: number;
+  operations: CellOperation[];
+  selected: boolean;
+}
+
+interface CellOperation {
+  id: string;
+  action: string;
+  substance?: string;
+  sampleId?: string;
+  volume?: string;
+  note?: string;
+}
+
+interface SequenceOperation {
+  id: string;
+  action: string;
+  substance: string;
+  sampleId: string;
+  volume: number;
+  unit: string;
+  scanned: boolean;
+  equipment?: string;
+  scanObject?: string;
+  required?: boolean;
+  note?: string;
+  step?: string;
+}
 
 const router = useRouter();
 const route = useRoute();
 
-const taskId = route.params.taskId as string;
 const formTemplateId = route.params.formTemplateId as string;
 const itemCode = route.query.itemCode as string;
 
-const task = computed<Task>(() => {
-  const t = tasks.find((item: any) => item.id === taskId);
-  return t ?? { id: taskId, taskName: '示例任务', itemCode: itemCode ?? '', itemName: '', formTemplates: [] } as Task;
+const currentForm = computed<FormTemplateRecord | null>(() => {
+  const byId = getFormTemplateById(formTemplateId);
+  if (byId) return byId;
+  return formTemplates.find(f => f.templateName === formTemplateId || f.templateCode === formTemplateId) ?? null;
 });
 
-const currentForm = computed(() => formTemplates.find(f => f.id === formTemplateId) ?? null);
-const isPlateTemplate = computed(() => currentForm.value?.cellLabel === 'well');
+const isPlateTemplate = computed(() =>
+  currentForm.value?.previewMode === 'plate'
+);
+
+const isWorkSolutionTemplate = computed(() =>
+  currentForm.value?.templateCode === 'BA-SBR03'
+);
+
+const plateRows = computed<string[]>(() =>
+  currentForm.value?.structure.plate?.rows ?? ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+);
+
+const plateCols = computed<number>(() =>
+  currentForm.value?.structure.plate?.cols ?? 12
+);
+
+const tableFields = computed<string[]>(() =>
+  currentForm.value?.structure.tableColumns ?? currentForm.value?.structure.fields ?? []
+);
+
 const templateKindLabel = computed(() => {
   if (!currentForm.value) return '—';
+  if (isWorkSolutionTemplate.value) return '工作溶液配制表';
   return isPlateTemplate.value ? '96 孔板 / 格子布局' : '记录表布局';
 });
+
 const templateSubtitle = computed(() => {
   if (!currentForm.value) return '模板缺失 — 请返回模板选择页重新选择';
+  if (isWorkSolutionTemplate.value) return '工作溶液配制表 — 任务级表单编辑器';
   return isPlateTemplate.value ? '格子编辑器 — 负责人配置操作' : '记录表编辑器 — 负责人配置操作';
 });
-const pageTitle = computed(() => `编辑表单 - ${currentForm.value?.name ?? '模板不存在'}`);
+
+const pageTitle = computed(() => `编辑表单 - ${currentForm.value?.templateName ?? '模板不存在'}`);
 
 const cells = ref<FormCell[]>([]);
 const recordRows = ref<string[][]>([]);
+const workModel = ref({
+  context: { projectCode: '', methodVersion: '' },
+  rows: [
+    { solutionCode: '', sourceCode: '', sourceConcentration: '', sourceVolume: '', sourceMerge: '', diluentVolume: '', finalVolume: '', finalConcentration: '' },
+    { solutionCode: '', sourceCode: '', sourceConcentration: '', sourceVolume: '', sourceMerge: '', diluentVolume: '', finalVolume: '', finalConcentration: '' },
+  ],
+  sourceBatch: '', diluentInfo: '', pureReagentInfo: '', pipetteNo: '', containerMaterial: '', containerColor: '',
+  lightCondition: '', batchLabel: '', completedAt: '', disposalMethod: '', controlledPaperNo: '', refrigeratorNo: '',
+  signatures: { operator: '', reviewer: '', auditor: '' },
+});
+const workSolutionDemoCell = ref<{ row: string; col: number } | null>(null);
 const editing = ref(false);
 const editingCell = ref<{ row: string; col: number } | null>(null);
 const cellEditorOpen = ref(false);
@@ -172,6 +247,7 @@ const cellEditorOpen = ref(false);
 watch(currentForm, (form) => {
   editing.value = false;
   editingCell.value = null;
+  workSolutionDemoCell.value = null;
   cellEditorOpen.value = false;
 
   if (!form) {
@@ -180,27 +256,16 @@ watch(currentForm, (form) => {
     return;
   }
 
-  if (form.cellLabel === 'well') {
-    cells.value = buildCells(form.grid.rows, form.grid.cols, form.id === 'FT001' ? [
-      { row: 'A', col: 1, operations: [{ id: 'op-1', action: '加平衡液', substance: 'Equ', sampleId: 'Equ', volume: '100 μL', note: '' }], selected: false },
-      { row: 'A', col: 2, operations: [{ id: 'op-2', action: '加基质样品', substance: 'SST', sampleId: 'SST', volume: '100 μL', note: '' }], selected: false },
-      { row: 'A', col: 3, operations: [
-        { id: 'op-3a', action: '加内标工作液', substance: 'IS-WS', sampleId: 'STD8', volume: '30 μL', note: '' },
-        { id: 'op-3b', action: '加空白基质', substance: '空白基质', sampleId: 'BL', volume: '50 μL', note: '溶剂空白用稀释液2' },
-      ], selected: false },
-      { row: 'A', col: 4, operations: [
-        { id: 'op-4a', action: '加工作液', substance: 'WS-LLOQ', sampleId: 'LLOQ', volume: '50 μL', note: '' },
-        { id: 'op-4b', action: '加 QC', substance: 'QC', sampleId: 'QC', volume: '50 μL', note: '' },
-      ], selected: false },
-      { row: 'A', col: 5, operations: [{ id: 'op-5', action: '加工作液', substance: 'WS-MQC', sampleId: 'MQC', volume: '50 μL', note: '' }], selected: false },
-      { row: 'A', col: 6, operations: [{ id: 'op-6', action: '加工作液', substance: 'WS-HQC', sampleId: 'HQ', volume: '50 μL', note: '' }], selected: false },
-    ] : undefined);
+  if (form.previewMode === 'plate') {
+    cells.value = buildCells(form.structure.plate?.rows ?? ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'], form.structure.plate?.cols ?? 12);
     recordRows.value = [];
     return;
   }
 
   cells.value = [];
-  recordRows.value = buildRecordRows(form.fields, 3);
+  const fields = form.structure.tableColumns ?? form.structure.fields;
+  const initialRows = form.structure.tableRows?.length ? form.structure.tableRows : buildRecordRows(fields, 3);
+  recordRows.value = initialRows.map(row => [...row, ...Array(Math.max(0, fields.length - row.length)).fill('')].slice(0, fields.length));
 }, { immediate: true });
 
 const currentCells = computed(() => cells.value);
@@ -251,6 +316,12 @@ function openCellEditor(row: string, col: number) {
 
 function closeCellEditor() {
   cellEditorOpen.value = false;
+}
+
+function openWorkSolutionDemoCell(row: string, col: number) {
+  workSolutionDemoCell.value = { row, col };
+  editingCell.value = null;
+  cellEditorOpen.value = true;
 }
 
 function saveCellOps(ops: SequenceOperation[]) {
@@ -305,7 +376,8 @@ function formatVolume(volume: number, unit?: string) {
 
 function addRecordRow() {
   if (!currentForm.value) return;
-  recordRows.value.push(currentForm.value.fields.map(() => ''));
+  const width = tableFields.value.length || 1;
+  recordRows.value.push(Array.from({ length: width }, () => ''));
   editing.value = true;
 }
 
@@ -319,17 +391,17 @@ function saveDraft() {
   if (!currentForm.value) return;
   editing.value = true;
   alert('草稿已保存');
-  router.push(`/experiments/plans/${task.value.planId}/tasks`);
+  router.push('/experiments/form-templates');
 }
 
 function saveAndExit() {
   if (!currentForm.value) return;
   editing.value = true;
-  alert('表单已保存，返回任务创建页');
-  router.push(`/experiments/plans/${task.value.planId}/tasks`);
+  alert('表单已保存');
+  router.push('/experiments/form-templates');
 }
 
 function goBack() {
-  router.push(`/experiments/plans/${task.value.planId}/tasks`);
+  router.push('/experiments/form-templates');
 }
 </script>

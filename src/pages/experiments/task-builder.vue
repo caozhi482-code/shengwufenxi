@@ -39,6 +39,7 @@
         </template>
         <template #cell-actions="{ row }">
           <button class="text-[--info] text-xs font-medium hover:underline" @click="editTask(row)">编辑</button>
+          <button class="text-[--primary] text-xs font-medium hover:underline ml-2" @click="executeTask(row)">执行</button>
           <button class="text-[--primary] text-xs font-medium hover:underline ml-2" @click="$router.push(`/experiments/plans/${row.planId}/tasks/new`)">复制</button>
           <button class="text-[--muted-foreground] text-xs hover:underline ml-2">删除</button>
         </template>
@@ -67,7 +68,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import BasePageHeader from '@/components/base/BasePageHeader.vue';
 import BaseSummaryCard from '@/components/base/BaseSummaryCard.vue';
 import BaseCard from '@/components/base/BaseCard.vue';
@@ -80,6 +81,7 @@ import { tasks } from '@/api/mock/tasks';
 import { evaluationItems } from '@/api/mock/evaluation';
 import type { TaskStatus } from '@/types/experiments';
 
+const router = useRouter();
 const route = useRoute();
 const search = ref('');
 const statusFilter = ref('');
@@ -87,6 +89,7 @@ const loading = ref(false);
 const showDrawer = ref(false);
 
 const planId = route.params.id as string;
+const planCode = (route.query.planCode as string) || planId;
 const planTasks = computed(() => tasks.filter((t: any) => t.planId === planId));
 
 const summaryCards = [
@@ -142,6 +145,12 @@ const instrumentOptions = [{ label: 'LC-MS/MS-001', value: 'LC-MS/MS-001' }, { l
 
 function openDrawer() { showDrawer.value = true; }
 function editTask(row: any) { editForm.value = { itemId: row.itemCode, taskName: row.taskName, investigator: (row.investigators as string[])[0] ?? '', planDate: row.planDate, sampleBatch: row.sampleBatch, instrument: (row.instruments as string[])[0] ?? '' }; showDrawer.value = true; }
+function executeTask(row: any) {
+  router.push({
+    path: `/experiments/tasks/${row.id}/execute`,
+    query: { planCode, projectId: '' },
+  });
+}
 function saveTask() { showDrawer.value = false; }
 function batchGenerate() { alert('已从方案批量生成任务（模拟）'); }
 </script>

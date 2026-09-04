@@ -168,11 +168,15 @@
         </tr>
       </tbody>
     </table>
+    <CellOpEditor v-if="drawerOpen" :open="drawerOpen" :read-only="!props.editable" :cell-row="activeCellRow" :cell-col="activeCellCol" :operations="cellOperations" @close="drawerOpen=false" @save="saveDrawer" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, defineComponent, h } from 'vue';
+import { computed, defineComponent, h, ref } from 'vue';
+import { Settings2 } from 'lucide-vue-next';
+import CellOpEditor from './CellOpEditor.vue';
+import type { SequenceOperation } from '@/types/experiments';
 
 interface ModelValue {
   context: {
@@ -230,6 +234,10 @@ const emit = defineEmits<{
 }>();
 
 const model = computed(() => props.modelValue);
+const drawerOpen = ref(false);
+const activeCellRow = ref(0);
+const activeCellCol = ref(0);
+const cellOperations = ref<SequenceOperation[]>([]);
 
 const CellEditor = defineComponent({
   props: {
@@ -290,6 +298,19 @@ function handleDisposalChange(method: 'discard' | 'store') {
     next.storageLocation = '';
   }
   patch({ resultIntegration: next });
+}
+function handleConfigureCell(rowIndex: number, colIndex: number) {
+  activeCellRow.value = rowIndex;
+  activeCellCol.value = colIndex;
+  const key = `${rowIndex}-${colIndex}`;
+  cellOperations.value = (props.modelValue as any).cellOperations?.[key] ?? [];
+  drawerOpen.value = true;
+}
+function saveDrawer(ops: SequenceOperation[]) {
+  const key = `${activeCellRow.value}-${activeCellCol.value}`;
+  const next = { ...props.modelValue, cellOperations: { ...(props.modelValue as any).cellOperations ?? {}, [key]: ops } };
+  emit('update:modelValue', next);
+  drawerOpen.value = false;
 }
 </script>
 

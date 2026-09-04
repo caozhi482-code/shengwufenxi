@@ -50,11 +50,17 @@
         </tr>
         <tr>
           <td class="is-label">储备液编号</td>
-          <td class="is-cell" colspan="2"><CellEditor :value="model.rows[0]?.stockCode" :editable="editable" @update="updateRow(0, 'stockCode', $event)" /></td>
+          <td class="is-cell" colspan="2">
+            <div class="space-y-1"><CellEditor :value="model.rows[0]?.stockCode" :editable="editable" @update="updateRow(0, 'stockCode', $event)" /><button v-if="editable && !model.rows[0]?.stockCode" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(0, 0)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div>
+          </td>
           <td class="is-label">储备液浓度</td>
-          <td class="is-cell" colspan="2"><CellEditor :value="model.rows[0]?.concentration" :editable="editable" @update="updateRow(0, 'concentration', $event)" /></td>
+          <td class="is-cell" colspan="2">
+            <div class="space-y-1"><CellEditor :value="model.rows[0]?.concentration" :editable="editable" @update="updateRow(0, 'concentration', $event)" /><button v-if="editable && !model.rows[0]?.concentration" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(0, 1)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div>
+          </td>
           <td class="is-label">计算过程</td>
-          <td class="is-cell" colspan="2"><CellEditor :value="model.rows[0]?.calculation" :editable="editable" @update="updateRow(0, 'calculation', $event)" /></td>
+          <td class="is-cell" colspan="2">
+            <div class="space-y-1"><CellEditor :value="model.rows[0]?.calculation" :editable="editable" @update="updateRow(0, 'calculation', $event)" /><button v-if="editable && !model.rows[0]?.calculation" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(0, 2)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div>
+          </td>
         </tr>
         <tr>
           <td class="is-section" colspan="9">配制过程</td>
@@ -146,11 +152,15 @@
         </tr>
       </tbody>
     </table>
+    <CellOpEditor v-if="drawerOpen" :open="drawerOpen" :read-only="!props.editable" :cell-row="activeCellRow" :cell-col="activeCellCol" :operations="cellOperations" @close="drawerOpen=false" @save="saveDrawer" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, defineComponent, h } from 'vue';
+import { computed, defineComponent, h, ref } from 'vue';
+import { Settings2 } from 'lucide-vue-next';
+import CellOpEditor from './CellOpEditor.vue';
+import type { SequenceOperation } from '@/types/experiments';
 import BaseCheckbox from '@/components/base/BaseCheckbox.vue';
 interface ModelValue {
   context: { projectCode?: string; methodVersion?: string; isName?: string; isCode?: string; isExpiry?: string; pipetteNo?: string; isMass?: string; isCount: number; totalVolume?: string };
@@ -160,8 +170,12 @@ interface ModelValue {
   signatures: { operator: string; reviewer: string; auditor: string };
 }
 const props = withDefaults(defineProps<{ modelValue: ModelValue; editable?: boolean }>(), { editable: false });
-const emit = defineEmits<{ 'update:modelValue': [value: ModelValue] }>();
+const emit = defineEmits<{ 'update:modelValue': [value: ModelValue]; }>()();
 const model = computed(() => props.modelValue);
+const drawerOpen = ref(false);
+const activeCellRow = ref(0);
+const activeCellCol = ref(0);
+const cellOperations = ref<SequenceOperation[]>([]);
 const CellEditor = defineComponent({
   props: { value: { type: [String, Number], default: '' }, editable: { type: Boolean, default: false }, type: { type: String, default: 'text' } },
   emits: ['update'],
@@ -182,6 +196,19 @@ function toggleLight(condition: string) {
   const i = current.indexOf(condition);
   if (i >= 0) current.splice(i, 1); else current.push(condition);
   patch({ storage: { ...props.modelValue.storage, lightConditions: current } });
+}
+function handleConfigureCell(rowIndex: number, colIndex: number) {
+  activeCellRow.value = rowIndex;
+  activeCellCol.value = colIndex;
+  const key = `${rowIndex}-${colIndex}`;
+  cellOperations.value = (props.modelValue as any).cellOperations?.[key] ?? [];
+  drawerOpen.value = true;
+}
+function saveDrawer(ops: SequenceOperation[]) {
+  const key = `${activeCellRow.value}-${activeCellCol.value}`;
+  const next = { ...props.modelValue, cellOperations: { ...(props.modelValue as any).cellOperations ?? {}, [key]: ops } };
+  emit('update:modelValue', next);
+  drawerOpen.value = false;
 }
 </script>
 <style scoped>

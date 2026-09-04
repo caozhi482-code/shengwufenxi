@@ -211,3 +211,37 @@ export interface FormTemplateRecord {
     solventFields?: string[];
   };
 }
+
+export type SDResourceType = 'reagent' | 'consumable' | 'equipment' | 'standard' | 'control' | 'other';
+export type SDResourceStatus = 'pending' | 'confirmed' | 'reserved' | 'purchasing' | 'arrived' | 'shortage';
+
+export interface SDResourceItem {
+  id: string;
+  instanceId: string;
+  itemId: string;
+  itemName: string;
+  templateId: string;
+  templateName: string;
+  name: string;
+  materialCode: string;
+  type: SDResourceType;
+  specification: string;
+  unit: string;
+  plannedQty: number;
+  currentStock: number;
+  gapQty: number;
+  brand: string;
+  expectedArrival: string;
+  isCritical: boolean;
+  priority: 'high' | 'medium' | 'low';
+  status: SDResourceStatus;
+  remark: string;
+}
+
+export interface SDPlanningRecord {
+  planCode: string;
+  projectId: string;
+  sdOwner: string;
+  items: SDResourceItem[];
+  completed: boolean;
+}

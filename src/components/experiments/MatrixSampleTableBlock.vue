@@ -62,28 +62,52 @@
         </tr>
         <tr v-for="(row, rowIndex) in model.rows" :key="row.id" class="h-[58px]">
           <td class="mx-cell bg-[#f3efe0]">
-            <CellEditor :value="row.sampleCode" :editable="editable" @update="updateRow(rowIndex, 'sampleCode', $event)" />
+            <div class="space-y-1">
+              <CellEditor :value="row.sampleCode" :editable="editable" @update="updateRow(rowIndex, 'sampleCode', $event)" />
+              <button v-if="editable && !row.sampleCode" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(rowIndex, 0)"><Settings2 class="h-3.5 w-3.5" />配置格子</button>
+            </div>
           </td>
           <td class="mx-cell">
-            <CellEditor :value="row.sourceCode" :editable="editable" @update="updateRow(rowIndex, 'sourceCode', $event)" />
+            <div class="space-y-1">
+              <CellEditor :value="row.sourceCode" :editable="editable" @update="updateRow(rowIndex, 'sourceCode', $event)" />
+              <button v-if="editable && !row.sourceCode" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(rowIndex, 1)"><Settings2 class="h-3.5 w-3.5" />配置格子</button>
+            </div>
           </td>
           <td class="mx-cell">
-            <CellEditor :value="row.sourceConcentration" :editable="editable" @update="updateRow(rowIndex, 'sourceConcentration', $event)" />
+            <div class="space-y-1">
+              <CellEditor :value="row.sourceConcentration" :editable="editable" @update="updateRow(rowIndex, 'sourceConcentration', $event)" />
+              <button v-if="editable && !row.sourceConcentration" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(rowIndex, 2)"><Settings2 class="h-3.5 w-3.5" />配置格子</button>
+            </div>
           </td>
           <td class="mx-cell">
-            <CellEditor :value="String(row.sourceVolume)" :editable="editable" type="number" @update="updateRow(rowIndex, 'sourceVolume', Number($event) || 0)" />
+            <div class="space-y-1">
+              <CellEditor :value="String(row.sourceVolume)" :editable="editable" type="number" @update="updateRow(rowIndex, 'sourceVolume', Number($event) || 0)" />
+              <button v-if="editable && !row.sourceVolume" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(rowIndex, 3)"><Settings2 class="h-3.5 w-3.5" />配置格子</button>
+            </div>
           </td>
           <td class="mx-cell">
-            <CellEditor :value="String(row.blankMatrixVolume)" :editable="editable" type="number" @update="updateRow(rowIndex, 'blankMatrixVolume', Number($event) || 0)" />
+            <div class="space-y-1">
+              <CellEditor :value="String(row.blankMatrixVolume)" :editable="editable" type="number" @update="updateRow(rowIndex, 'blankMatrixVolume', Number($event) || 0)" />
+              <button v-if="editable && !row.blankMatrixVolume" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(rowIndex, 4)"><Settings2 class="h-3.5 w-3.5" />配置格子</button>
+            </div>
           </td>
           <td class="mx-cell">
-            <CellEditor :value="String(row.finalVolume)" :editable="editable" type="number" @update="updateRow(rowIndex, 'finalVolume', Number($event) || 0)" />
+            <div class="space-y-1">
+              <CellEditor :value="String(row.finalVolume)" :editable="editable" type="number" @update="updateRow(rowIndex, 'finalVolume', Number($event) || 0)" />
+              <button v-if="editable && !row.finalVolume" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(rowIndex, 5)"><Settings2 class="h-3.5 w-3.5" />配置格子</button>
+            </div>
           </td>
           <td class="mx-cell">
-            <CellEditor :value="row.blankMatrixCode" :editable="editable" @update="updateRow(rowIndex, 'blankMatrixCode', $event)" />
+            <div class="space-y-1">
+              <CellEditor :value="row.blankMatrixCode" :editable="editable" @update="updateRow(rowIndex, 'blankMatrixCode', $event)" />
+              <button v-if="editable && !row.blankMatrixCode" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(rowIndex, 6)"><Settings2 class="h-3.5 w-3.5" />配置格子</button>
+            </div>
           </td>
           <td class="mx-cell">
-            <CellEditor :value="row.finalConcentration" :editable="editable" @update="updateRow(rowIndex, 'finalConcentration', $event)" />
+            <div class="space-y-1">
+              <CellEditor :value="row.finalConcentration" :editable="editable" @update="updateRow(rowIndex, 'finalConcentration', $event)" />
+              <button v-if="editable && !row.finalConcentration" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(rowIndex, 7)"><Settings2 class="h-3.5 w-3.5" />配置格子</button>
+            </div>
           </td>
           <td class="mx-cell">
             <div v-if="editable" class="flex flex-col items-center gap-1 text-[11px]">
@@ -279,12 +303,26 @@
         </tr>
       </tbody>
     </table>
+    <!-- CellOpEditor 抽屉 -->
+    <CellOpEditor
+      v-if="drawerOpen"
+      :open="drawerOpen"
+      :read-only="!props.editable"
+      :cell-row="String(activeCellRow)"
+      :cell-col="activeCellCol"
+      :operations="cellOperations"
+      @close="drawerOpen = false"
+      @save="saveDrawer"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, defineComponent, h } from 'vue';
+import { computed, defineComponent, h, ref } from 'vue';
+import { Settings2 } from 'lucide-vue-next';
 import BaseCheckbox from '@/components/base/BaseCheckbox.vue';
+import CellOpEditor from './CellOpEditor.vue';
+import type { SequenceOperation } from '@/types/experiments';
 
 interface MatrixSampleRow {
   id: string;
@@ -332,6 +370,25 @@ const emit = defineEmits<{
 }>();
 
 const model = computed(() => props.modelValue);
+
+const drawerOpen = ref(false);
+const activeCellRow = ref(0);
+const activeCellCol = ref(0);
+const cellOperations = ref<SequenceOperation[]>([]);
+
+function handleConfigureCell(rowIndex: number, colIndex: number) {
+  activeCellRow.value = rowIndex;
+  activeCellCol.value = colIndex;
+  cellOperations.value = (props.modelValue as any).cellOperations?.[`${rowIndex}-${colIndex}`] || [];
+  drawerOpen.value = true;
+}
+
+function saveDrawer(ops: SequenceOperation[]) {
+  const m = props.modelValue as any;
+  if (!m.cellOperations) m.cellOperations = {};
+  m.cellOperations[`${activeCellRow.value}-${activeCellCol.value}`] = ops;
+  emit('update:modelValue', { ...props.modelValue, cellOperations: m.cellOperations });
+}
 
 const CellEditor = defineComponent({
   props: {

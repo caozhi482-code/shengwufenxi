@@ -110,7 +110,7 @@
               <span class="text-[--muted-foreground]">未选模板考察项</span>
               <span class="font-semibold" :class="missingItemCount > 0 ? 'text-[--danger]' : 'text-[--primary]'">{{ missingItemCount }}</span>
             </div>
-            <div class="text-xs text-[--muted-foreground]">所有考察项都至少选择一个模板表单后，才能进入模板实例内容编辑。</div>
+            <div class="text-xs text-[--muted-foreground]">有匹配模板的考察项至少选择一个表单后，即可进入模板实例内容编辑。</div>
           </div>
         </BaseCard>
       </div>
@@ -158,10 +158,6 @@
                       <BaseTag :label="template.version" tone="info" />
                       <BaseTag v-if="isRecommended(template)" label="默认推荐" tone="success" />
                       <BaseTag :label="statusLabel(template.status)" :tone="statusTone(template.status)" />
-                    </div>
-                    <div class="text-xs text-[--muted-foreground]">适用场景：{{ template.description }}</div>
-                    <div class="flex flex-wrap gap-1.5">
-                      <BaseTag v-for="name in template.itemNames" :key="name" :label="name" tone="neutral" />
                     </div>
                   </div>
                 </label>
@@ -336,7 +332,8 @@ const initialTemplateMap = computed(() => {
 });
 const currentSelections = computed(() => currentItem.value ? selectedTemplateIds[currentItem.value.id] ?? [] : []);
 const selectedTemplateCount = computed(() => selectedItems.value.reduce((total, item) => total + itemSelectionCount(item.id), 0));
-const missingItemCount = computed(() => selectedItems.value.filter(item => itemSelectionCount(item.id) === 0).length);
+const requiredItems = computed(() => selectedItems.value.filter(item => availableTemplatesForItem(item).length > 0));
+const missingItemCount = computed(() => requiredItems.value.filter(item => itemSelectionCount(item.id) === 0).length);
 const completedItemCount = computed(() => selectedItems.value.length - missingItemCount.value);
 const canContinue = computed(() => !!selectedProject.value && selectedFiles.value.length > 0 && selectedItems.value.length > 0 && missingItemCount.value === 0);
 

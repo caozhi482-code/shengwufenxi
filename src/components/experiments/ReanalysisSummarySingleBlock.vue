@@ -42,12 +42,24 @@
           <td class="sr-head text-center" colspan="2">重分析批次</td>
         </tr>
         <tr v-for="(row, i) in model.rows" :key="row.id" class="h-[42px]">
-          <td class="sr-cell bg-[#f3efe0]" colspan="2"><CellEditor :value="row.sampleId" :editable="editable" @update="updateRow(i, 'sampleId', $event)" /></td>
-          <td class="sr-cell" colspan="2"><CellEditor :value="row.initialResult" :editable="editable" @update="updateRow(i, 'initialResult', $event)" /></td>
-          <td class="sr-cell" colspan="2"><CellEditor :value="row.initialBatch" :editable="editable" @update="updateRow(i, 'initialBatch', $event)" /></td>
-          <td class="sr-cell" colspan="2"><CellEditor :value="row.reason" :editable="editable" @update="updateRow(i, 'reason', $event)" /></td>
-          <td class="sr-cell" colspan="2"><CellEditor :value="row.reResult" :editable="editable" @update="updateRow(i, 'reResult', $event)" /></td>
-          <td class="sr-cell" colspan="2"><CellEditor :value="row.reBatch" :editable="editable" @update="updateRow(i, 'reBatch', $event)" /></td>
+          <td class="sr-cell bg-[#f3efe0]" colspan="2">
+            <div class="space-y-1"><CellEditor :value="row.sampleId" :editable="editable" @update="updateRow(i, 'sampleId', $event)" /><button v-if="editable && !row.sampleId" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(i, 0)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div>
+          </td>
+          <td class="sr-cell" colspan="2">
+            <div class="space-y-1"><CellEditor :value="row.initialResult" :editable="editable" @update="updateRow(i, 'initialResult', $event)" /><button v-if="editable && !row.initialResult" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(i, 1)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div>
+          </td>
+          <td class="sr-cell" colspan="2">
+            <div class="space-y-1"><CellEditor :value="row.initialBatch" :editable="editable" @update="updateRow(i, 'initialBatch', $event)" /><button v-if="editable && !row.initialBatch" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(i, 2)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div>
+          </td>
+          <td class="sr-cell" colspan="2">
+            <div class="space-y-1"><CellEditor :value="row.reason" :editable="editable" @update="updateRow(i, 'reason', $event)" /><button v-if="editable && !row.reason" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(i, 3)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div>
+          </td>
+          <td class="sr-cell" colspan="2">
+            <div class="space-y-1"><CellEditor :value="row.reResult" :editable="editable" @update="updateRow(i, 'reResult', $event)" /><button v-if="editable && !row.reResult" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(i, 4)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div>
+          </td>
+          <td class="sr-cell" colspan="2">
+            <div class="space-y-1"><CellEditor :value="row.reBatch" :editable="editable" @update="updateRow(i, 'reBatch', $event)" /><button v-if="editable && !row.reBatch" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(i, 5)"><Settings2 class="h-3.5 w-3.5" />配置格子</button></div>
+          </td>
         </tr>
         <tr v-if="model.rows.length === 0">
           <td class="sr-cell text-center text-[--muted-foreground]" colspan="12">暂无记录</td>
@@ -76,16 +88,24 @@
     <div v-if="editable" class="mt-3">
       <button class="text-[--primary] text-sm font-medium hover:underline" @click="addRow">+ 新增重分析记录</button>
     </div>
+    <CellOpEditor v-if="drawerOpen" :open="drawerOpen" :read-only="!props.editable" :cell-row="activeCellRow" :cell-col="activeCellCol" :operations="cellOperations" @close="drawerOpen=false" @save="saveDrawer" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, defineComponent, h } from 'vue';
+import { computed, defineComponent, h, ref } from 'vue';
+import { Settings2 } from 'lucide-vue-next';
+import CellOpEditor from './CellOpEditor.vue';
+import type { SequenceOperation } from '@/types/experiments';
 interface Row { id: string; sampleId: string; initialResult: string; initialBatch: string; reason: string; reResult: string; reBatch: string; }
 interface ModelValue { context: { projectCode?: string; analyteName?: string; linearRange?: string }; rows: Row[]; signatures: { summarizer: string; lead: string; qc: string }; }
 const props = withDefaults(defineProps<{ modelValue: ModelValue; editable?: boolean }>(), { editable: false });
-const emit = defineEmits<{ 'update:modelValue': [value: ModelValue] }>();
+const emit = defineEmits<{ 'update:modelValue': [value: ModelValue]; }>()();
 const model = computed(() => props.modelValue);
+const drawerOpen = ref(false);
+const activeCellRow = ref(0);
+const activeCellCol = ref(0);
+const cellOperations = ref<SequenceOperation[]>([]);
 const CellEditor = defineComponent({
   props: { value: { type: [String, Number], default: '' }, editable: { type: Boolean, default: false }, type: { type: String, default: 'text' } },
   emits: ['update'],
@@ -100,6 +120,20 @@ function updateContext(k: string, v: string) { patch({ context: { ...props.model
 function updateSignature(k: string, v: string) { patch({ signatures: { ...props.modelValue.signatures, [k]: v } }); }
 function updateRow(i: number, k: keyof Row, v: any) { const rows = [...props.modelValue.rows]; rows[i] = { ...rows[i], [k]: v }; patch({ rows }); }
 function addRow() { patch({ rows: [...props.modelValue.rows, { id: `sr-${Date.now()}`, sampleId: '', initialResult: '', initialBatch: '', reason: '', reResult: '', reBatch: '' }] }); }
+
+function handleConfigureCell(rowIndex: number, colIndex: number) {
+  activeCellRow.value = rowIndex;
+  activeCellCol.value = colIndex;
+  const key = `${rowIndex}-${colIndex}`;
+  cellOperations.value = (props.modelValue as any).cellOperations?.[key] ?? [];
+  drawerOpen.value = true;
+}
+function saveDrawer(ops: SequenceOperation[]) {
+  const key = `${activeCellRow.value}-${activeCellCol.value}`;
+  const next = { ...props.modelValue, cellOperations: { ...(props.modelValue as any).cellOperations ?? {}, [key]: ops } };
+  emit('update:modelValue', next);
+  drawerOpen.value = false;
+}
 </script>
 <style scoped>
 .sr-cell, .sr-label, .sr-section, .sr-title, .sr-head { border: 1px solid #222; padding: 9px 10px; vertical-align: middle; background: #fff; }
