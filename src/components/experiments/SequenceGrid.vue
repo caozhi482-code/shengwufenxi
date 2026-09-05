@@ -19,7 +19,7 @@
           <div v-for="col in 12" :key="col" class="flex-1">
             <div
               :class="['relative rounded-md border-2 transition-all duration-150 min-h-[56px] flex flex-col justify-center items-center text-center p-1',
-                readOnly ? 'cursor-default' : 'cursor-pointer',
+                readOnly && !props.selectable ? 'cursor-default' : 'cursor-pointer',
                 cellHasWarning(row, col) ? 'ring-2 ring-[--danger]/30' : '',
                 getCell(row, col).selected
                   ? 'border-[--primary] bg-[--primary-soft]'
@@ -72,6 +72,7 @@ const props = defineProps<{
   cells: SequenceCell[];
   footer?: { location?: string; time?: string; owner?: string; reviewer?: string };
   readOnly?: boolean;
+  selectable?: boolean;
   activeKey?: string | null;
 }>();
 
@@ -124,6 +125,7 @@ function cellHasWarning(row: string, col: number) {
 }
 
 function handleCellClick(row: string, col: number) {
+  if (readOnly.value && !props.selectable) return;
   if (pendingClick) {
     clearTimeout(pendingClick);
     pendingClick = null;

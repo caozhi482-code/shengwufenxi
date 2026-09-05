@@ -24,6 +24,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'daily-sheets', component: () => import('@/pages/experiments/daily-sheets.vue') },
       { path: 'sequence-tables/:id', component: () => import('@/pages/experiments/sequence-table.vue') },
       { path: 'my-sheets', component: () => import('@/pages/experiments/my-sheets.vue') },
+      { path: 'execute-step', component: () => import('@/pages/experiments/execute-step.vue') },
       { path: 'sheets/:id/execute', component: () => import('@/pages/experiments/execute-step.vue') },
       { path: 'tasks/:taskId/execute', component: () => import('@/pages/experiments/execute-step.vue') },
       { path: 'review', component: () => import('@/pages/experiments/data-review.vue') },

@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full overflow-x-auto">
+  <div class="w-full overflow-x-auto" @click="handleRootClick">
     <table class="w-full min-w-[1500px] border-collapse table-fixed text-[13px] text-[--text-main]">
       <colgroup>
         <col class="w-[12%]" />
@@ -63,28 +63,25 @@
             v-for="(cell, cellIndex) in rowCells(row)"
             :key="`${rowIndex}-${cellIndex}`"
             class="ws-cell align-top"
+            :data-cell-key="cellKey(rowIndex, cellIndex)"
+            :class="props.executionMode ? cellClass(rowIndex, cellIndex) : ''"
+            @click="handleCellClick(rowIndex, cellIndex)"
+            @mouseenter="props.executionMode && showCellHover(rowIndex, cellIndex)"
+            @mouseleave="props.executionMode && clearCellHover()"
           >
-            <div class="space-y-1">
+            <div class="space-y-1 relative">
               <CellEditor :value="cell" :editable="editable" @update="updateRow(rowIndex, rowKeys[cellIndex], $event)" />
-              <button
-                v-if="editable && !cell.trim()"
-                type="button"
-                class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline"
-                title="配置格子"
-                @click.stop="handleConfigureCell(rowIndex, cellIndex)"
-              >
-                <Settings2 class="h-3.5 w-3.5" />
-                配置格子
-              </button>
+              <div v-if="props.executionMode && isCellHovered(rowIndex, cellIndex) && getCellPlanText(rowIndex, cellIndex)" class="absolute left-0 top-full z-10 mt-2 w-[260px] rounded-md bg-[--foreground] px-3 py-2 text-[11px] text-white shadow-xl pointer-events-none">
+                {{ getCellPlanText(rowIndex, cellIndex) }}
+              </div>
             </div>
           </td>
-          <td class="ws-cell text-center align-top">
-            <div class="space-y-1">
-              <div class="font-medium leading-5">配置</div>
-              <button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(rowIndex, 9)">
-                <Settings2 class="h-3.5 w-3.5" />
-                配置格子
-              </button>
+          <td class="ws-cell text-center align-top" :data-cell-key="cellKey(rowIndex, 9)" :class="props.executionMode ? cellClass(rowIndex, 9) : ''" @click="handleCellClick(rowIndex, 9)" @mouseenter="props.executionMode && showCellHover(rowIndex, 9)" @mouseleave="props.executionMode && clearCellHover()">
+            <div class="space-y-1 relative">
+              <div class="font-medium leading-5">{{ props.executionMode ? '点击查看' : '配置' }}</div>
+              <div v-if="props.executionMode && isCellHovered(rowIndex, 9) && getCellPlanText(rowIndex, 9)" class="absolute left-0 top-full z-10 mt-2 w-[260px] rounded-md bg-[--foreground] px-3 py-2 text-[11px] text-white shadow-xl pointer-events-none">
+                {{ getCellPlanText(rowIndex, 9) }}
+              </div>
             </div>
           </td>
           <td class="ws-cell text-center align-top">
@@ -94,10 +91,10 @@
             </div>
           </td>
           <td class="ws-cell text-center align-top">
-            <button v-if="editable && model.rows.length > 1" class="text-[--danger] text-xs hover:underline" @click.stop="deleteRow(rowIndex)">删除</button>
+            <button v-if="editable && !props.executionMode && model.rows.length > 1" class="text-[--danger] text-xs hover:underline" @click.stop="deleteRow(rowIndex)">删除</button>
           </td>
           <td class="ws-cell text-center align-top">
-            <button v-if="editable" class="text-[--info] text-xs hover:underline" @click.stop="copyRow(rowIndex)">复制</button>
+            <button v-if="editable && !props.executionMode" class="text-[--info] text-xs hover:underline" @click.stop="copyRow(rowIndex)">复制</button>
           </td>
         </tr>
         <tr v-if="model.rows.length === 0">
@@ -173,7 +170,7 @@
       </tbody>
     </table>
     <CellOpEditor
-      v-if="drawerOpen"
+      v-if="drawerOpen && !props.executionMode"
       :open="drawerOpen"
       :read-only="!props.editable"
       :cell-row="String(activeCellRow)"
@@ -187,7 +184,6 @@
 
 <script setup lang="ts">
 import { computed, defineComponent, h, ref } from 'vue';
-import { Settings2 } from 'lucide-vue-next';
 import CellOpEditor from './CellOpEditor.vue';
 import type { SequenceOperation } from '@/types/experiments';
 
@@ -228,14 +224,19 @@ const props = withDefaults(defineProps<{
   editable?: boolean;
   titleTags?: string[];
   demoCellConfigured?: boolean;
+  executionMode?: boolean;
+  activeCellKey?: string | null;
 }>(), {
   editable: false,
   titleTags: () => [],
   demoCellConfigured: false,
+  executionMode: false,
+  activeCellKey: null,
 });
 
 const emit = defineEmits<{
   'update:modelValue': [value: ModelValue];
+  'select-cell': [rowIndex: number, colIndex: number];
 }>();
 
 const model = computed(() => props.modelValue);
@@ -244,13 +245,60 @@ const drawerOpen = ref(false);
 const activeCellRow = ref(0);
 const activeCellCol = ref(0);
 const cellOperations = ref<SequenceOperation[]>([]);
+const hoveredCellKey = ref<string | null>(null);
 
 function handleConfigureCell(rowIndex: number, colIndex: number) {
+  if (props.executionMode) return;
   const key = `${rowIndex}-${colIndex}`;
   cellOperations.value = (props.modelValue as any).cellOperations?.[key] ?? [];
   activeCellRow.value = rowIndex;
   activeCellCol.value = colIndex;
   drawerOpen.value = true;
+}
+
+function handleCellClick(rowIndex: number, colIndex: number) {
+  if (props.executionMode) {
+    emit('select-cell', rowIndex, colIndex);
+    return;
+  }
+  if (!props.editable) return;
+  handleConfigureCell(rowIndex, colIndex);
+}
+
+function handleRootClick(event: MouseEvent) {
+  if (!props.executionMode) return;
+  const target = event.target as HTMLElement | null;
+  const cell = target?.closest?.('[data-cell-key]') as HTMLElement | null;
+  if (!cell) return;
+  const key = cell.dataset.cellKey;
+  if (!key) return;
+  const [rowIndexStr, colIndexStr] = key.split('-');
+  const rowIndex = Number(rowIndexStr);
+  const colIndex = Number(colIndexStr);
+  if (Number.isNaN(rowIndex) || Number.isNaN(colIndex)) return;
+  emit('select-cell', rowIndex, colIndex);
+}
+
+function cellKey(rowIndex: number, colIndex: number) {
+  return `${rowIndex}-${colIndex}`;
+}
+
+function isCellHovered(rowIndex: number, colIndex: number) {
+  return hoveredCellKey.value === cellKey(rowIndex, colIndex);
+}
+
+function showCellHover(rowIndex: number, colIndex: number) {
+  hoveredCellKey.value = cellKey(rowIndex, colIndex);
+}
+
+function clearCellHover() {
+  hoveredCellKey.value = null;
+}
+
+function getCellPlanText(rowIndex: number, colIndex: number) {
+  const ops = (props.modelValue as any).cellOperations?.[cellKey(rowIndex, colIndex)] ?? [];
+  if (!ops.length) return '';
+  return ops.map((op: SequenceOperation) => [op.action || op.substance, op.sampleId, op.volume !== undefined ? `${op.volume}${op.unit}` : '', op.equipment].filter(Boolean).join(' · ')).join('；');
 }
 
 function saveDrawer(ops: SequenceOperation[]) {
@@ -300,6 +348,15 @@ function rowCells(row: WorkRow) {
 
 function cellHasOps(rowIndex: number, colIndex: number) {
   return (props.modelValue as any).cellOperations?.[`${rowIndex}-${colIndex}`]?.length > 0;
+}
+
+function cellClass(rowIndex: number, colIndex: number) {
+  if (props.executionMode) {
+    return props.activeCellKey === cellKey(rowIndex, colIndex)
+      ? 'cursor-pointer bg-[--primary-soft] ring-2 ring-[--primary-border]'
+      : 'cursor-pointer bg-white hover:bg-[--surface-muted]';
+  }
+  return '';
 }
 
 function deleteRow(rowIndex: number) {

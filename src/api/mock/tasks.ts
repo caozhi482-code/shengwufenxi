@@ -29,7 +29,7 @@ export const tasks: Task[] = [
     itemCode: '4.7', itemName: '准确度和精密度', itemType: '准确度/精密度', taskType: '定量',
     methodId: 'M001', methodCode: 'BRH-MN-202506059', methodVersion: 'VAL1',
     steps: [],
-    formTemplates: ['预处理记录表'],
+    formTemplates: ['工作溶液配制表', '预处理记录表'],
     responsiblePerson: '武琴',
     investigators: ['李华', '王芳'],
     planDate: '2026-08-12',

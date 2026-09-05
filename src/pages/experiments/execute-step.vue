@@ -70,7 +70,7 @@
         <span class="text-xs text-[--warning]">△ {{ inProgressCellCount }} 录入中</span>
         <span class="text-xs text-[--danger]">✕ {{ failedCellCount }} 异常</span>
         <span class="text-xs text-[--muted-foreground] ml-2">|</span>
-        <span class="text-xs text-[--muted-foreground]">当前：{{ activeCellKey ? activeCellKey : '未选择格子' }}</span>
+        <span class="text-xs text-[--muted-foreground]">当前：{{ selectedCellLabel || '未选择格子' }}</span>
       </div>
     </div>
 
@@ -177,7 +177,7 @@
         </div>
         <div v-else-if="activeForm.template?.previewMode === 'plate'" class="h-full flex flex-col">
           <div class="bg-white border border-[--border] rounded-[--radius-lg] shadow-[var(--shadow-card)] p-4 mb-4 shrink-0">
-            <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center justify-between mb-3">
               <div>
                 <div class="text-sm font-bold text-[--foreground]">
                   {{ activeForm.template?.templateName }}
@@ -189,7 +189,7 @@
               </div>
               <div class="flex items-center gap-2">
                 <BaseTag :label="cellStatusSummaryLabel" :tone="cellStatusSummaryTone" />
-                <BaseTag tone="info" label="计划指令悬停查看" />
+                <BaseTag tone="info" label="悬停看计划内容" />
               </div>
             </div>
           </div>
@@ -197,28 +197,41 @@
             <SequenceGrid
               :cells="gridCells"
               :read-only="true"
+              :selectable="true"
               :active-key="activeCellKey"
               @cell-select="onCellSelect"
             />
           </div>
         </div>
+        <div
+          v-else-if="tableFormComponent"
+          class="bg-white border border-[--border] rounded-[--radius-lg] shadow-[var(--shadow-card)] p-4 overflow-auto"
+          @click.capture="handleExecutionTableNativeSelect"
+          @pointerdown.capture="handleExecutionTableNativeSelect"
+        >
+          <component
+            :is="tableFormComponent"
+            v-bind="tableFormProps as any"
+            @select-cell="onTableCellSelect"
+          />
+        </div>
         <div v-else class="bg-white border border-[--border] rounded-[--radius-lg] shadow-[var(--shadow-card)] p-8">
           <div class="text-center py-12">
             <div class="text-3xl mb-3">📋</div>
             <div class="text-sm font-bold text-[--text-main] mb-1">{{ activeForm.template?.templateName }}</div>
-            <div class="text-xs text-[--muted-foreground] mb-4">该模板为表格类型，无格子配置</div>
-            <div class="text-xs text-[--muted-foreground]">可通过右侧面板查看执行录入</div>
+            <div class="text-xs text-[--muted-foreground] mb-4">该模板暂未接入执行态渲染组件</div>
+            <div class="text-xs text-[--muted-foreground]">请先确认计划端已保存模板实例数据</div>
           </div>
         </div>
       </main>
 
-      <!-- 右侧：执行详情面板 -->
+        <!-- 右侧：执行详情面板 -->
       <aside class="w-[380px] shrink-0 flex flex-col gap-4 overflow-y-auto">
         <!-- 当前格子信息 -->
         <BaseCard v-if="selectedCell">
           <template #header>
             <div class="flex items-center justify-between">
-              <span class="text-sm font-bold text-[--foreground]">格子 {{ selectedCellKey }}</span>
+              <span class="text-sm font-bold text-[--foreground]">实际执行录入</span>
               <BaseTag
                 :label="getCellExecutionState(selectedCellKey).statusLabel"
                 :tone="getCellExecutionState(selectedCellKey).statusTone"
@@ -226,11 +239,15 @@
             </div>
           </template>
 
+          <div class="mb-3 text-xs text-[--muted-foreground]">
+            当前格子：<span class="font-medium text-[--text-main]">{{ selectedCellLabel }}</span>
+          </div>
+
           <!-- 计划指令区 -->
           <div class="mb-4">
             <div class="flex items-center gap-2 mb-2">
               <div class="w-1 h-4 bg-[--warning] rounded-full" />
-              <span class="text-xs font-bold text-[--text-main]">计划指令</span>
+              <span class="text-xs font-bold text-[--text-main]">计划内容</span>
             </div>
             <div class="space-y-1.5">
               <div
@@ -341,7 +358,7 @@
           <div>
             <div class="flex items-center gap-2 mb-2">
               <div class="w-1 h-4 bg-[--info] rounded-full" />
-              <span class="text-xs font-bold text-[--text-main]">录入实际操作</span>
+              <span class="text-xs font-bold text-[--text-main]">实际执行录入</span>
             </div>
             <div class="space-y-2">
               <BaseFormField
@@ -405,9 +422,9 @@
         <BaseCard v-else>
           <div class="py-8 text-center space-y-3">
             <div class="text-3xl">🔬</div>
-            <div class="text-sm font-bold text-[--text-main]">选择格子开始执行</div>
+            <div class="text-sm font-bold text-[--text-main]">点击任意格子开始执行</div>
             <div class="text-xs text-[--muted-foreground] leading-relaxed">
-              在左侧格子图中点击任意格子<br />查看计划指令并录入实际执行数据
+              在左侧模板中点击任意格子<br />查看计划内容并录入实际执行数据
             </div>
           </div>
         </BaseCard>
@@ -462,7 +479,7 @@
         <div class="bg-white border border-[--border] rounded-[--radius-lg] px-4 py-3 shrink-0">
           <div class="flex items-center justify-between">
             <div class="text-xs text-[--muted-foreground]">
-              <span v-if="activeCellKey" class="text-[--text-main] font-medium">{{ activeCellKey }}</span>
+              <span v-if="selectedCellLabel" class="text-[--text-main] font-medium">{{ selectedCellLabel }}</span>
               <span v-else>未选择格子</span>
             </div>
             <div class="flex gap-2">
@@ -487,6 +504,26 @@ import BaseFormField from '@/components/base/BaseFormField.vue';
 import BaseCheckbox from '@/components/base/BaseCheckbox.vue';
 import BaseTag from '@/components/base/BaseTag.vue';
 import SequenceGrid from '@/components/experiments/SequenceGrid.vue';
+import WorkSolutionTableBlock from '@/components/experiments/WorkSolutionTableBlock.vue';
+import ReferenceStockTableBlock from '@/components/experiments/ReferenceStockTableBlock.vue';
+import SolutionPrepTableBlock from '@/components/experiments/SolutionPrepTableBlock.vue';
+import MSSolutionTableBlock from '@/components/experiments/MSSolutionTableBlock.vue';
+import SplitRecordTableBlock from '@/components/experiments/SplitRecordTableBlock.vue';
+import MatrixSampleTableBlock from '@/components/experiments/MatrixSampleTableBlock.vue';
+import InjectionSequenceTableBlock from '@/components/experiments/InjectionSequenceTableBlock.vue';
+import AdditionSequenceTableBlock from '@/components/experiments/AdditionSequenceTableBlock.vue';
+import InjectionLCMSRecordTableBlock from '@/components/experiments/InjectionLCMSRecordTableBlock.vue';
+import StabilitySampleTableBlock from '@/components/experiments/StabilitySampleTableBlock.vue';
+import DilutionRecordTableBlock from '@/components/experiments/DilutionRecordTableBlock.vue';
+import PureSolutionStabilityTableBlock from '@/components/experiments/PureSolutionStabilityTableBlock.vue';
+import FreezeThawStabilityTableBlock from '@/components/experiments/FreezeThawStabilityTableBlock.vue';
+import MatrixSampleStabilityTableBlock from '@/components/experiments/MatrixSampleStabilityTableBlock.vue';
+import MethodValidationResultBlock from '@/components/experiments/MethodValidationResultBlock.vue';
+import ReanalysisApplicationBlock from '@/components/experiments/ReanalysisApplicationBlock.vue';
+import ISStockSolutionBlock from '@/components/experiments/ISStockSolutionBlock.vue';
+import ReanalysisSummaryDoubleBlock from '@/components/experiments/ReanalysisSummaryDoubleBlock.vue';
+import ReanalysisSummarySingleBlock from '@/components/experiments/ReanalysisSummarySingleBlock.vue';
+import UnconventionalStabilityBlock from '@/components/experiments/UnconventionalStabilityBlock.vue';
 import { tasks } from '@/api/mock/tasks';
 import { formTemplates } from '@/api/mock/form-templates';
 import type { Task, TaskStep, SequenceCell, SequenceOperation, FormTemplateRecord } from '@/types/experiments';
@@ -512,12 +549,15 @@ type WorkspaceForm = {
   template: FormTemplateRecord | null;
   cells: SequenceCell[];
   footer?: { location?: string; time?: string; owner?: string; reviewer?: string };
+  recordModel?: any;
+  solutionTopRows?: string[][];
+  solutionBottomRows?: string[][];
 };
 
 // ── 路由 & 任务 ──────────────────────────────────────────────────
 const route = useRoute();
 const router = useRouter();
-const taskId = (route.params.taskId as string) || '';
+const taskId = (route.params.taskId as string) || (route.params.id as string) || (route.query.taskId as string) || '';
 const planCode = (route.query.planCode as string) || '';
 const projectId = (route.query.projectId as string) || '';
 
@@ -537,6 +577,55 @@ const templateNames = computed(() =>
 );
 
 const activeForm = computed<WorkspaceForm | null>(() => workspaceForms.value[activeFormIndex.value] ?? null);
+const activeTemplateCode = computed(() => activeForm.value?.template?.templateCode ?? '');
+const tableFormComponent = computed(() => {
+  switch (activeTemplateCode.value) {
+    case 'FT-SOL-004': return SolutionPrepTableBlock;
+    case 'BA-SBR02': return ReferenceStockTableBlock;
+    case 'BA-SBR03': return WorkSolutionTableBlock;
+    case 'BA-SBR04': return SplitRecordTableBlock;
+    case 'BA-SBR06': return MatrixSampleTableBlock;
+    case 'BA-SBR07': return AdditionSequenceTableBlock;
+    case 'BA-SBR08': return MSSolutionTableBlock;
+    case 'BA-SBR09': return InjectionSequenceTableBlock;
+    case 'BA-SBR10': return InjectionLCMSRecordTableBlock;
+    case 'BA-SBR12': return StabilitySampleTableBlock;
+    case 'BA-SBR13': return DilutionRecordTableBlock;
+    case 'BA-SBR14': return PureSolutionStabilityTableBlock;
+    case 'BA-SBR15': return FreezeThawStabilityTableBlock;
+    case 'BA-SBR16': return MatrixSampleStabilityTableBlock;
+    case 'BA-SBR17': return MethodValidationResultBlock;
+    case 'BA-SBR19': return ReanalysisApplicationBlock;
+    case 'BA-SBR20': return ISStockSolutionBlock;
+    case 'BA-SBR21': return ReanalysisSummaryDoubleBlock;
+    case 'BA-SBR22': return ReanalysisSummarySingleBlock;
+    case 'BA-SBR23': return UnconventionalStabilityBlock;
+    default: return null;
+  }
+});
+const tableFormProps = computed(() => {
+  const form = activeForm.value;
+  if (!form) return {};
+  if (activeTemplateCode.value === 'FT-SOL-004') {
+    return {
+      topRows: form.solutionTopRows ?? [],
+      bottomRows: form.solutionBottomRows ?? [],
+      editable: false,
+    };
+  }
+  if (activeTemplateCode.value === 'BA-SBR03') {
+    return {
+      modelValue: form.recordModel ?? {},
+      editable: false,
+      executionMode: true,
+      activeCellKey: activeTableCellKey.value,
+    };
+  }
+  return {
+    modelValue: form.recordModel ?? {},
+    editable: false,
+  };
+});
 
 // ── 格子执行状态 map ────────────────────────────────────────────
 const cellExecDataMap = ref<Record<string, CellExecData>>({});
@@ -565,20 +654,95 @@ function ensureCellExec(key: string): CellExecData {
   return cellExecDataMap.value[key]!;
 }
 
+function seedWorkSolutionPlanOps() {
+  return {
+    '0-0': [{ id: 'ws-plan-1', action: '确认工作溶液编号', substance: 'WS-01', sampleId: '工作溶液 01', volume: 0, unit: 'μL', scanned: false, equipment: '标签核对', scanObject: 'sample', required: true, step: '步骤一', note: '由计划生成工作溶液编号' }],
+    '0-1': [{ id: 'ws-plan-2', action: '核对源溶液代码', substance: 'IS-01', sampleId: '内标工作液', volume: 0, unit: 'μL', scanned: false, equipment: '扫码枪', scanObject: 'reagent', required: true, step: '步骤一', note: '源溶液需与计划一致' }],
+    '0-2': [{ id: 'ws-plan-3', action: '核对源溶液浓度', substance: '1000 ng/mL', sampleId: '浓度记录', volume: 0, unit: 'μL', scanned: false, equipment: '读数核对', scanObject: 'reagent', required: true, step: '步骤一', note: '执行时检查标准浓度' }],
+    '0-3': [{ id: 'ws-plan-4', action: '移取源溶液', substance: 'IS-01', sampleId: '源溶液', volume: 50, unit: 'μL', scanned: false, equipment: '移液器-001', scanObject: 'device', required: true, step: '步骤二', note: '按计划体积移取' }],
+    '0-4': [{ id: 'ws-plan-5', action: '合并源溶液', substance: '已移取样液', sampleId: '工作容器', volume: 0, unit: 'μL', scanned: false, equipment: '工作台', scanObject: 'consumable', required: true, step: '步骤二', note: '与稀释液合并' }],
+    '0-5': [{ id: 'ws-plan-6', action: '加入稀释液', substance: '稀释液', sampleId: 'Diluent-A', volume: 450, unit: 'μL', scanned: false, equipment: '移液器-001', scanObject: 'reagent', required: true, step: '步骤二', note: '补足至终体积' }],
+    '0-6': [{ id: 'ws-plan-7', action: '确认终体积', substance: '工作液', sampleId: '终体积 500 μL', volume: 500, unit: 'μL', scanned: false, equipment: '容器核对', scanObject: 'consumable', required: true, step: '步骤三', note: '终体积应与计划一致' }],
+    '0-7': [{ id: 'ws-plan-8', action: '确认最终浓度', substance: '100 ng/mL', sampleId: '浓度确认', volume: 0, unit: 'μL', scanned: false, equipment: '记录核对', scanObject: 'sample', required: true, step: '步骤三', note: '最终浓度按计划填写' }],
+    '1-0': [{ id: 'ws-plan-9', action: '确认工作溶液编号', substance: 'WS-02', sampleId: '工作溶液 02', volume: 0, unit: 'μL', scanned: false, equipment: '标签核对', scanObject: 'sample', required: true, step: '步骤一', note: '第二组工作溶液编号' }],
+    '1-3': [{ id: 'ws-plan-10', action: '移取源溶液', substance: 'IS-02', sampleId: '源溶液', volume: 40, unit: 'μL', scanned: false, equipment: '移液器-002', scanObject: 'device', required: true, step: '步骤二', note: '第二行采用不同配比' }],
+    '1-5': [{ id: 'ws-plan-11', action: '加入稀释液', substance: '稀释液', sampleId: 'Diluent-B', volume: 360, unit: 'μL', scanned: false, equipment: '移液器-002', scanObject: 'reagent', required: true, step: '步骤二', note: '第二组定容' }],
+    '1-6': [{ id: 'ws-plan-12', action: '确认终体积', substance: '工作液', sampleId: '终体积 400 μL', volume: 400, unit: 'μL', scanned: false, equipment: '容器核对', scanObject: 'consumable', required: true, step: '步骤三', note: '终体积应与计划一致' }],
+    '1-7': [{ id: 'ws-plan-13', action: '确认最终浓度', substance: '80 ng/mL', sampleId: '浓度确认', volume: 0, unit: 'μL', scanned: false, equipment: '记录核对', scanObject: 'sample', required: true, step: '步骤三', note: '第二组最终浓度' }],
+  };
+}
+
 // ── 格子选中 ─────────────────────────────────────────────────────
 const activeCellKey = ref<string | null>(null);
+const activeTableCellKey = ref<string | null>(null);
+
+function getTableExecutionKey(rowIndex: number, colIndex: number): string {
+  return `ws:${rowIndex}-${colIndex}`;
+}
 
 const selectedCell = computed<SequenceCell | null>(() => {
-  if (!activeCellKey.value || !activeForm.value) return null;
+  if (!activeForm.value) return null;
+  if (activeTemplateCode.value === 'BA-SBR03') {
+    if (!activeTableCellKey.value) return null;
+    const [rowIndexStr, colIndexStr] = activeTableCellKey.value.split('-');
+    const rowIndex = Number(rowIndexStr);
+    const colIndex = Number(colIndexStr);
+    const ops = (activeForm.value.recordModel?.cellOperations?.[`${rowIndex}-${colIndex}`] ?? []).map((op: SequenceOperation) => ({ ...op }));
+    if (Number.isNaN(rowIndex) || Number.isNaN(colIndex)) return null;
+    return { row: `R${rowIndex + 1}`, col: colIndex + 1, operations: ops, selected: true };
+  }
+  if (!activeCellKey.value) return null;
   const [row, colStr] = activeCellKey.value.split('-');
   const col = parseInt(colStr, 10);
   return activeForm.value.cells.find(c => c.row === row && c.col === col) ?? null;
 });
 
-const selectedCellKey = computed(() => activeCellKey.value);
+const selectedCellKey = computed(() => {
+  if (activeTemplateCode.value === 'BA-SBR03') {
+    if (!activeTableCellKey.value) return null;
+    const [rowIndexStr, colIndexStr] = activeTableCellKey.value.split('-');
+    const rowIndex = Number(rowIndexStr);
+    const colIndex = Number(colIndexStr);
+    if (Number.isNaN(rowIndex) || Number.isNaN(colIndex)) return null;
+    return `${rowIndex}-${colIndex}`;
+  }
+  return activeCellKey.value;
+});
+
+const selectedCellLabel = computed(() => {
+  if (activeTemplateCode.value === 'BA-SBR03') {
+    if (!activeTableCellKey.value) return null;
+    const [rowIndexStr, colIndexStr] = activeTableCellKey.value.split('-');
+    const rowIndex = Number(rowIndexStr);
+    const colIndex = Number(colIndexStr);
+    if (Number.isNaN(rowIndex) || Number.isNaN(colIndex)) return activeTableCellKey.value;
+    return `第 ${rowIndex + 1} 行第 ${colIndex + 1} 列`;
+  }
+  return activeCellKey.value;
+});
 
 function onCellSelect(row: string, col: number) {
+  activeTableCellKey.value = null;
   activeCellKey.value = getCellKey(row, col);
+}
+
+function onTableCellSelect(rowIndex: number, colIndex: number) {
+  activeCellKey.value = null;
+  activeTableCellKey.value = `${rowIndex}-${colIndex}`;
+}
+
+function handleExecutionTableNativeSelect(event: MouseEvent | PointerEvent) {
+  if (activeTemplateCode.value !== 'BA-SBR03') return;
+  const target = event.target as HTMLElement | null;
+  const cell = target?.closest?.('[data-cell-key]') as HTMLElement | null;
+  if (!cell) return;
+  const key = cell.dataset.cellKey;
+  if (!key) return;
+  const [rowIndexStr, colIndexStr] = key.split('-');
+  const rowIndex = Number(rowIndexStr);
+  const colIndex = Number(colIndexStr);
+  if (Number.isNaN(rowIndex) || Number.isNaN(colIndex)) return;
+  onTableCellSelect(rowIndex, colIndex);
 }
 
 // ── 格子数据变化回调 ─────────────────────────────────────────────
@@ -587,7 +751,7 @@ function onCellDataChange() {
   const data = getCellExecData();
   data.status = 'in_progress';
   data.errors = validateCell(selectedCell.value!, data);
-  if (data.errors.length === 0 && hasAnyPlanOp) {
+  if (data.errors.length === 0 && hasAnyPlanContent.value) {
     data.status = 'pass';
   } else if (data.errors.length > 0) {
     data.status = 'fail';
@@ -628,7 +792,25 @@ function compareOpResult(op: SequenceOperation): 'pass' | 'fail' | 'pending' {
 // ── 格子状态统计 ─────────────────────────────────────────────────
 const hasAnyPlanOp = computed(() => activeForm.value?.cells.some(c => c.operations.length > 0) ?? false);
 
+const hasAnyTablePlanOp = computed(() => {
+  if (!activeForm.value || activeTemplateCode.value !== 'BA-SBR03') return false;
+  const opsMap = activeForm.value.recordModel?.cellOperations ?? {};
+  return Object.values(opsMap).some((ops: any) => Array.isArray(ops) && ops.length > 0);
+});
+
+const hasAnyPlanContent = computed(() => hasAnyPlanOp.value || hasAnyTablePlanOp.value);
+
 function formCellCompletedCount(form: WorkspaceForm): number {
+  if (form.template?.templateCode === 'BA-SBR03') {
+    const rows = form.recordModel?.rows?.length ?? 0;
+    let total = 0;
+    for (let rowIndex = 0; rowIndex < rows; rowIndex += 1) {
+      for (let colIndex = 0; colIndex < 8; colIndex += 1) {
+        if (ensureCellExec(`${rowIndex}-${colIndex}`).status === 'pass') total += 1;
+      }
+    }
+    return total;
+  }
   return form.cells.filter(c => {
     const key = getCellKey(c.row, c.col);
     return ensureCellExec(key).status === 'pass';
@@ -636,6 +818,16 @@ function formCellCompletedCount(form: WorkspaceForm): number {
 }
 
 function formCellFailedCount(form: WorkspaceForm): number {
+  if (form.template?.templateCode === 'BA-SBR03') {
+    const rows = form.recordModel?.rows?.length ?? 0;
+    let total = 0;
+    for (let rowIndex = 0; rowIndex < rows; rowIndex += 1) {
+      for (let colIndex = 0; colIndex < 8; colIndex += 1) {
+        if (ensureCellExec(`${rowIndex}-${colIndex}`).status === 'fail') total += 1;
+      }
+    }
+    return total;
+  }
   return form.cells.filter(c => {
     const key = getCellKey(c.row, c.col);
     return ensureCellExec(key).status === 'fail';
@@ -643,6 +835,9 @@ function formCellFailedCount(form: WorkspaceForm): number {
 }
 
 function totalCellsInForm(form: WorkspaceForm): number {
+  if (form.template?.templateCode === 'BA-SBR03') {
+    return (form.recordModel?.rows?.length ?? 0) * 8;
+  }
   return form.cells.filter(c => c.operations.length > 0).length;
 }
 
@@ -659,7 +854,7 @@ const failedCellCount = computed(() =>
 );
 
 const totalConfiguredCells = computed(() =>
-  workspaceForms.value.reduce((sum, f) => sum + f.cells.filter(c => c.operations.length > 0).length, 0)
+  workspaceForms.value.reduce((sum, f) => sum + totalCellsInForm(f), 0)
 );
 
 const progressPercent = computed(() => {
@@ -698,13 +893,14 @@ const cellStatusSummaryTone = computed((): 'success' | 'warning' | 'danger' | 'n
 function getCellExecutionState(key: string): { statusLabel: string; statusTone: 'success' | 'warning' | 'danger' | 'neutral' } {
   const data = cellExecDataMap.value[key];
   if (!data) return { statusLabel: '未开始', statusTone: 'neutral' };
-  const map = {
+  const map: Record<CellExecData['status'], { label: string; tone: 'success' | 'warning' | 'danger' | 'neutral' }> = {
     pending: { label: '未开始', tone: 'neutral' as const },
     in_progress: { label: '录入中', tone: 'warning' as const },
     pass: { label: '比对通过', tone: 'success' as const },
     fail: { label: '比对失败', tone: 'danger' as const },
   };
-  return map[data.status] ?? map.pending;
+  const current = map[data.status] ?? map.pending;
+  return { statusLabel: current.label, statusTone: current.tone };
 }
 
 // ── 工具函数 ─────────────────────────────────────────────────────
@@ -736,6 +932,9 @@ function loadWorkspaceState() {
           templateId: string;
           cells: SequenceCell[];
           footer?: any;
+          recordModel?: any;
+          solutionTopRows?: string[][];
+          solutionBottomRows?: string[][];
         }>;
         planCode?: string;
       };
@@ -748,13 +947,60 @@ function loadWorkspaceState() {
         })
         .map(form => {
           const tpl = formTemplates.find((f: any) => f.id === form.templateId) ?? null;
-          return { ...form, template: tpl } as WorkspaceForm;
+          return {
+            ...form,
+            template: tpl,
+            recordModel: (form as any).recordModel,
+            solutionTopRows: (form as any).solutionTopRows,
+            solutionBottomRows: (form as any).solutionBottomRows,
+          } as WorkspaceForm;
         });
       if (matchingForms.length > 0) {
+        matchingForms.forEach(form => {
+          if (form.template?.templateCode === 'BA-SBR03') {
+            const recordModel = (form.recordModel ?? {}) as any;
+            recordModel.cellOperations = recordModel.cellOperations ?? seedWorkSolutionPlanOps();
+            form.recordModel = recordModel;
+          }
+        });
         workspaceForms.value = matchingForms;
         break;
       }
     } catch { /* ignore */ }
+  }
+
+  if (workspaceForms.value.length === 0 && taskFormTemplates.includes('工作溶液配制表')) {
+    const tpl = formTemplates.find((f: FormTemplateRecord) => f.templateCode === 'BA-SBR03') ?? null;
+    if (tpl) {
+      workspaceForms.value = [{
+        itemId: task.value?.itemCode ?? 'ITEM',
+        templateId: tpl.id,
+        instanceId: `${planCode || 'PLAN'}-BA-SBR03-EXEC-01`,
+        template: tpl,
+        cells: [],
+        recordModel: {
+          context: { projectCode: task.value?.planId ?? '' , methodVersion: tpl.version },
+          rows: [
+            { solutionCode: 'WS-01', sourceCode: 'IS-01', sourceConcentration: '1000', sourceVolume: '50', sourceMerge: '', diluentVolume: '450', finalVolume: '500', finalConcentration: '100' },
+            { solutionCode: 'WS-02', sourceCode: 'IS-02', sourceConcentration: '800', sourceVolume: '40', sourceMerge: '', diluentVolume: '360', finalVolume: '400', finalConcentration: '80' },
+          ],
+          sourceBatch: 'BL-EXEC-001',
+          diluentInfo: 'Diluent-A / BATCH-01',
+          pureReagentInfo: '—',
+          pipetteNo: 'PIP-001',
+          containerMaterial: '玻璃',
+          containerColor: '透明',
+          lightCondition: '黄光灯',
+          batchLabel: 'WORK-SOL-EXEC-001',
+          completedAt: '',
+          disposalMethod: 'DAU',
+          controlledPaperNo: '',
+          refrigeratorNo: '',
+          signatures: { operator: '', reviewer: '', auditor: '' },
+          cellOperations: seedWorkSolutionPlanOps(),
+        },
+      }];
+    }
   }
 }
 
@@ -772,8 +1018,9 @@ function saveDraft() {
     planCode,
     taskId,
     cellExecData: cellExecDataMap.value,
-    activeFormIndex,
-    activeCellKey,
+    activeFormIndex: activeFormIndex.value,
+    activeCellKey: activeCellKey.value,
+    activeTableCellKey: activeTableCellKey.value,
     savedAt: new Date().toISOString(),
   };
   const draftKey = `exec-draft::${taskId}`;
@@ -808,6 +1055,7 @@ onMounted(() => {
       if (draft.cellExecData) cellExecDataMap.value = draft.cellExecData;
       if (draft.activeFormIndex !== undefined) activeFormIndex.value = draft.activeFormIndex;
       if (draft.activeCellKey) activeCellKey.value = draft.activeCellKey;
+      if (draft.activeTableCellKey) activeTableCellKey.value = draft.activeTableCellKey;
     } catch { /* ignore */ }
   }
 });
