@@ -1263,6 +1263,7 @@ function backToPublish() {
 }
 
 function goToTaskAssignment() {
+  alert('按钮被点击了！正在跳转到任务分配页面...');
   persistState();
   router.push({
     path: '/experiments/plans/new/task-assignment',
