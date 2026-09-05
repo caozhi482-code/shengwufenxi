@@ -214,6 +214,7 @@ export interface FormTemplateRecord {
 
 export type SDResourceType = 'reagent' | 'consumable' | 'equipment' | 'standard' | 'control' | 'other';
 export type SDResourceStatus = 'pending' | 'confirmed' | 'reserved' | 'purchasing' | 'arrived' | 'shortage';
+export type SDResourceSource = 'sampleLedger' | 'warehouseLedger' | 'equipmentLedger' | 'special';
 
 export interface SDResourceItem {
   id: string;
@@ -236,6 +237,7 @@ export interface SDResourceItem {
   priority: 'high' | 'medium' | 'low';
   status: SDResourceStatus;
   remark: string;
+  source: SDResourceSource;
 }
 
 export interface SDPlanningRecord {

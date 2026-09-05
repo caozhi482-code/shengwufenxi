@@ -353,6 +353,159 @@
     <!-- 新增/编辑资源抽屉 -->
     <BaseDrawer :open="drawerOpen" :title="drawerTitle" @close="drawerOpen = false">
       <div class="space-y-4">
+        <!-- 台账选择标签 -->
+        <div class="flex gap-1 p-1 bg-[--surface-muted] rounded-lg border border-[--border]">
+          <button
+            v-for="tab in drawerTabs"
+            :key="tab.value"
+            class="flex-1 text-xs font-medium py-1.5 px-3 rounded-md transition-all"
+            :class="drawerSource === tab.value ? 'bg-white text-[--text-main] shadow-sm' : 'text-[--muted-foreground] hover:text-[--text-main]'"
+            @click="drawerSource = tab.value; drawerSearch = ''"
+          >
+            {{ tab.label }}
+          </button>
+        </div>
+
+        <!-- 样品管理部台账 -->
+        <template v-if="drawerSource === 'sampleLedger'">
+          <div class="flex gap-2 items-center">
+            <div class="relative flex-1">
+              <input
+                v-model="drawerSearch"
+                class="w-full h-8 pl-3 pr-3 text-xs bg-white border border-[--border] rounded-md outline-none focus:border-[--primary]"
+                placeholder="搜索标准品、对照品、内标、质控品、基质…"
+              />
+            </div>
+            <select
+              v-model="drawerSampleFilter"
+              class="h-8 px-2 text-xs border border-[--border] rounded-md bg-white text-[--muted-foreground] outline-none"
+            >
+              <option value="全部">全部</option>
+              <option value="标准品">标准品</option>
+              <option value="内标">内标</option>
+              <option value="质控品">质控品</option>
+              <option value="基质">基质</option>
+            </select>
+          </div>
+          <div class="space-y-1.5 max-h-[200px] overflow-y-auto pr-1">
+            <div
+              v-for="item in filteredSampleLedger"
+              :key="item.id"
+              class="flex items-start gap-3 p-2.5 rounded-lg border cursor-pointer transition-all hover:border-[--primary-border] hover:bg-[--primary-soft]/30"
+              :class="item.status === 'out_of_stock' ? 'opacity-50 border-dashed' : 'border-[--border]'"
+              @click="fillFromSampleLedger(item)"
+            >
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-medium text-[--text-main] truncate">{{ item.name }}</span>
+                  <BaseTag :label="item.type" :tone="sampleTypeTone(item.type)" />
+                </div>
+                <div class="text-[10px] text-[--muted-foreground] font-mono mt-0.5">{{ item.code }} · {{ item.specification }} · {{ item.brand }}</div>
+                <div class="text-[10px] text-[--muted-foreground] mt-0.5">
+                  库存: {{ item.stock }}{{ item.unit }} · {{ item.location }}
+                </div>
+              </div>
+              <div class="shrink-0">
+                <BaseTag :label="sampleStockStatusLabel(item)" :tone="sampleStockStatusTone(item)" />
+              </div>
+            </div>
+            <div v-if="filteredSampleLedger.length === 0" class="text-xs text-[--muted-foreground] text-center py-6">
+              无匹配结果
+            </div>
+          </div>
+          <div class="text-[10px] text-[--muted-foreground]">点击条目自动填充表单，可在下方手动调整</div>
+        </template>
+
+        <!-- 仓库台账 -->
+        <template v-else-if="drawerSource === 'warehouseLedger'">
+          <div class="flex gap-2 items-center">
+            <div class="relative flex-1">
+              <input
+                v-model="drawerSearch"
+                class="w-full h-8 pl-3 pr-3 text-xs bg-white border border-[--border] rounded-md outline-none focus:border-[--primary]"
+                placeholder="搜索试剂、耗材、溶剂…"
+              />
+            </div>
+            <select
+              v-model="drawerWarehouseFilter"
+              class="h-8 px-2 text-xs border border-[--border] rounded-md bg-white text-[--muted-foreground] outline-none"
+            >
+              <option value="全部">全部</option>
+              <option value="reagent">试剂</option>
+              <option value="consumable">耗材</option>
+              <option value="solvent">溶剂</option>
+            </select>
+          </div>
+          <div class="space-y-1.5 max-h-[200px] overflow-y-auto pr-1">
+            <div
+              v-for="item in filteredWarehouseLedger"
+              :key="item.id"
+              class="flex items-start gap-3 p-2.5 rounded-lg border cursor-pointer transition-all hover:border-[--primary-border] hover:bg-[--primary-soft]/30"
+              :class="item.status === 'out_of_stock' ? 'opacity-50 border-dashed' : 'border-[--border]'"
+              @click="fillFromWarehouseLedger(item)"
+            >
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-medium text-[--text-main] truncate">{{ item.name }}</span>
+                  <BaseTag :label="warehouseTypeLabel(item.type)" :tone="warehouseTypeTone(item.type)" />
+                </div>
+                <div class="text-[10px] text-[--muted-foreground] font-mono mt-0.5">{{ item.code }} · {{ item.specification }} · {{ item.brand }}</div>
+                <div class="text-[10px] text-[--muted-foreground] mt-0.5">
+                  库存: {{ item.stock }}{{ item.unit }} · {{ item.shelf }}
+                </div>
+              </div>
+              <div class="shrink-0">
+                <BaseTag :label="warehouseStockStatusLabel(item)" :tone="warehouseStockStatusTone(item)" />
+              </div>
+            </div>
+            <div v-if="filteredWarehouseLedger.length === 0" class="text-xs text-[--muted-foreground] text-center py-6">
+              无匹配结果
+            </div>
+          </div>
+          <div class="text-[10px] text-[--muted-foreground]">点击条目自动填充表单，可在下方手动调整</div>
+        </template>
+
+        <!-- 仪器设备台账 -->
+        <template v-else-if="drawerSource === 'equipmentLedger'">
+          <div class="relative">
+            <input
+              v-model="drawerSearch"
+              class="w-full h-8 pl-3 pr-3 text-xs bg-white border border-[--border] rounded-md outline-none focus:border-[--primary]"
+              placeholder="搜索设备名称…"
+            />
+          </div>
+          <div class="space-y-1.5 max-h-[200px] overflow-y-auto pr-1">
+            <div
+              v-for="item in filteredEquipmentLedger"
+              :key="item.id"
+              class="flex items-start gap-3 p-2.5 rounded-lg border cursor-pointer transition-all hover:border-[--primary-border] hover:bg-[--primary-soft]/30"
+              :class="item.status !== 'available' ? 'opacity-60 border-dashed' : 'border-[--border]'"
+              @click="fillFromEquipmentLedger(item)"
+            >
+              <div class="flex-1 min-w-0">
+                <div class="text-xs font-medium text-[--text-main]">{{ item.name }}</div>
+                <div class="text-[10px] text-[--muted-foreground] font-mono mt-0.5">{{ item.code }} · {{ item.model }} · {{ item.brand }}</div>
+                <div class="text-[10px] text-[--muted-foreground] mt-0.5">{{ item.location }} · 序列号: {{ item.serialNumber }}</div>
+              </div>
+              <div class="shrink-0">
+                <BaseTag :label="equipStatusLabel(item.status)" :tone="equipStatusTone(item.status)" />
+              </div>
+            </div>
+            <div v-if="filteredEquipmentLedger.length === 0" class="text-xs text-[--muted-foreground] text-center py-6">
+              无匹配结果
+            </div>
+          </div>
+          <div class="text-[10px] text-[--muted-foreground]">点击条目自动填充表单，可在下方手动调整</div>
+        </template>
+
+        <!-- 特殊资源（手动录入） -->
+        <template v-else>
+          <div class="text-[10px] text-[--warning] bg-[--warning-soft]/50 border border-[--warning-border] rounded-md px-2 py-1.5 mb-3">
+            该资源未在上述台账中找到，请手动录入信息
+          </div>
+        </template>
+
+        <!-- 公共表单 -->
         <div class="grid grid-cols-2 gap-4">
           <BaseFormField label="资源名称" placeholder="输入资源名称" v-model="editForm.name" />
           <BaseFormField label="物料编码" placeholder="如：REG-2025-001" v-model="editForm.materialCode" />
@@ -453,7 +606,9 @@ import { projects } from '@/api/mock/projects';
 import { formTemplates } from '@/api/mock/form-templates';
 import type { EvaluationItem } from '@/api/mock/evaluation';
 import type { FormTemplateRecord } from '@/types/experiments';
-import type { SDResourceItem, SDResourceType, SDResourceStatus } from '@/types/experiments';
+import type { SDResourceItem, SDResourceType, SDResourceStatus, SDResourceSource } from '@/types/experiments';
+import { sampleLedger, warehouseLedger, equipmentLedger } from '@/api/mock/ledgers';
+import type { SampleLedgerItem, WarehouseLedgerItem, EquipmentLedgerItem } from '@/api/mock/ledgers';
 
 type FormStatus = 'unedited' | 'editing' | 'done';
 
@@ -562,6 +717,10 @@ const confirmDelete = ref<{ item: SDResourceItem; index: number } | null>(null);
 const drawerOpen = ref(false);
 const drawerMode = ref<'add' | 'edit'>('add');
 const drawerTitle = computed(() => drawerMode.value === 'add' ? '新增资源' : '编辑资源');
+const drawerSource = ref<SDResourceSource>('warehouseLedger');
+const drawerSearch = ref('');
+const drawerSampleFilter = ref('全部');
+const drawerWarehouseFilter = ref('全部');
 
 const editForm = ref<Partial<SDResourceItem>>({
   name: '', materialCode: '', type: 'reagent', specification: '', unit: '',
@@ -722,6 +881,10 @@ function generateId(): string {
 
 function openAddDrawer() {
   drawerMode.value = 'add';
+  drawerSource.value = 'warehouseLedger';
+  drawerSearch.value = '';
+  drawerSampleFilter.value = '全部';
+  drawerWarehouseFilter.value = '全部';
   editForm.value = {
     name: '', materialCode: '', type: 'reagent', specification: '', unit: '',
     plannedQty: 0, currentStock: 0, brand: '', expectedArrival: '',
@@ -732,8 +895,55 @@ function openAddDrawer() {
 
 function editResource(item: SDResourceItem) {
   drawerMode.value = 'edit';
+  drawerSource.value = item.source;
+  drawerSearch.value = '';
   editForm.value = { ...item };
   drawerOpen.value = true;
+}
+
+function fillFromSampleLedger(item: SampleLedgerItem) {
+  drawerSource.value = 'sampleLedger';
+  drawerSearch.value = '';
+  const typeMap: Record<string, SDResourceType> = { '标准品': 'standard', '内标': 'standard', '质控品': 'control', '基质': 'other' };
+  editForm.value = {
+    name: item.name, materialCode: item.code, type: typeMap[item.type] ?? 'other',
+    specification: item.specification, unit: item.unit, brand: item.brand,
+    currentStock: item.stock, plannedQty: Math.ceil(item.stock * 0.8),
+    expectedArrival: item.expiryDate, isCritical: item.type === '标准品' || item.type === '内标',
+    priority: item.type === '标准品' ? 'high' : 'medium',
+    status: item.stock === 0 ? 'shortage' : item.status === 'out_of_stock' ? 'shortage' : 'pending',
+    remark: `台账ID: ${item.id} · 批次: ${item.batch} · 存放: ${item.location}${item.status === 'out_of_stock' ? ' · [缺货]' : ''}`,
+  };
+}
+
+function fillFromWarehouseLedger(item: WarehouseLedgerItem) {
+  drawerSource.value = 'warehouseLedger';
+  drawerSearch.value = '';
+  const typeMap: Record<string, SDResourceType> = { reagent: 'reagent', consumable: 'consumable', solvent: 'reagent', other: 'other' };
+  editForm.value = {
+    name: item.name, materialCode: item.code, type: typeMap[item.type] ?? 'other',
+    specification: item.specification, unit: item.unit, brand: item.brand,
+    currentStock: item.stock, plannedQty: item.stock,
+    expectedArrival: '', isCritical: item.type === 'reagent',
+    priority: item.type === 'reagent' ? 'high' : 'medium',
+    status: item.status === 'out_of_stock' ? 'shortage' : item.status === 'low_stock' ? 'purchasing' : 'pending',
+    remark: `台账ID: ${item.id} · 批次: ${item.batch}${item.shelf ? ` · 货位: ${item.shelf}` : ''}${item.status !== 'in_stock' ? ` · [${item.status === 'low_stock' ? '低库存' : '缺货'}]` : ''}`,
+  };
+}
+
+function fillFromEquipmentLedger(item: EquipmentLedgerItem) {
+  drawerSource.value = 'equipmentLedger';
+  drawerSearch.value = '';
+  editForm.value = {
+    name: item.name, materialCode: item.code, type: 'equipment',
+    specification: item.model, unit: '台', brand: item.brand,
+    currentStock: item.status === 'available' ? 1 : 0,
+    plannedQty: item.status !== 'available' ? 1 : 1,
+    expectedArrival: item.nextCalibration, isCritical: true,
+    priority: 'high',
+    status: item.status === 'available' ? 'confirmed' : item.status === 'in_use' ? 'reserved' : item.status === 'maintenance' ? 'purchasing' : 'pending',
+    remark: `台账ID: ${item.id} · 序列号: ${item.serialNumber} · 位置: ${item.location}${item.nextCalibration ? ` · 下次校准: ${item.nextCalibration}` : ''}${item.remark ? ` · ${item.remark}` : ''}`,
+  };
 }
 
 function saveResource() {
@@ -743,49 +953,35 @@ function saveResource() {
   const itemId = form?.itemId ?? '';
   const templateName = form?.template?.templateName ?? '';
 
+  const payload = {
+    name: editForm.value.name,
+    materialCode: editForm.value.materialCode ?? '',
+    type: (editForm.value.type ?? 'reagent') as SDResourceType,
+    specification: editForm.value.specification ?? '',
+    unit: editForm.value.unit ?? '',
+    plannedQty: editForm.value.plannedQty ?? 0,
+    currentStock: editForm.value.currentStock ?? 0,
+    gapQty: Math.max(0, (editForm.value.plannedQty ?? 0) - (editForm.value.currentStock ?? 0)),
+    brand: editForm.value.brand ?? '',
+    expectedArrival: editForm.value.expectedArrival ?? '',
+    isCritical: editForm.value.isCritical ?? false,
+    priority: (editForm.value.priority ?? 'medium') as 'high' | 'medium' | 'low',
+    status: (editForm.value.status ?? 'pending') as SDResourceStatus,
+    remark: editForm.value.remark ?? '',
+    source: drawerSource.value,
+  };
+
   if (drawerMode.value === 'add') {
-    const plannedQty = editForm.value.plannedQty ?? 0;
-    const currentStock = editForm.value.currentStock ?? 0;
-    const newItem: SDResourceItem = {
-      id: generateId(),
-      instanceId, itemId, itemName: getItemName(itemId),
+    resourceItems.value.push({
+      id: generateId(), instanceId, itemId,
+      itemName: getItemName(itemId),
       templateId: form?.templateId ?? '', templateName,
-      name: editForm.value.name,
-      materialCode: editForm.value.materialCode ?? '',
-      type: (editForm.value.type ?? 'reagent') as SDResourceType,
-      specification: editForm.value.specification ?? '',
-      unit: editForm.value.unit ?? '',
-      plannedQty, currentStock,
-      gapQty: Math.max(0, plannedQty - currentStock),
-      brand: editForm.value.brand ?? '',
-      expectedArrival: editForm.value.expectedArrival ?? '',
-      isCritical: editForm.value.isCritical ?? false,
-      priority: (editForm.value.priority ?? 'medium') as 'high' | 'medium' | 'low',
-      status: (editForm.value.status ?? 'pending') as SDResourceStatus,
-      remark: editForm.value.remark ?? '',
-    };
-    resourceItems.value.push(newItem);
+      ...payload,
+    });
   } else {
     const idx = resourceItems.value.findIndex(i => i.id === editForm.value.id);
     if (idx >= 0) {
-      const plannedQty = editForm.value.plannedQty ?? 0;
-      const currentStock = editForm.value.currentStock ?? 0;
-      resourceItems.value[idx] = {
-        ...resourceItems.value[idx],
-        name: editForm.value.name,
-        materialCode: editForm.value.materialCode ?? '',
-        type: (editForm.value.type ?? 'reagent') as SDResourceType,
-        specification: editForm.value.specification ?? '',
-        unit: editForm.value.unit ?? '',
-        plannedQty, currentStock,
-        gapQty: Math.max(0, plannedQty - currentStock),
-        brand: editForm.value.brand ?? '',
-        expectedArrival: editForm.value.expectedArrival ?? '',
-        isCritical: editForm.value.isCritical ?? false,
-        priority: (editForm.value.priority ?? 'medium') as 'high' | 'medium' | 'low',
-        status: (editForm.value.status ?? 'pending') as SDResourceStatus,
-        remark: editForm.value.remark ?? '',
-      };
+      resourceItems.value[idx] = { ...resourceItems.value[idx], ...payload };
     }
   }
   drawerOpen.value = false;
@@ -958,6 +1154,100 @@ function restoreState() {
     if (state.resourceItems?.length) resourceItems.value = state.resourceItems;
     if (state.activeInstanceId) activeInstanceId.value = state.activeInstanceId;
   } catch { /* ignore */ }
+}
+
+const drawerTabs = [
+  { label: '仓库台账', value: 'warehouseLedger' },
+  { label: '样品管理部台账', value: 'sampleLedger' },
+  { label: '仪器设备台账', value: 'equipmentLedger' },
+  { label: '特殊资源', value: 'special' },
+];
+
+const filteredSampleLedger = computed<SampleLedgerItem[]>(() => {
+  let items = sampleLedger;
+  if (drawerSampleFilter.value !== '全部') {
+    items = items.filter(i => i.type === drawerSampleFilter.value);
+  }
+  if (drawerSearch.value) {
+    const q = drawerSearch.value.toLowerCase();
+    items = items.filter(i => i.name.toLowerCase().includes(q) || i.code.toLowerCase().includes(q));
+  }
+  return items;
+});
+
+const filteredWarehouseLedger = computed<WarehouseLedgerItem[]>(() => {
+  let items = warehouseLedger;
+  if (drawerWarehouseFilter.value !== '全部') {
+    items = items.filter(i => i.type === drawerWarehouseFilter.value);
+  }
+  if (drawerSearch.value) {
+    const q = drawerSearch.value.toLowerCase();
+    items = items.filter(i => i.name.toLowerCase().includes(q) || i.code.toLowerCase().includes(q));
+  }
+  return items;
+});
+
+const filteredEquipmentLedger = computed<EquipmentLedgerItem[]>(() => {
+  if (!drawerSearch.value) return equipmentLedger;
+  const q = drawerSearch.value.toLowerCase();
+  return equipmentLedger.filter(i => i.name.toLowerCase().includes(q) || i.code.toLowerCase().includes(q));
+});
+
+function sampleTypeTone(t: string): 'success' | 'info' | 'warning' | 'danger' | 'neutral' {
+  const map: Record<string, 'success' | 'info' | 'warning' | 'danger' | 'neutral'> = {
+    '标准品': 'success', '对照品': 'info', '内标': 'warning', '质控品': 'neutral', '基质': 'neutral',
+  };
+  return map[t] ?? 'neutral';
+}
+
+function sampleStockStatusLabel(item: SampleLedgerItem): string {
+  if (item.status === 'out_of_stock') return '缺货';
+  if (item.stock === 0) return '缺货';
+  return `${item.stock}${item.unit}`;
+}
+
+function sampleStockStatusTone(item: SampleLedgerItem): 'success' | 'warning' | 'danger' | 'neutral' {
+  if (item.status === 'out_of_stock' || item.stock === 0) return 'danger';
+  if (item.stock <= 3) return 'warning';
+  return 'success';
+}
+
+function warehouseTypeLabel(t: string): string {
+  const map: Record<string, string> = { reagent: '试剂', consumable: '耗材', solvent: '溶剂', other: '其他' };
+  return map[t] ?? t;
+}
+
+function warehouseTypeTone(t: string): 'success' | 'info' | 'warning' | 'danger' | 'neutral' {
+  const map: Record<string, 'success' | 'info' | 'warning' | 'danger' | 'neutral'> = {
+    reagent: 'info', consumable: 'neutral', solvent: 'info', other: 'neutral',
+  };
+  return map[t] ?? 'neutral';
+}
+
+function warehouseStockStatusLabel(item: WarehouseLedgerItem): string {
+  if (item.status === 'out_of_stock') return '缺货';
+  if (item.status === 'low_stock') return '低库存';
+  return `${item.stock}${item.unit}`;
+}
+
+function warehouseStockStatusTone(item: WarehouseLedgerItem): 'success' | 'warning' | 'danger' | 'neutral' {
+  if (item.status === 'out_of_stock') return 'danger';
+  if (item.status === 'low_stock') return 'warning';
+  return 'success';
+}
+
+function equipStatusLabel(s: string): string {
+  const map: Record<string, string> = {
+    available: '可用', in_use: '使用中', maintenance: '维护中', calibration: '校准中',
+  };
+  return map[s] ?? s;
+}
+
+function equipStatusTone(s: string): 'success' | 'info' | 'warning' | 'danger' | 'neutral' {
+  const map: Record<string, 'success' | 'info' | 'warning' | 'danger' | 'neutral'> = {
+    available: 'success', in_use: 'info', maintenance: 'warning', calibration: 'warning',
+  };
+  return map[s] ?? 'neutral';
 }
 
 function backToPublish() {
