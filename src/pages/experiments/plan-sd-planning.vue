@@ -10,7 +10,7 @@
     >
       <template #extra>
         <BaseButton variant="secondary" size="sm" @click="backToPublish">上一步</BaseButton>
-        <BaseButton variant="primary" size="sm" :disabled="!canProceed" @click="goToTaskAssignment">
+        <BaseButton variant="primary" size="sm" @click="goToTaskAssignment">
           下一步：任务分配
         </BaseButton>
       </template>
@@ -341,7 +341,7 @@
             <BaseButton variant="secondary" size="sm" @click="backToPublish">返回确认页</BaseButton>
             <div class="flex gap-2">
               <BaseButton variant="secondary" size="sm" @click="saveDraft">保存草稿</BaseButton>
-              <BaseButton variant="primary" size="sm" :disabled="!canProceed" @click="goToTaskAssignment">
+              <BaseButton variant="primary" size="sm" @click="goToTaskAssignment">
                 下一步：任务分配
               </BaseButton>
             </div>
@@ -1263,7 +1263,6 @@ function backToPublish() {
 }
 
 function goToTaskAssignment() {
-  alert('按钮被点击了！canProceed=' + canProceed.value + '，resourceItems=' + resourceItems.value.length + '，completionRate=' + completionRate.value + '%');
   persistState();
   router.push({
     path: '/experiments/plans/new/task-assignment',
