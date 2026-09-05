@@ -1263,7 +1263,7 @@ function backToPublish() {
 }
 
 function goToTaskAssignment() {
-  alert('按钮被点击了！正在跳转到任务分配页面...');
+  alert('按钮被点击了！canProceed=' + canProceed.value + '，resourceItems=' + resourceItems.value.length + '，completionRate=' + completionRate.value + '%');
   persistState();
   router.push({
     path: '/experiments/plans/new/task-assignment',
