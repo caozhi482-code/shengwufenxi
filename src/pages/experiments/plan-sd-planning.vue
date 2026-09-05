@@ -314,10 +314,6 @@
                       <td colspan="15" class="px-3 py-12 text-center">
                         <div class="text-sm text-[--muted-foreground] mb-2">暂无资源条目</div>
                         <div class="text-xs text-[--muted-foreground]">可从模板或方法文件生成建议清单，或手动新增</div>
-                        <div class="mt-3">
-                          <BaseButton variant="secondary" size="sm" @click="autoGenerate">自动生成建议</BaseButton>
-                          <BaseButton variant="primary" size="sm" @click="openAddDrawer" class="ml-2">新增资源</BaseButton>
-                        </div>
                       </td>
                     </tr>
                   </tbody>
