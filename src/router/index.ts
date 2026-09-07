@@ -12,6 +12,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'plans/:planId/items/:itemId/forms', component: () => import('@/pages/experiments/plan-form-workspace.vue') },
       { path: 'plans/new/publish', component: () => import('@/pages/experiments/plan-publish.vue') },
       { path: 'plans/new/sd-planning', component: () => import('@/pages/experiments/plan-sd-planning.vue') },
+      { path: 'project-resource-allocation', component: () => import('@/pages/experiments/project-resource-allocation.vue') },
       { path: 'plans/new/task-assignment', component: () => import('@/pages/experiments/plan-task-assignment.vue') },
       { path: 'plans/:planId/items/:itemId/sequence-template', component: () => import('@/pages/experiments/sequence-table.vue') },
       { path: 'form-templates', component: () => import('@/pages/experiments/form-templates.vue') },

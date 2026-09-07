@@ -123,7 +123,7 @@
           <div class="ml-auto flex gap-2">
             <BaseButton variant="secondary" @click="saveDraft">保存草稿</BaseButton>
             <BaseButton v-if="step < 3" variant="primary" :disabled="(step === 1 && !canProceed1) || (step === 2 && !canProceed2)" @click="goNext">下一步</BaseButton>
-            <BaseButton v-else variant="primary" :disabled="!canProceed2" @click="goToItems">下一步</BaseButton>
+            <BaseButton v-else variant="primary" :disabled="!canProceed2" @click="goToItems">下一步：选择考察项</BaseButton>
           </div>
         </div>
         <div v-if="step === 2 && !canProceed2" class="text-xs text-[--danger]">请选择至少一份文件后再继续</div>
@@ -212,12 +212,13 @@ const projectLoading = ref(false);
 const selectedProject = ref<Project | null>(null);
 const fileLoading = ref(false);
 const selectedFiles = ref<string[]>([]);
+const routeFileIds = parseList(route.query.fileIds);
 
 const fileTypes: FileType[] = ['sop', 'method', 'protocol'];
 
 const steps = [
-  { label: '选择管理项目', sub: '搜索并选中一个项目' },
-  { label: '选择关联文件', sub: '从文件库选择 SOP/方法/方案文件' },
+  { label: '选择项目', sub: '实验负责人选择计划项目' },
+  { label: '关联文件', sub: '自动带入 SD 已确认文件' },
   { label: '进入考察项', sub: '跳转到考察项选择页' },
 ];
 
@@ -233,7 +234,7 @@ const canProceed2 = computed(() => !!selectedProject.value && selectedFiles.valu
 watch(selectedProject, (proj) => {
   if (proj) {
     fileLoading.value = true;
-    selectedFiles.value = [];
+    selectedFiles.value = routeFileIds.length > 0 ? [...routeFileIds] : getAutoFileIds(proj.id);
     setTimeout(() => { fileLoading.value = false; }, 300);
   }
 });
@@ -273,6 +274,23 @@ function selectedFilesByType(t: FileType): FileItem[] {
 function toggleFile(f: FileItem) {
   const idx = selectedFiles.value.indexOf(f.id);
   idx >= 0 ? selectedFiles.value.splice(idx, 1) : selectedFiles.value.push(f.id);
+}
+
+function getAutoFileIds(projectId: string): string[] {
+  if (typeof window !== 'undefined') {
+    const raw = window.localStorage.getItem(`project-resource-allocation::${projectId}`);
+    if (raw) {
+      try {
+        const state = JSON.parse(raw) as { selectedFileIds?: string[] };
+        if (Array.isArray(state.selectedFileIds) && state.selectedFileIds.length > 0) {
+          return state.selectedFileIds.filter(Boolean);
+        }
+      } catch {
+        // ignore malformed cache
+      }
+    }
+  }
+  return getFilesByProject(projectId).filter(file => file.status !== 'deprecated').map(file => file.id);
 }
 
 function goNext() {
