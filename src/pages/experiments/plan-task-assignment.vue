@@ -9,7 +9,7 @@
       :subtitle="`${selectedProject?.name ?? '—'} · ${planCode}`"
     >
       <template #extra>
-        <BaseButton variant="secondary" size="sm" @click="backToPublish">返回SD规划</BaseButton>
+        <BaseButton variant="secondary" size="sm" @click="backToPublish">返回确认创建</BaseButton>
         <BaseButton variant="primary" size="sm" :disabled="!allTasksAssigned" @click="handlePublish">
           发布计划
         </BaseButton>
@@ -333,7 +333,6 @@ const steps = [
   { label: '选择模板表单', sub: '为考察项绑定表单模板' },
   { label: '编辑模板内容', sub: '编辑计划下模板实例' },
   { label: '确认创建', sub: '确认并创建实验计划' },
-  { label: 'SD资源规划', sub: '规划试剂、耗材、设备等资源' },
   { label: '任务分配', sub: '为每个任务分配执行资源' },
 ];
 

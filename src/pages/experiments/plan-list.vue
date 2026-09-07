@@ -3,6 +3,7 @@
     <BasePageHeader title="实验计划列表" subtitle="管理方法学验证实验计划">
       <template #extra>
         <BaseButton variant="secondary" @click="$router.push('/experiments/form-templates')">进入模板中心</BaseButton>
+        <BaseButton variant="secondary" @click="$router.push('/experiments/project-resource-allocation')">项目资源调配</BaseButton>
         <BaseButton variant="primary" @click="$router.push('/experiments/plans/new')">+ 新建实验计划</BaseButton>
       </template>
     </BasePageHeader>

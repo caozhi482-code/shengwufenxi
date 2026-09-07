@@ -50,7 +50,7 @@
           <template #header>
             <div class="flex items-center justify-between">
               <div>
-                <span class="text-base font-bold text-[--foreground]">从文件库选择关联文件</span>
+                <span class="text-base font-bold text-[--foreground]">自动带入关联文件</span>
                 <div class="text-xs text-[--muted-foreground] mt-0.5">
                   已选项目：<span class="font-medium text-[--text-main]">{{ selectedProject?.name }}</span>
                   （{{ selectedProject?.code }}）
@@ -60,26 +60,24 @@
             </div>
           </template>
 
-          <div v-if="fileLoading" class="text-center py-8 text-[--muted-foreground] text-sm">加载文件库中...</div>
+          <div v-if="fileLoading" class="text-center py-8 text-[--muted-foreground] text-sm">自动带入文件中...</div>
           <div v-else-if="availableFiles.length === 0" class="text-center py-8 text-[--muted-foreground] text-sm">
-            该项目暂无可用文件，请先上传相关文件到文件库
+            该项目暂无可用文件，请先到项目资源调配中补充关联文件
           </div>
           <template v-for="ft in fileTypes" :key="ft">
             <div v-if="getFilesByType(ft).length > 0" class="mb-6 last:mb-0">
               <div class="flex items-center gap-2 mb-3">
                 <span class="text-sm font-semibold text-[--text-main]">{{ fileTypeLabel(ft) }}</span>
                 <span class="text-xs text-[--muted-foreground]">共 {{ getFilesByType(ft).length }} 份</span>
-                <span class="text-xs font-medium" :class="selectedFilesByType(ft).length > 0 ? 'text-[--primary]' : 'text-[--muted-foreground]'">
-                  已选 {{ selectedFilesByType(ft).length }}
+                <span class="text-xs font-medium text-[--primary]">已自动带入 {{ selectedFilesByType(ft).length }}
                 </span>
               </div>
               <div class="space-y-2">
                 <div
                   v-for="f in getFilesByType(ft)"
                   :key="f.id"
-                  class="flex items-center gap-4 p-3 border rounded-lg cursor-pointer transition-all"
-                  :class="f.status === 'deprecated' ? 'border-[--danger-border] bg-[--danger-soft] opacity-60' : selectedFiles.includes(f.id) ? 'border-[--primary] bg-[--primary-soft]' : 'border-[--border] hover:border-[--border-strong]'"
-                  @click="f.status !== 'deprecated' && toggleFile(f)"
+                  class="flex items-center gap-4 p-3 border rounded-lg transition-all"
+                  :class="f.status === 'deprecated' ? 'border-[--danger-border] bg-[--danger-soft] opacity-60' : 'border-[--border] bg-white'"
                 >
                   <div class="w-5 h-5 rounded border-2 flex items-center justify-center shrink-0"
                     :class="selectedFiles.includes(f.id) ? 'border-[--primary] bg-[--primary] text-white' : 'border-[--border]'"
@@ -91,6 +89,7 @@
                       <span class="text-sm font-medium text-[--text-main]">{{ f.name }}</span>
                       <BaseTag v-if="f.status === 'deprecated'" tone="danger" label="已废止" />
                       <BaseTag v-else tone="success" label="现行" />
+                      <BaseTag :label="selectedFiles.includes(f.id) ? '已带入' : '未带入'" :tone="selectedFiles.includes(f.id) ? 'success' : 'neutral'" />
                     </div>
                     <div class="text-xs text-[--muted-foreground] mt-0.5">{{ f.code }} / {{ f.version }} · {{ f.publishDate }}</div>
                     <div class="text-xs text-[--muted-foreground] mt-0.5">{{ f.description }}</div>
@@ -115,7 +114,7 @@
               <div><span class="text-[--muted-foreground]">文件数量：</span><span class="font-medium text-[--text-main]">{{ selectedFileItems.length }} 份</span></div>
               <div><span class="text-[--muted-foreground]">计划编号：</span><span class="font-mono text-xs font-medium text-[--primary]">{{ planCode }}</span></div>
             </div>
-            <div class="text-xs text-[--muted-foreground]">点击下一步将进入考察项选择页，继续完成模板绑定。</div>
+            <div class="text-xs text-[--muted-foreground]">这些关联文件已由项目资源调配结果自动带入，点击下一步将进入考察项选择页，继续完成模板绑定。</div>
           </div>
         </BaseCard>
 

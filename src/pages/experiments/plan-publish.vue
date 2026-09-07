@@ -10,7 +10,7 @@
     >
       <template #extra>
         <BaseButton variant="secondary" size="sm" @click="backToWorkspace">上一步</BaseButton>
-        <BaseButton variant="primary" size="sm" :disabled="!hasAnyForm" @click="goToSdPlanning">下一步：SD资源规划</BaseButton>
+        <BaseButton variant="primary" size="sm" :disabled="!hasAnyForm" @click="goToTaskAssignment">下一步：任务分配</BaseButton>
       </template>
     </BasePageHeader>
 
@@ -203,7 +203,6 @@ const steps = [
   { label: '选择模板表单', sub: '为考察项绑定表单模板' },
   { label: '编辑模板内容', sub: '编辑计划下模板实例' },
   { label: '确认创建', sub: '确认并创建实验计划' },
-  { label: 'SD资源规划', sub: '规划试剂、耗材、设备等资源' },
   { label: '任务分配', sub: '为每个任务分配执行资源' },
 ];
 
@@ -303,22 +302,6 @@ function backToWorkspace() {
     path: itemId
       ? `/experiments/plans/${encodeURIComponent(planCode.value)}/items/${encodeURIComponent(itemId)}/forms`
       : '/experiments/plans/new/forms',
-    query: {
-      planCode: planCode.value,
-      projectId: projectId.value,
-      fileIds: fileIds.value.join(','),
-      itemIds: itemIds.value.join(','),
-      ...(activeItemId.value ? { activeItemId: activeItemId.value } : {}),
-      ...(instanceId.value ? { instanceId: instanceId.value } : {}),
-      ...(currentTemplateId.value ? { currentTemplateId: currentTemplateId.value } : {}),
-      ...(templateIds.value.length > 0 ? { templateIds: templateIds.value.map(p => `${p.itemId}:${p.templateId}`).join(',') } : {}),
-    },
-  });
-}
-
-function goToSdPlanning() {
-  router.push({
-    path: '/experiments/plans/new/sd-planning',
     query: {
       planCode: planCode.value,
       projectId: projectId.value,
