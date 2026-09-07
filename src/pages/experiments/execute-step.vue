@@ -72,103 +72,31 @@
 
     <!-- 主工作区 -->
     <div class="flex-1 flex gap-5 p-5 overflow-hidden">
-      <!-- 左侧：导航 -->
-      <aside class="w-[220px] shrink-0 flex flex-col gap-4 overflow-y-auto">
-        <!-- 模板实例列表 -->
-        <BaseCard>
-          <template #header>
-            <div class="flex items-center justify-between">
-              <span class="text-sm font-bold text-[--foreground]">模板实例</span>
-              <BaseTag :label="`${workspaceForms.length}`" tone="info" />
-            </div>
-          </template>
-          <div class="space-y-1.5">
-            <div
-              v-for="(form, fi) in workspaceForms"
-              :key="form.instanceId"
-              class="rounded-lg border px-3 py-2.5 cursor-pointer transition-all"
+      <!-- 中间：模板格子工作区 -->
+      <div class="flex-1 flex flex-col gap-4 overflow-y-auto min-h-0">
+        <!-- 模板实例选择栏 -->
+        <div class="bg-white border border-[--border] rounded-[--radius-lg] shadow-[var(--shadow-card)] px-4 py-2.5 shrink-0">
+          <div class="flex items-center gap-3 overflow-x-auto">
+            <span class="text-xs font-semibold text-[--muted-foreground] whitespace-nowrap shrink-0">当前模板：</span>
+            <div v-for="(form, fi) in workspaceForms" :key="form.instanceId"
+              class="flex items-center gap-2 px-3 py-1.5 rounded-lg border cursor-pointer transition-all shrink-0"
               :class="activeFormIndex === fi ? 'border-[--primary] bg-[--primary-soft]' : 'border-[--border] hover:border-[--primary-border]'"
               @click="activeFormIndex = fi"
             >
-              <div class="flex items-center justify-between mb-1">
-                <span class="text-xs font-medium text-[--text-main] truncate flex-1">{{ form.template?.templateName ?? '模板实例' }}</span>
-                <BaseTag :label="form.template?.previewMode === 'plate' ? '孔板' : '表格'" tone="neutral" />
-              </div>
-              <div class="text-[10px] text-[--muted-foreground] font-mono">{{ form.instanceId.slice(-10) }}</div>
-              <div class="flex items-center gap-2 mt-1.5">
-                <span class="text-[10px] text-[--success]">✓ {{ formCellCompletedCount(form) }}</span>
-                <span class="text-[10px] text-[--danger]">✕ {{ formCellFailedCount(form) }}</span>
-                <span class="text-[10px] text-[--muted-foreground]">共 {{ totalCellsInForm(form) }} 格</span>
-              </div>
+              <span class="text-xs font-medium text-[--text-main]">{{ form.template?.templateName ?? '模板' }}</span>
+              <span class="text-[10px] text-[--muted-foreground] font-mono">{{ form.instanceId.slice(-8) }}</span>
+              <BaseTag :label="form.template?.previewMode === 'plate' ? '孔板' : '表格'" tone="neutral" />
             </div>
-            <div v-if="workspaceForms.length === 0" class="text-xs text-[--muted-foreground] text-center py-4">
-              暂无模板实例数据<br /><span class="text-[10px]">请先在计划编辑中配置模板</span>
-            </div>
+            <div v-if="workspaceForms.length === 0" class="text-xs text-[--muted-foreground]">暂无模板实例数据</div>
           </div>
-        </BaseCard>
+        </div>
 
-        <!-- 方法步骤导航 -->
-        <BaseCard>
-          <template #header>
-            <span class="text-sm font-bold text-[--foreground]">方法步骤</span>
-          </template>
-          <div class="space-y-1.5 max-h-[280px] overflow-y-auto">
-            <div
-              v-for="(step, i) in methodSteps"
-              :key="step.id"
-              :class="['p-2.5 rounded-lg border cursor-pointer transition-all',
-                activeStepIndex === i ? 'border-[--primary] bg-[--primary-soft]' : 'border-[--border] hover:border-[--primary-border]']"
-              @click="activeStepIndex = i"
-            >
-              <div class="flex items-center gap-2 mb-1">
-                <span class="w-5 h-5 rounded-full bg-[--primary] text-white text-[10px] font-bold flex items-center justify-center shrink-0">{{ i + 1 }}</span>
-                <span class="text-xs font-semibold text-[--text-main] truncate">{{ step.action.slice(0, 18) }}{{ step.action.length > 18 ? '…' : '' }}</span>
-              </div>
-              <div v-if="step.expected.length" class="text-[10px] text-[--warning] ml-7">
-                {{ step.expected.map(e => `${e.value}${e.unit}`).join('、') }}
-              </div>
-            </div>
-            <div v-if="methodSteps.length === 0" class="text-xs text-[--muted-foreground] text-center py-3">
-              暂无方法步骤
-            </div>
-          </div>
-        </BaseCard>
-
-        <!-- 状态图例 -->
-        <BaseCard>
-          <template #header><span class="text-sm font-bold text-[--foreground]">状态图例</span></template>
-          <div class="space-y-2 text-xs">
-            <div class="flex items-center gap-2">
-              <div class="w-4 h-4 rounded border-2 border-[--border] bg-[--surface-muted] shrink-0" />
-              <span class="text-[--muted-foreground]">未开始（无计划配置）</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <div class="w-4 h-4 rounded border-2 border-[--primary-border] bg-[--primary-soft] shrink-0" />
-              <span class="text-[--primary]">已选中</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <div class="w-4 h-4 rounded bg-[--success] shrink-0" />
-              <span class="text-[--success]">比对通过</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <div class="w-4 h-4 rounded bg-[--danger] shrink-0" />
-              <span class="text-[--danger]">比对失败</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <div class="w-4 h-4 rounded bg-[--warning] shrink-0" />
-              <span class="text-[--warning]">录入中</span>
-            </div>
-          </div>
-        </BaseCard>
-      </aside>
-
-      <!-- 中间：模板格子工作区 -->
-      <main class="flex-1 overflow-y-auto">
+        <div class="flex-1 overflow-y-auto min-h-0">
         <div v-if="!activeForm" class="h-full flex items-center justify-center">
           <div class="text-center">
             <div class="text-4xl mb-4">🧪</div>
-            <div class="text-sm font-medium text-[--text-main]">请选择左侧模板实例</div>
-            <div class="text-xs text-[--muted-foreground] mt-1">从左侧列表选择一个模板实例，查看格子执行状态</div>
+            <div class="text-sm font-medium text-[--text-main]">请选择模板实例</div>
+            <div class="text-xs text-[--muted-foreground] mt-1">从上方列表选择一个模板实例，查看格子执行状态</div>
           </div>
         </div>
         <div v-else-if="activeForm.template?.previewMode === 'plate'" class="h-full flex flex-col">
@@ -219,9 +147,10 @@
             <div class="text-xs text-[--muted-foreground]">请先确认计划端已保存模板实例数据</div>
           </div>
         </div>
-      </main>
+        </div>
+      </div>
 
-        <!-- 右侧：执行详情面板 -->
+      <!-- 右侧：执行详情面板 -->
       <aside class="w-[380px] shrink-0 flex flex-col gap-4 overflow-y-auto">
         <!-- 当前格子信息 -->
         <BaseCard v-if="selectedCell">
