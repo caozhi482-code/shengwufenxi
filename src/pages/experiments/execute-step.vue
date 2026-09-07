@@ -29,10 +29,6 @@
             <div class="text-sm font-medium text-[--text-main]">{{ task?.sampleBatch ?? '—' }}</div>
           </div>
           <div class="w-px h-9 bg-[--border]" />
-          <div>
-            <div class="text-[10px] text-[--muted-foreground] leading-none mb-1">关联模板</div>
-            <div class="text-sm font-medium text-[--text-main]">{{ templateNames.join('、') || '—' }}</div>
-          </div>
         </div>
         <div class="ml-auto flex items-center gap-3">
           <div class="text-xs text-[--muted-foreground]">
