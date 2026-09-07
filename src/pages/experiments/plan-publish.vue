@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-5 pb-24">
     <div class="bg-white border border-[--border] rounded-[--radius-lg] shadow-[var(--shadow-card)] px-5 py-4">
-      <StepWizard :steps="steps" :current="6" />
+      <StepWizard :steps="steps" :current="5" />
     </div>
 
     <BasePageHeader
