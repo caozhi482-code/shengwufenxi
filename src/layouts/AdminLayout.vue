@@ -1,7 +1,7 @@
 <template>
-  <div class="flex h-screen bg-[--shell-bg]">
+  <div class="ui-shell flex h-screen bg-[--shell-bg]">
     <!-- 左侧导航轨 88px -->
-    <nav class="w-[--rail-w] bg-white border-r border-[--border] flex flex-col items-center py-4 shrink-0">
+    <nav class="ui-rail w-[--rail-w] bg-white border-r border-[--border] flex flex-col items-center py-4 shrink-0">
       <div class="w-10 h-10 rounded-lg bg-[--primary] flex items-center justify-center text-white font-bold text-sm mb-6">LIMS</div>
       <div class="flex flex-col gap-1 flex-1 w-full px-2">
         <div v-for="item in menuItems" :key="item.path"
@@ -18,7 +18,7 @@
     <!-- 右侧主内容区 -->
     <div class="flex-1 flex flex-col min-w-0">
       <!-- 顶部栏 64px -->
-      <header class="h-[var(--header-h)] bg-white border-b border-[--border] flex items-center justify-between px-6 shrink-0">
+      <header class="ui-shell-header h-[var(--header-h)] bg-white border-b border-[--border] flex items-center justify-between px-6 shrink-0">
         <div class="flex items-center gap-2 text-sm text-[--muted-foreground]">
           <span class="font-medium text-[--text-main]">Lims 智慧实验分析系统</span>
           <span class="text-[--text-tertiary]">/</span>
@@ -37,7 +37,7 @@
       </header>
 
       <!-- 工作区页签 44px -->
-      <div class="h-[44px] bg-white border-b border-[--border] flex items-center px-6 gap-0 shrink-0">
+      <div class="ui-workspace-tabs h-[44px] bg-white border-b border-[--border] flex items-center px-6 gap-0 shrink-0">
         <button v-for="tab in tabs" :key="tab.path"
           :class="['px-4 py-2 text-sm font-medium border-b-2 transition-all duration-150 -mb-px',
             isActive(tab.path) ? 'border-[--primary] text-[--primary]' : 'border-transparent text-[--muted-foreground] hover:text-[--text-main]']"
@@ -47,7 +47,7 @@
       </div>
 
       <!-- 内容区 -->
-      <main class="flex-1 overflow-y-auto p-5">
+      <main class="ui-main flex-1 overflow-y-auto p-5">
         <router-view />
       </main>
     </div>

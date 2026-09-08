@@ -32,9 +32,12 @@
           <div class="text-xs text-[--muted-foreground]">计划编号</div>
           <div class="font-mono text-xs font-semibold text-[--primary] mt-1 truncate">{{ planCode }}</div>
         </div>
-        <div class="rounded-lg border border-[--border] bg-[--surface-muted] p-3">
-          <div class="text-xs text-[--muted-foreground]">已选文件</div>
-          <div class="font-semibold text-[--text-main] mt-1">{{ selectedFiles.length }} 份</div>
+        <div class="rounded-lg border border-[--primary-border] bg-[--primary-soft] p-3">
+          <div class="text-xs text-[--muted-foreground]">SD已确认文件</div>
+          <div class="flex items-center gap-2 mt-1">
+            <div class="font-semibold text-[--text-main]">{{ selectedFiles.length }} 份</div>
+            <BaseTag label="SD已确认" tone="success" />
+          </div>
         </div>
       </div>
     </div>
@@ -65,7 +68,7 @@
             </div>
             <div class="flex justify-between gap-3">
               <span class="text-[--muted-foreground]">文件状态</span>
-              <span class="font-medium text-[--danger]">缺少关联文件</span>
+              <span class="font-medium text-[--success]">● SD已确认</span>
             </div>
           </div>
         </BaseCard>
@@ -141,8 +144,8 @@
         <BaseCard>
           <template #header>
             <div class="flex items-center justify-between gap-2">
-              <span class="text-sm font-bold text-[--foreground]">文件摘要</span>
-              <span class="text-xs text-[--muted-foreground]">{{ selectedFiles.length }} 份</span>
+              <span class="text-sm font-bold text-[--foreground]">SD已确认关联文件</span>
+              <span class="text-xs text-[--muted-foreground]">{{ selectedFiles.length }} 份（只读）</span>
             </div>
           </template>
           <div class="space-y-2 text-xs">
@@ -185,6 +188,21 @@
 
         <BaseCard>
           <template #header>
+            <span class="text-sm font-bold text-[--foreground]">分析批</span>
+          </template>
+          <div v-if="currentBatch" class="space-y-2 text-xs">
+            <div class="flex items-center gap-2">
+              <span class="font-mono font-semibold text-[--primary]">{{ currentBatch.id }}</span>
+              <BaseTag :label="batchStatusLabels[currentBatch.status].label" :tone="batchStatusLabels[currentBatch.status].tone" />
+            </div>
+            <div class="font-medium text-[--text-main]">{{ currentBatch.name }}</div>
+            <div class="text-[--muted-foreground]">关联考察项：{{ currentBatch.itemIds.length }} 个 · 计划执行：{{ currentBatch.plannedDate || '待定' }}</div>
+          </div>
+          <div v-else class="text-xs text-[--muted-foreground] py-2">尚未指定分析批</div>
+        </BaseCard>
+
+        <BaseCard>
+          <template #header>
             <span class="text-sm font-bold text-[--foreground]">上下文</span>
           </template>
           <div class="space-y-2 text-sm">
@@ -194,7 +212,7 @@
             </div>
             <div class="flex justify-between gap-3">
               <span class="text-[--muted-foreground]">文件状态</span>
-              <span class="font-medium text-[--text-main]">{{ selectedFiles.length }} 份已关联</span>
+              <span class="font-medium text-[--text-main]"><span class="text-[--success]">● SD已确认</span> <span class="ml-1 text-[--muted-foreground]">{{ selectedFiles.length }} 份已关联</span></span>
             </div>
           </div>
         </BaseCard>
@@ -301,9 +319,12 @@ import { evaluationItems } from '@/api/mock/evaluation';
 import { files, getFilesByProject, getFileTypeLabel } from '@/api/mock/files';
 import { projects } from '@/api/mock/projects';
 import { formTemplates } from '@/api/mock/methods';
+import { getBatchesByPlan, batchStatusLabels } from '@/api/mock/batches';
 import type { EvaluationItem } from '@/api/mock/evaluation';
 import type { FileItem, FileType } from '@/api/mock/files';
 import type { Project } from '@/api/mock/projects';
+import type { AnalysisBatch } from '@/api/mock/batches';
+import { DEMO_PLAN_CODE } from '@/api/mock/demoContext';
 
 type MaintainableItem = EvaluationItem & { enabled: boolean; note: string };
 type ItemErrors = { name: string; id: string };
@@ -351,7 +372,15 @@ const templateIds = computed(() => parseSingle(route.query.templateIds));
 const activeItemId = computed(() => parseSingle(route.query.activeItemId));
 const currentTemplateId = computed(() => parseSingle(route.query.currentTemplateId));
 const instanceId = computed(() => parseSingle(route.query.instanceId));
-const planCode = computed(() => parseSingle(route.query.planCode) || (selectedProject.value ? `PLAN-${selectedProject.value.code}-DRAFT` : 'PLAN-DRAFT'));
+const batchId = computed(() => parseSingle(route.query.batchId));
+const planCode = computed(() => parseSingle(route.query.planCode) || (selectedProject.value ? `PLAN-${selectedProject.value.code}-DRAFT` : DEMO_PLAN_CODE));
+
+const currentBatch = computed<AnalysisBatch | null>(() => {
+  if (!batchId.value) return null;
+  const batch = getBatchesByPlan(planCode.value).find(b => b.id === batchId.value);
+  return batch ?? null;
+});
+const allBatches = computed<AnalysisBatch[]>(() => getBatchesByPlan(planCode.value));
 
 const selectedProject = computed<Project | null>(() => {
   const id = projectId.value;
@@ -591,9 +620,10 @@ function goNext() {
     path: '/experiments/plans/new/forms',
     query: {
       planCode: planCode.value,
-      projectId: selectedProject.value?.id ?? '',
+      projectId: selectedProject.value?.id ?? 'PRJ001',
       fileIds: selectedFiles.value.map(file => file.id).join(','),
       itemIds: selectedItems.value.map(item => item.id).join(','),
+      batchId: batchId.value,
       ...(templateIds.value ? { templateIds: templateIds.value } : {}),
       ...(activeItemId.value ? { activeItemId: activeItemId.value } : {}),
       ...(currentTemplateId.value ? { currentTemplateId: currentTemplateId.value } : {}),
@@ -608,8 +638,9 @@ function backToFiles() {
     query: {
       step: '2',
       planCode: planCode.value,
-      projectId: selectedProject.value?.id ?? '',
+      projectId: selectedProject.value?.id ?? 'PRJ001',
       fileIds: fileIds.value.join(','),
+      batchId: batchId.value,
       ...(itemIds.value.length > 0 ? { itemIds: itemIds.value.join(',') } : {}),
       ...(templateIds.value ? { templateIds: templateIds.value } : {}),
       ...(activeItemId.value ? { activeItemId: activeItemId.value } : {}),

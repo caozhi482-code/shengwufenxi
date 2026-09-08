@@ -10,8 +10,7 @@
     >
       <template #extra>
         <BaseButton variant="secondary" size="sm" @click="$router.push('/experiments/plans')">返回列表</BaseButton>
-        <BaseButton variant="secondary" size="sm" @click="saveDraft">保存草稿</BaseButton>
-        <BaseButton variant="primary" size="sm" :disabled="!canEnterPlanWizard" @click="enterPlanWizard">进入实验计划创建</BaseButton>
+        <BaseButton variant="primary" size="sm" :disabled="!canSaveProject" @click="saveDraft">保存项目资源</BaseButton>
       </template>
     </BasePageHeader>
 
@@ -22,7 +21,7 @@
             <div class="flex items-center justify-between gap-3">
               <div>
                 <span class="text-base font-bold text-[--foreground]">选择管理项目</span>
-                <div class="text-xs text-[--muted-foreground] mt-0.5">项目由 SD 负责人先确认，后续关联文件会自动带入到实验计划创建页。</div>
+                <div class="text-xs text-[--muted-foreground] mt-0.5">项目由 SD 负责人先确认并保存，实验负责人后续从计划列表进入项目编辑实验计划。</div>
               </div>
               <BaseButton variant="secondary" size="sm" @click="resetSelection">重置</BaseButton>
             </div>
@@ -71,6 +70,7 @@
               <div class="flex gap-2">
                 <BaseButton variant="secondary" size="sm" @click="step = 1">← 返回</BaseButton>
                 <BaseButton variant="secondary" size="sm" @click="selectAllFiles">全选可用文件</BaseButton>
+                <BaseButton variant="primary" size="sm" :disabled="selectedFileIds.length === 0" @click="step = 3">下一步：资源配置 →</BaseButton>
               </div>
             </div>
           </template>
@@ -116,7 +116,7 @@
             <div class="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <span class="text-base font-bold text-[--foreground]">项目资源调配</span>
-                <div class="text-xs text-[--muted-foreground] mt-0.5">在这里配置本项目关联文件所需的试剂、耗材和设备，保存后会自动供实验计划创建页带入。</div>
+                <div class="text-xs text-[--muted-foreground] mt-0.5">在这里配置本项目关联文件所需的试剂、耗材和设备；保存项目资源后，SD 角色操作结束。</div>
               </div>
               <div class="flex flex-wrap gap-2">
                 <BaseButton variant="secondary" size="sm" @click="step = 2">← 返回文件</BaseButton>
@@ -204,7 +204,8 @@
                           <th class="text-right px-3 py-2 font-semibold text-[--muted-foreground]">库存</th>
                           <th class="text-right px-3 py-2 font-semibold text-[--muted-foreground]">缺口</th>
                           <th class="text-left px-3 py-2 font-semibold text-[--muted-foreground]">状态</th>
-                          <th class="text-left px-3 py-2 font-semibold text-[--muted-foreground] w-24">操作</th>
+                          <th class="text-left px-3 py-2 font-semibold text-[--muted-foreground]">来源</th>
+                          <th class="text-left px-3 py-2 font-semibold text-[--muted-foreground]">操作</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -217,6 +218,7 @@
                           <td class="px-3 py-2 text-right">{{ item.currentStock }}</td>
                           <td class="px-3 py-2 text-right"><span :class="item.gapQty > 0 ? 'text-[--danger] font-semibold' : 'text-[--success]'">{{ item.gapQty > 0 ? item.gapQty : '—' }}</span></td>
                           <td class="px-3 py-2"><BaseTag :label="resourceStatusText(item.status)" :tone="resourceStatusToneMap(item.status)" /></td>
+                          <td class="px-3 py-2"><BaseTag :label="sourceLabel(item.source)" :tone="sourceTone(item.source)" /></td>
                           <td class="px-3 py-2">
                             <div class="flex items-center gap-2 text-[--info]">
                               <button type="button" class="hover:underline" @click="editResource(item)">编辑</button>
@@ -226,7 +228,7 @@
                           </td>
                         </tr>
                         <tr v-if="activeResourceItems.length === 0">
-                          <td colspan="9" class="px-3 py-10 text-center text-sm text-[--muted-foreground]">当前文件暂无资源条目</td>
+                          <td colspan="10" class="px-3 py-10 text-center text-sm text-[--muted-foreground]">当前文件暂无资源条目</td>
                         </tr>
                       </tbody>
                     </table>
@@ -266,7 +268,7 @@
         <BaseCard>
           <template #header><span class="text-sm font-bold text-[--foreground]">流程摘要</span></template>
           <div v-if="!selectedProject" class="py-6 text-center text-xs text-[--muted-foreground]">
-            先选择项目，再进入文件和资源配置。
+            SD 先选择项目，再进入文件和资源配置。
           </div>
           <div v-else class="space-y-2 text-sm">
             <div class="flex justify-between gap-3"><span class="text-[--muted-foreground]">项目</span><span class="font-medium text-[--text-main] text-right truncate max-w-[150px]">{{ selectedProject.name }}</span></div>
@@ -293,32 +295,187 @@
 
     <BaseDrawer :open="drawerOpen" :title="drawerMode === 'add' ? '新增资源' : '编辑资源'" @close="drawerOpen = false">
       <div class="space-y-4">
+        <!-- 来源切换标签 -->
+        <div class="flex gap-1 p-1 bg-[--surface-muted] rounded-lg border border-[--border]">
+          <button
+            v-for="tab in drawerTabs"
+            :key="tab.value"
+            type="button"
+            class="flex-1 text-xs font-medium py-1.5 px-3 rounded-md transition-all"
+            :class="drawerSource === tab.value ? 'bg-white text-[--text-main] shadow-sm' : 'text-[--muted-foreground] hover:text-[--text-main]'"
+            @click="drawerSource = tab.value; drawerSearch = ''"
+          >{{ tab.label }}</button>
+        </div>
+
+        <!-- 仓库台账 -->
+        <template v-if="drawerSource === 'warehouseLedger'">
+          <div class="flex gap-2 items-center">
+            <div class="relative flex-1">
+              <input
+                type="text"
+                v-model="drawerSearch"
+                class="w-full h-8 pl-3 pr-3 text-xs bg-white border border-[--border] rounded-md outline-none focus:border-[--primary]"
+                placeholder="搜索试剂、耗材、溶剂…"
+              />
+            </div>
+            <select
+              v-model="drawerWarehouseFilter"
+              class="h-8 px-2 text-xs border border-[--border] rounded-md bg-white text-[--muted-foreground] outline-none"
+            >
+              <option value="全部">全部</option>
+              <option value="reagent">试剂</option>
+              <option value="consumable">耗材</option>
+              <option value="solvent">溶剂</option>
+            </select>
+          </div>
+          <div class="space-y-1.5 max-h-[200px] overflow-y-auto pr-1">
+            <div
+              v-for="item in filteredWarehouseLedger"
+              :key="item.id"
+                            class="flex items-start gap-3 p-2.5 rounded-lg border cursor-pointer transition-all hover:border-[--primary-border] hover:bg-[--primary-soft]/30"
+              :class="item.status === 'out_of_stock' ? 'opacity-50 border-dashed' : 'border-[--border]'"
+              @click="fillFromWarehouseLedger(item)"
+            >
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-medium text-[--text-main] truncate">{{ item.name }}</span>
+                  <BaseTag :label="warehouseTypeLabel(item.type)" :tone="warehouseTypeTone(item.type)" />
+                </div>
+                <div class="text-[10px] text-[--muted-foreground] font-mono mt-0.5">{{ item.code }} · {{ item.specification }} · {{ item.brand }}</div>
+                <div class="text-[10px] text-[--muted-foreground] mt-0.5">库存: {{ item.stock }}{{ item.unit }} · {{ item.shelf }}</div>
+              </div>
+              <div class="shrink-0">
+                <BaseTag :label="warehouseStockStatusLabel(item)" :tone="warehouseStockStatusTone(item)" />
+              </div>
+            </div>
+            <div v-if="filteredWarehouseLedger.length === 0" class="text-xs text-[--muted-foreground] text-center py-6">无匹配结果</div>
+          </div>
+          <div class="text-[10px] text-[--muted-foreground]">点击条目自动填充表单，可在下方手动调整</div>
+        </template>
+
+        <!-- 样品台账 -->
+        <template v-else-if="drawerSource === 'sampleLedger'">
+          <div class="flex gap-2 items-center">
+            <div class="relative flex-1">
+              <input
+                type="text"
+                v-model="drawerSearch"
+                class="w-full h-8 pl-3 pr-3 text-xs bg-white border border-[--border] rounded-md outline-none focus:border-[--primary]"
+                placeholder="搜索标准品、对照品、内标、质控品、基质…"
+              />
+            </div>
+            <select
+              v-model="drawerSampleFilter"
+              class="h-8 px-2 text-xs border border-[--border] rounded-md bg-white text-[--muted-foreground] outline-none"
+            >
+              <option value="全部">全部</option>
+              <option value="标准品">标准品</option>
+              <option value="内标">内标</option>
+              <option value="质控品">质控品</option>
+              <option value="基质">基质</option>
+            </select>
+          </div>
+          <div class="space-y-1.5 max-h-[200px] overflow-y-auto pr-1">
+            <div
+              v-for="item in filteredSampleLedger"
+              :key="item.id"
+                            class="flex items-start gap-3 p-2.5 rounded-lg border cursor-pointer transition-all hover:border-[--primary-border] hover:bg-[--primary-soft]/30"
+              :class="item.status === 'out_of_stock' ? 'opacity-50 border-dashed' : 'border-[--border]'"
+              @click="fillFromSampleLedger(item)"
+            >
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-medium text-[--text-main] truncate">{{ item.name }}</span>
+                  <BaseTag :label="item.type" :tone="sampleTypeTone(item.type)" />
+                </div>
+                <div class="text-[10px] text-[--muted-foreground] font-mono mt-0.5">{{ item.code }} · {{ item.specification }} · {{ item.brand }}</div>
+                <div class="text-[10px] text-[--muted-foreground] mt-0.5">库存: {{ item.stock }}{{ item.unit }} · {{ item.location }}</div>
+              </div>
+              <div class="shrink-0">
+                <BaseTag :label="sampleStockStatusLabel(item)" :tone="sampleStockStatusTone(item)" />
+              </div>
+            </div>
+            <div v-if="filteredSampleLedger.length === 0" class="text-xs text-[--muted-foreground] text-center py-6">无匹配结果</div>
+          </div>
+          <div class="text-[10px] text-[--muted-foreground]">点击条目自动填充表单，可在下方手动调整</div>
+        </template>
+
+        <!-- 仪器台账 -->
+        <template v-else-if="drawerSource === 'equipmentLedger'">
+          <div class="relative">
+            <input
+              type="text"
+              v-model="drawerSearch"
+              class="w-full h-8 pl-3 pr-3 text-xs bg-white border border-[--border] rounded-md outline-none focus:border-[--primary]"
+              placeholder="搜索设备名称、编号、型号…"
+            />
+          </div>
+          <div class="space-y-1.5 max-h-[200px] overflow-y-auto pr-1">
+            <div
+              v-for="item in filteredEquipmentLedger"
+              :key="item.id"
+                            class="flex items-start gap-3 p-2.5 rounded-lg border cursor-pointer transition-all hover:border-[--primary-border] hover:bg-[--primary-soft]/30"
+              :class="item.status !== 'available' ? 'opacity-60 border-dashed' : 'border-[--border]'"
+              @click="fillFromEquipmentLedger(item)"
+            >
+              <div class="flex-1 min-w-0">
+                <div class="text-xs font-medium text-[--text-main]">{{ item.name }}</div>
+                <div class="text-[10px] text-[--muted-foreground] font-mono mt-0.5">{{ item.code }} · {{ item.model }} · {{ item.brand }}</div>
+                <div class="text-[10px] text-[--muted-foreground] mt-0.5">{{ item.location }} · 序列号: {{ item.serialNumber }}</div>
+              </div>
+              <div class="shrink-0">
+                <BaseTag :label="equipStatusLabel(item.status)" :tone="equipStatusTone(item.status)" />
+              </div>
+            </div>
+            <div v-if="filteredEquipmentLedger.length === 0" class="text-xs text-[--muted-foreground] text-center py-6">无匹配结果</div>
+          </div>
+          <div class="text-[10px] text-[--muted-foreground]">点击条目自动填充表单，可在下方手动调整</div>
+        </template>
+
+        <!-- 特殊资源 -->
+        <template v-else>
+          <div class="text-[10px] text-[--warning] bg-[--warning-soft]/50 border border-[--warning-border] rounded-md px-2 py-1.5 mb-3">
+            该资源未在上述台账中找到，请手动录入信息
+          </div>
+        </template>
+
+        <!-- 来源摘要 -->
+        <div v-if="drawerSource !== 'special'" class="rounded-md border border-[--border] bg-[--surface-muted] px-3 py-2 text-xs">
+          <div class="font-medium text-[--text-main] mb-1">已选来源</div>
+          <div class="text-[--muted-foreground]">
+            <span v-if="drawerSource === 'warehouseLedger'">来源：仓库台账 · {{ editForm.materialCode || '未选中条目' }}</span>
+            <span v-else-if="drawerSource === 'sampleLedger'">来源：样品台账 · {{ editForm.materialCode || '未选中条目' }}</span>
+            <span v-else-if="drawerSource === 'equipmentLedger'">来源：仪器台账 · {{ editForm.materialCode || '未选中条目' }}</span>
+          </div>
+        </div>
+
+        <!-- 公共表单 -->
         <div class="grid grid-cols-2 gap-4">
-          <BaseFormField v-model="editForm.name" label="资源名称" placeholder="输入资源名称" />
-          <BaseFormField v-model="editForm.materialCode" label="资源编码" placeholder="如：REG-2026-001" />
+          <BaseFormField label="资源名称" placeholder="输入资源名称" v-model="editForm.name" />
+          <BaseFormField label="物料编码" placeholder="如：REG-2026-001" v-model="editForm.materialCode" />
         </div>
         <div class="grid grid-cols-2 gap-4">
-          <BaseFormField v-model="editForm.type" label="资源类型" type="select" :options="resourceTypeOptions" />
-          <BaseFormField v-model="editForm.unit" label="单位" placeholder="瓶 / 支 / 盒" />
+          <BaseFormField label="资源类型" type="select" :options="resourceTypeOptions" v-model="editForm.type" />
+          <BaseFormField label="单位" placeholder="瓶 / 支 / 盒" v-model="editForm.unit" />
         </div>
         <div class="grid grid-cols-2 gap-4">
-          <BaseFormField v-model="editForm.specification" label="规格型号" placeholder="如：10mL/瓶" />
-          <BaseFormField v-model="editForm.brand" label="品牌" placeholder="如：Sigma" />
+          <BaseFormField label="规格型号" placeholder="如：10mL/瓶" v-model="editForm.specification" />
+          <BaseFormField label="品牌" placeholder="如：Sigma" v-model="editForm.brand" />
         </div>
         <div class="grid grid-cols-3 gap-4">
-          <BaseFormField v-model.number="editForm.plannedQty" label="计划数量" type="number" placeholder="0" />
-          <BaseFormField v-model.number="editForm.currentStock" label="当前库存" type="number" placeholder="0" />
-          <BaseFormField v-model="editForm.status" label="状态" type="select" :options="resourceStatusOptions" />
+          <BaseFormField label="计划数量" type="number" placeholder="0" v-model.number="editForm.plannedQty" />
+          <BaseFormField label="当前库存" type="number" placeholder="0" v-model.number="editForm.currentStock" />
+          <BaseFormField label="状态" type="select" :options="resourceStatusOptions" v-model="editForm.status" />
         </div>
         <div class="grid grid-cols-2 gap-4">
-          <BaseFormField v-model="editForm.expectedArrival" label="预计到位时间" type="date" />
-          <BaseFormField v-model="editForm.priority" label="优先级" type="select" :options="priorityOptions" />
+          <BaseFormField label="预计到位时间" type="date" v-model="editForm.expectedArrival" />
+          <BaseFormField label="优先级" type="select" :options="priorityOptions" v-model="editForm.priority" />
         </div>
         <div class="flex items-center gap-2">
           <BaseCheckbox :checked="editForm.isCritical" @update:checked="v => (editForm.isCritical = v)" />
           <span class="text-xs text-[--text-main]">关键物料</span>
         </div>
-        <BaseFormField v-model="editForm.remark" label="备注" type="textarea" placeholder="可选备注" />
+        <BaseFormField label="备注" type="textarea" placeholder="可选备注" v-model="editForm.remark" />
       </div>
       <template #footer>
         <BaseButton variant="secondary" @click="drawerOpen = false">取消</BaseButton>
@@ -356,6 +513,8 @@ import { getFilesByProject, getFileTypeLabel } from '@/api/mock/files';
 import type { FileItem, FileType } from '@/api/mock/files';
 import type { Project } from '@/api/mock/projects';
 import type { SDResourceSource, SDResourceStatus, SDResourceType } from '@/types/experiments';
+import { sampleLedger, warehouseLedger, equipmentLedger } from '@/api/mock/ledgers';
+import type { SampleLedgerItem, WarehouseLedgerItem, EquipmentLedgerItem } from '@/api/mock/ledgers';
 
 interface AllocationResourceItem {
   id: string;
@@ -402,6 +561,10 @@ const sdOwner = ref('');
 const resourceItems = ref<AllocationResourceItem[]>([]);
 const drawerOpen = ref(false);
 const drawerMode = ref<'add' | 'edit'>('add');
+const drawerSource = ref<SDResourceSource>('warehouseLedger');
+const drawerSearch = ref('');
+const drawerSampleFilter = ref('全部');
+const drawerWarehouseFilter = ref('全部');
 const confirmDelete = ref<AllocationResourceItem | null>(null);
 const editingId = ref('');
 const editForm = ref<Partial<AllocationResourceItem>>({
@@ -413,7 +576,7 @@ const editForm = ref<Partial<AllocationResourceItem>>({
 const steps = [
   { label: '选择项目', sub: '由 SD 负责人确定计划项目' },
   { label: '选择关联文件', sub: '自动带入并确认项目文件' },
-  { label: '项目资源调配', sub: '规划资源并保存到计划创建页' },
+  { label: '项目资源调配', sub: 'SD 保存项目资源' },
 ];
 
 const projectFiles = computed(() => {
@@ -427,7 +590,7 @@ const selectedFileRecords = computed(() => {
 const activeFile = computed(() => selectedFileRecords.value.find(file => file.id === activeFileId.value) ?? selectedFileRecords.value[0] ?? null);
 const activeResourceItems = computed(() => resourceItems.value.filter(item => item.fileId === activeFile.value?.id));
 const filteredProjects = computed(() => searchProjects(projectSearch.value));
-const canEnterPlanWizard = computed(() => !!selectedProject.value && selectedFileRecords.value.length > 0);
+const canSaveProject = computed(() => !!selectedProject.value && selectedFileRecords.value.length > 0 && resourceItems.value.length > 0);
 const fileGroups = computed(() => ([
   { type: 'sop' as FileType, files: projectFiles.value.filter(file => file.type === 'sop') },
   { type: 'method' as FileType, files: projectFiles.value.filter(file => file.type === 'method') },
@@ -460,6 +623,101 @@ const priorityOptions = [
 ];
 
 const localStorageKey = computed(() => selectedProject.value ? `project-resource-allocation::${selectedProject.value.id}` : 'project-resource-allocation::draft');
+
+const drawerTabs = [
+  { label: '仓库台账', value: 'warehouseLedger' },
+  { label: '样品台账', value: 'sampleLedger' },
+  { label: '仪器台账', value: 'equipmentLedger' },
+  { label: '特殊资源', value: 'special' },
+];
+
+const filteredSampleLedger = computed<SampleLedgerItem[]>(() => {
+  let items = sampleLedger;
+  if (drawerSampleFilter.value !== '全部') {
+    items = items.filter(i => i.type === drawerSampleFilter.value);
+  }
+  if (drawerSearch.value) {
+    const q = drawerSearch.value.toLowerCase();
+    items = items.filter(i => i.name.toLowerCase().includes(q) || i.code.toLowerCase().includes(q));
+  }
+  return items;
+});
+
+const filteredWarehouseLedger = computed<WarehouseLedgerItem[]>(() => {
+  let items = warehouseLedger;
+  if (drawerWarehouseFilter.value !== '全部') {
+    items = items.filter(i => i.type === drawerWarehouseFilter.value);
+  }
+  if (drawerSearch.value) {
+    const q = drawerSearch.value.toLowerCase();
+    items = items.filter(i => i.name.toLowerCase().includes(q) || i.code.toLowerCase().includes(q));
+  }
+  return items;
+});
+
+const filteredEquipmentLedger = computed<EquipmentLedgerItem[]>(() => {
+  if (!drawerSearch.value) return equipmentLedger;
+  const q = drawerSearch.value.toLowerCase();
+  return equipmentLedger.filter(i => i.name.toLowerCase().includes(q) || i.code.toLowerCase().includes(q));
+});
+
+function sampleTypeTone(t: string): 'success' | 'info' | 'warning' | 'danger' | 'neutral' {
+  const map: Record<string, 'success' | 'info' | 'warning' | 'danger' | 'neutral'> = {
+    '标准品': 'success', '对照品': 'info', '内标': 'warning', '质控品': 'neutral', '基质': 'neutral',
+  };
+  return map[t] ?? 'neutral';
+}
+
+function sampleStockStatusLabel(item: SampleLedgerItem): string {
+  if (item.status === 'out_of_stock') return '缺货';
+  if (item.stock === 0) return '缺货';
+  return `${item.stock}${item.unit}`;
+}
+
+function sampleStockStatusTone(item: SampleLedgerItem): 'success' | 'warning' | 'danger' | 'neutral' {
+  if (item.status === 'out_of_stock' || item.stock === 0) return 'danger';
+  if (item.stock <= 3) return 'warning';
+  return 'success';
+}
+
+function warehouseTypeLabel(t: string): string {
+  return { reagent: '试剂', consumable: '耗材', solvent: '溶剂', other: '其他' }[t] ?? t;
+}
+
+function warehouseTypeTone(t: string): 'success' | 'info' | 'warning' | 'danger' | 'neutral' {
+  const map: Record<string, 'success' | 'info' | 'warning' | 'danger' | 'neutral'> = {
+    reagent: 'info', consumable: 'neutral', solvent: 'info', other: 'neutral',
+  };
+  return map[t] ?? 'neutral';
+}
+
+function warehouseStockStatusLabel(item: WarehouseLedgerItem): string {
+  if (item.status === 'out_of_stock') return '缺货';
+  if (item.status === 'low_stock') return '低库存';
+  return `${item.stock}${item.unit}`;
+}
+
+function warehouseStockStatusTone(item: WarehouseLedgerItem): 'success' | 'warning' | 'danger' | 'neutral' {
+  if (item.status === 'out_of_stock') return 'danger';
+  if (item.status === 'low_stock') return 'warning';
+  return 'success';
+}
+
+function equipStatusLabel(s: string): string {
+  return { available: '可用', in_use: '使用中', maintenance: '维护中', calibration: '校准中' }[s] ?? s;
+}
+
+function equipStatusTone(s: string): 'success' | 'info' | 'warning' | 'danger' | 'neutral' {
+  return { available: 'success', in_use: 'info', maintenance: 'warning', calibration: 'warning' }[s] ?? 'neutral';
+}
+
+function sourceLabel(s: SDResourceSource): string {
+  return { warehouseLedger: '仓库台账', sampleLedger: '样品台账', equipmentLedger: '仪器台账', special: '特殊资源' }[s] ?? '未知';
+}
+
+function sourceTone(s: SDResourceSource): 'success' | 'info' | 'warning' | 'danger' | 'neutral' {
+  return { warehouseLedger: 'info', sampleLedger: 'success', equipmentLedger: 'warning', special: 'neutral' }[s] ?? 'neutral';
+}
 
 function fileTypeLabel(type: FileType): string {
   return getFileTypeLabel(type);
@@ -518,7 +776,6 @@ function selectProject(proj: Project) {
   selectedProject.value = proj;
   projectSearch.value = '';
   step.value = 2;
-  hydrateProjectState(proj.id, false);
 }
 
 function resetSelection() {
@@ -608,6 +865,10 @@ function autoGenerateResources() {
 function openAddDrawer() {
   if (!activeFile.value) return;
   drawerMode.value = 'add';
+  drawerSource.value = 'warehouseLedger';
+  drawerSearch.value = '';
+  drawerSampleFilter.value = '全部';
+  drawerWarehouseFilter.value = '全部';
   editingId.value = '';
   editForm.value = {
     fileId: activeFile.value.id,
@@ -620,8 +881,70 @@ function openAddDrawer() {
   drawerOpen.value = true;
 }
 
+function fillFromWarehouseLedger(item: WarehouseLedgerItem) {
+  drawerSource.value = 'warehouseLedger';
+  drawerSearch.value = '';
+  const typeMap: Record<string, SDResourceType> = { reagent: 'reagent', consumable: 'consumable', solvent: 'reagent', other: 'other' };
+  editForm.value = {
+    fileId: activeFile.value?.id ?? '',
+    fileName: activeFile.value?.name ?? '',
+    fileType: activeFile.value?.type ?? 'sop',
+    name: item.name, materialCode: item.code, type: typeMap[item.type] ?? 'other',
+    specification: item.specification, unit: item.unit, brand: item.brand,
+    currentStock: item.stock, plannedQty: item.stock,
+    expectedArrival: '', isCritical: item.type === 'reagent',
+    priority: item.type === 'reagent' ? 'high' : 'medium',
+    status: item.status === 'out_of_stock' ? 'shortage' : item.status === 'low_stock' ? 'purchasing' : 'pending',
+    remark: `台账ID: ${item.id} · 批次: ${item.batch}${item.shelf ? ` · 货位: ${item.shelf}` : ''}${item.status !== 'in_stock' ? ` · [${item.status === 'low_stock' ? '低库存' : '缺货'}]` : ''}`,
+    source: 'warehouseLedger',
+    gapQty: 0, itemId: '', itemName: '', templateId: '', templateName: '',
+  };
+}
+
+function fillFromSampleLedger(item: SampleLedgerItem) {
+  drawerSource.value = 'sampleLedger';
+  drawerSearch.value = '';
+  const typeMap: Record<string, SDResourceType> = { '标准品': 'standard', '内标': 'standard', '质控品': 'control', '基质': 'other' };
+  editForm.value = {
+    fileId: activeFile.value?.id ?? '',
+    fileName: activeFile.value?.name ?? '',
+    fileType: activeFile.value?.type ?? 'sop',
+    name: item.name, materialCode: item.code, type: typeMap[item.type] ?? 'other',
+    specification: item.specification, unit: item.unit, brand: item.brand,
+    currentStock: item.stock, plannedQty: Math.ceil(item.stock * 0.8),
+    expectedArrival: item.expiryDate, isCritical: item.type === '标准品' || item.type === '内标',
+    priority: item.type === '标准品' ? 'high' : 'medium',
+    status: item.stock === 0 ? 'shortage' : item.status === 'out_of_stock' ? 'shortage' : 'pending',
+    remark: `台账ID: ${item.id} · 批次: ${item.batch} · 存放: ${item.location}${item.status === 'out_of_stock' ? ' · [缺货]' : ''}`,
+    source: 'sampleLedger',
+    gapQty: 0, itemId: '', itemName: '', templateId: '', templateName: '',
+  };
+}
+
+function fillFromEquipmentLedger(item: EquipmentLedgerItem) {
+  drawerSource.value = 'equipmentLedger';
+  drawerSearch.value = '';
+  editForm.value = {
+    fileId: activeFile.value?.id ?? '',
+    fileName: activeFile.value?.name ?? '',
+    fileType: activeFile.value?.type ?? 'sop',
+    name: item.name, materialCode: item.code, type: 'equipment',
+    specification: item.model, unit: '台', brand: item.brand,
+    currentStock: item.status === 'available' ? 1 : 0,
+    plannedQty: 1,
+    expectedArrival: item.nextCalibration, isCritical: true,
+    priority: 'high',
+    status: item.status === 'available' ? 'confirmed' : item.status === 'in_use' ? 'reserved' : item.status === 'maintenance' ? 'purchasing' : 'pending',
+    remark: `台账ID: ${item.id} · 序列号: ${item.serialNumber} · 位置: ${item.location}${item.nextCalibration ? ` · 下次校准: ${item.nextCalibration}` : ''}${item.remark ? ` · ${item.remark}` : ''}`,
+    source: 'equipmentLedger',
+    gapQty: 0, itemId: '', itemName: '', templateId: '', templateName: '',
+  };
+}
+
 function editResource(item: AllocationResourceItem) {
   drawerMode.value = 'edit';
+  drawerSource.value = item.source;
+  drawerSearch.value = '';
   editingId.value = item.id;
   editForm.value = { ...item };
   drawerOpen.value = true;
@@ -672,7 +995,7 @@ function saveResource() {
     priority: (editForm.value.priority ?? 'medium') as 'high' | 'medium' | 'low',
     status: (editForm.value.status ?? 'pending') as SDResourceStatus,
     remark: editForm.value.remark ?? '',
-    source: (editForm.value.source ?? 'special') as SDResourceSource,
+    source: drawerSource.value as SDResourceSource,
   };
   if (drawerMode.value === 'add') {
     resourceItems.value.push(payload);
@@ -686,21 +1009,7 @@ function saveResource() {
 
 function saveDraft() {
   persistState();
-  alert('草稿已保存');
-}
-
-function enterPlanWizard() {
-  if (!selectedProject.value) return;
-  persistState();
-  router.push({
-    path: '/experiments/plans/new',
-    query: {
-      projectId: selectedProject.value.id,
-      planCode: `PLAN-${selectedProject.value.code}-DRAFT`,
-      step: '2',
-      fileIds: selectedFileIds.value.join(','),
-    },
-  });
+  alert('项目资源已保存，可由实验负责人进入项目编辑实验计划');
 }
 
 function persistState() {
@@ -729,7 +1038,6 @@ function hydrateProjectState(projectId: string, allowFallback = true) {
         selectedFileIds.value = projectFiles.value.map(file => file.id);
       }
       if (!selectedFileIds.value.includes(activeFileId.value)) activeFileId.value = selectedFileIds.value[0] ?? '';
-      step.value = selectedFileIds.value.length > 0 ? 3 : 2;
       return;
     } catch {
       // ignore malformed cache
@@ -739,7 +1047,6 @@ function hydrateProjectState(projectId: string, allowFallback = true) {
   activeFileId.value = selectedFileIds.value[0] ?? '';
   sdOwner.value = selectedProject.value?.manager ?? '';
   resourceItems.value = [];
-  step.value = 2;
 }
 
 watch(selectedProject, (proj) => {

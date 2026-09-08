@@ -77,6 +77,10 @@
                 <span class="text-[--muted-foreground]">模板实例</span>
                 <span class="font-medium text-[--text-main]">{{ allForms.length }} 个</span>
               </div>
+              <div v-if="currentBatch" class="flex justify-between gap-3 border-t border-[--border] pt-2 mt-1">
+                <span class="text-[--muted-foreground]">分析批</span>
+                <span class="font-medium text-[--text-main]">{{ currentBatch.id }} · {{ currentBatch.name }}</span>
+              </div>
               <div class="border-t border-[--border] pt-2">
                 <div class="text-xs text-[--muted-foreground] mb-2">关联文件清单</div>
                 <div class="space-y-1">
@@ -138,7 +142,7 @@
               <div class="text-sm text-[--muted-foreground] max-w-md mx-auto">
                 确认后将根据已编辑的 {{ allForms.length }} 个模板实例生成实验任务，分配给实验员执行。请确认以下信息无误后进入任务分配。
               </div>
-              <div class="grid grid-cols-4 gap-3 max-w-lg mx-auto mt-4">
+              <div class="grid grid-cols-5 gap-3 max-w-lg mx-auto mt-4">
                 <div class="bg-[--primary-soft] rounded-lg p-3 text-center">
                   <div class="text-xl font-bold text-[--primary]">{{ selectedItems.length }}</div>
                   <div class="text-[10px] text-[--muted-foreground] mt-0.5">考察项</div>
@@ -146,6 +150,10 @@
                 <div class="bg-[--info-soft] rounded-lg p-3 text-center">
                   <div class="text-xl font-bold text-[--info]">{{ allForms.length }}</div>
                   <div class="text-[10px] text-[--muted-foreground] mt-0.5">模板实例</div>
+                </div>
+                <div v-if="currentBatch" class="bg-[--warning-soft] rounded-lg p-3 text-center">
+                  <div class="text-xl font-bold text-[--warning] font-mono text-xs">{{ currentBatch.id }}</div>
+                  <div class="text-[10px] text-[--muted-foreground] mt-0.5">分析批</div>
                 </div>
                 <div class="bg-[--danger-soft] rounded-lg p-3 text-center">
                   <div class="text-xl font-bold text-[--danger]">{{ unfinishedForms }}</div>
@@ -179,9 +187,12 @@ import { evaluationItems } from '@/api/mock/evaluation';
 import { files, getFilesByProject } from '@/api/mock/files';
 import { projects } from '@/api/mock/projects';
 import { formTemplates } from '@/api/mock/form-templates';
+import { getBatchesByPlan } from '@/api/mock/batches';
+import { DEMO_PLAN_CODE } from '@/api/mock/demoContext';
 import type { EvaluationItem } from '@/api/mock/evaluation';
 import type { FileItem } from '@/api/mock/files';
 import type { FormTemplateRecord } from '@/types/experiments';
+import type { AnalysisBatch } from '@/api/mock/batches';
 
 type FormStatus = 'unedited' | 'editing' | 'done';
 
@@ -220,10 +231,11 @@ const parseTemplatePairs = (value: unknown): Array<{ itemId: string; templateId:
     return { itemId: itemId?.trim() ?? '', templateId: templateId?.trim() ?? '' };
   }).filter(p => p.itemId && p.templateId);
 
-const planCode = computed(() => parseSingle(route.query.planCode) || 'PLAN-DRAFT');
+const planCode = computed(() => parseSingle(route.query.planCode) || DEMO_PLAN_CODE);
 const projectId = computed(() => parseSingle(route.query.projectId));
 const fileIds = computed(() => parseList(route.query.fileIds));
 const itemIds = computed(() => parseList(route.query.itemIds));
+const batchId = computed(() => parseSingle(route.query.batchId));
 const templateIds = computed(() => parseTemplatePairs(route.query.templateIds));
 const activeItemId = computed(() => parseSingle(route.query.activeItemId));
 const instanceId = computed(() => parseSingle(route.query.instanceId));
@@ -243,6 +255,11 @@ const selectedFiles = computed<FileItem[]>(() => {
 const selectedItems = computed<EvaluationItem[]>(() =>
   evaluationItems.filter(item => itemIds.value.includes(item.id))
 );
+
+const currentBatch = computed<AnalysisBatch | null>(() => {
+  if (!batchId.value) return null;
+  return getBatchesByPlan(planCode.value).find(b => b.id === batchId.value) ?? null;
+});
 
 const allForms = computed<WorkspaceForm[]>(() => {
   const result: WorkspaceForm[] = [];
@@ -304,9 +321,10 @@ function backToWorkspace() {
       : '/experiments/plans/new/forms',
     query: {
       planCode: planCode.value,
-      projectId: projectId.value,
+      projectId: projectId.value || 'PRJ001',
       fileIds: fileIds.value.join(','),
       itemIds: itemIds.value.join(','),
+      batchId: batchId.value,
       ...(activeItemId.value ? { activeItemId: activeItemId.value } : {}),
       ...(instanceId.value ? { instanceId: instanceId.value } : {}),
       ...(currentTemplateId.value ? { currentTemplateId: currentTemplateId.value } : {}),
@@ -320,9 +338,10 @@ function goToTaskAssignment() {
     path: '/experiments/plans/new/task-assignment',
     query: {
       planCode: planCode.value,
-      projectId: projectId.value,
+      projectId: projectId.value || 'PRJ001',
       fileIds: fileIds.value.join(','),
       itemIds: itemIds.value.join(','),
+      batchId: batchId.value,
       ...(activeItemId.value ? { activeItemId: activeItemId.value } : {}),
       ...(instanceId.value ? { instanceId: instanceId.value } : {}),
       ...(currentTemplateId.value ? { currentTemplateId: currentTemplateId.value } : {}),

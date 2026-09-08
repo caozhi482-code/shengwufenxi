@@ -2,9 +2,24 @@ import type { Plan } from '../../types/experiments';
 
 export const plans: Plan[] = [
   {
+    id: 'PLAN-BRH-BIO-2025-001-DRAFT',
+    code: 'PLAN-BRH-BIO-2025-001-DRAFT',
+    projectName: '布洛芬 bio 分析',
+    version: 'MV-2025-048 / 1V',
+    methodCode: 'BRH-MN-202506059',
+    methodVersion: 'VAL1',
+    responsiblePerson: '武琴',
+    investigators: ['张明', '李华', '王芳'],
+    itemCount: 5,
+    status: 'running',
+    startDate: '2026-09-01',
+    endDate: '2026-09-30',
+    createdAt: '2026-08-25 09:00:00',
+  },
+  {
     id: 'P001',
     code: 'EXP-2026-001',
-    projectName: '布洛芬 bio 分析',
+    projectName: '布洛芬 bio 分析（旧编号）',
     version: 'MV-2025-048 / 1V',
     methodCode: 'BRH-MN-202506059',
     methodVersion: 'VAL1',

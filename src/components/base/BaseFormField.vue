@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full">
+  <div class="ui-field w-full">
     <label v-if="label" class="block text-xs font-semibold text-[--text-main] mb-1.5">
       {{ label }}
       <span v-if="required" class="text-[--danger] ml-0.5">*</span>

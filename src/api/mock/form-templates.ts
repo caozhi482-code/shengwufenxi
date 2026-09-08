@@ -597,6 +597,22 @@ export const formTemplates: FormTemplateRecord[] = [
     context: { projectName: '继承自实验计划', projectCode: 'EXP-2026-025', planCode: 'PLAN-UNCON-STAB-002V', methodCode: 'BRH-MN-202506059', methodVersion: 'VAL1', fileCode: 'BA-SBR23' },
     structure: { sections: ['顶部标题区', '上下文区', '设备信息区', '全血样品配制区', '孵育及分装区', '稳定性考察样品放置区', '签字区'], fields: ['样品代码', '源溶液编号', '源溶液体积', '空白全血体积', '最终样品总体积', '放置条件'], tableColumns: ['样品代码', '源溶液编号', '源溶液体积(μL)', '空白全血体积(μL)', '最终样品总体积(μL)'], highlights: ['源溶液批号', '空白全血编号', '配制完成时间', '放置条件'], notes: ['稳定性考察样品结束放置后应立即采用与0h样品同样的处理方式离心和放置'], signatureLabels: ['操作人 / 日期', '现场复核人 / 日期', '审核人 / 日期'], summary: '用于非常规项目采集稳定性样品的制备、孵育、分装和放置过程记录。', },
   },
+  {
+    id: 'TPL-025',
+    templateName: '预处理记录表',
+    templateCode: 'BA-SBR01',
+    version: '1V',
+    itemNames: ['系统适用性', '准确度/精密度', '基质效应', '选择性', '提取回收率'],
+    sourceFile: '线下原始记录-BA-SBR01-预处理记录表-1V.docx',
+    status: 'enabled',
+    updatedAt: '2026-09-03 20:00:00',
+    isDefault: false,
+    description: '用于样品预处理过程的记录，包括加样、离心、蒸发复溶等步骤。',
+    previewMode: 'plate',
+    group: 'sample',
+    context: { projectName: '继承自实验计划', projectCode: 'EXP-2026-010', planCode: 'PLAN-BR-001V', methodCode: 'BRH-MN-202506059', methodVersion: 'VAL1', fileCode: 'BA-SBR01' },
+    structure: { sections: ['顶部标题区', '样品信息区', '预处理步骤区', '离心及复溶区', '注意事项', '签字区'], fields: ['样品编号', '样品体积', '内标体积', '沉淀剂', '涡旋时间', '离心条件', '复溶体积'], tableColumns: ['样品编号', '样品体积(μL)', '内标体积(μL)', '沉淀剂(μL)', '涡旋(s)', '离心(rpm)', '离心(min)', '上清液(μL)', '复溶液(μL)'], highlights: ['样品编号', '离心条件', '复溶体积'], notes: ['预处理过程应在统一环境下进行，记录环境温湿度'], signatureLabels: ['操作人 / 日期', '现场复核人 / 日期', '审核人 / 日期'], summary: '用于样品预处理过程的原始记录，包含加样、离心、蒸发复溶等关键步骤追溯。', },
+  },
 ];
 
 export function getFormTemplateById(id: string) {

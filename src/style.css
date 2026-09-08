@@ -1,3 +1,90 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Shared presentation layer for the laboratory workspace. */
+body { -webkit-font-smoothing: antialiased; line-height: 1.6; }
+button, input, select, textarea { font: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+:where(button, a, input, select, textarea):focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+::selection { background: #ccecdf; color: #164e3b; }
+* { scrollbar-width: thin; scrollbar-color: #cbd5df transparent; }
+.ui-shell { isolation: isolate; }
+.ui-rail { background: #fff; padding-top: 24px; border-right-color: var(--border); }
+.ui-rail > div:first-child { border-radius: 13px; box-shadow: 0 5px 14px #07866b20; }
+.ui-rail > div:last-child { gap: 9px; }
+.ui-rail > div:last-child > div { min-height: 66px; border-radius: 12px; }
+.ui-rail span { font-size: 11px; }
+.ui-shell-header { padding-inline: 28px; }
+.ui-workspace-tabs { padding-inline: 28px; background: #ffffffd9; }
+.ui-workspace-tabs button { font-size: 13px; }
+.ui-main { padding: 26px 28px 40px; scroll-behavior: smooth; }
+.ui-main > div { min-width: 0; }
+.ui-page-header { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 24px; row-gap: 6px; align-items: center; }
+.ui-page-title { font-size: 24px; line-height: 1.4; letter-spacing: -.025em; }
+.ui-page-header > div:nth-child(2):not(.ui-page-actions) { grid-column: 1; margin-top: 0; font-size: 13px; }
+.ui-page-actions { grid-column: 2; grid-row: 1 / span 2; margin-top: 0; justify-content: flex-end; }
+.ui-card { padding: 22px; }
+.ui-card__header { margin-bottom: 20px; padding-bottom: 14px; }
+.ui-card__header > div { flex: 1; min-width: 0; }
+.ui-summary-item { position: relative; overflow: hidden; }
+.ui-summary-item::before { content: ''; position: absolute; left: 0; top: 22px; width: 3px; height: 24px; border-radius: 0 3px 3px 0; background: var(--primary-border); }
+.ui-summary-item > div:nth-child(2) { margin-top: 8px; font-size: 28px; line-height: 1.2; font-variant-numeric: tabular-nums; letter-spacing: -.03em; }
+.ui-button { border: 1px solid transparent; border-radius: 8px; line-height: 20px; white-space: nowrap; font-size: 13px; font-weight: 600; box-shadow: 0 1px 2px #0f172a05; }
+.ui-button--primary { background: var(--primary); border-color: var(--primary); color: white; }
+.ui-button--primary:hover:not(:disabled) { background: var(--primary-hover); border-color: var(--primary-hover); }
+.ui-button--secondary { background: white; color: var(--text-main); border-color: var(--border-strong); }
+.ui-button--secondary:hover:not(:disabled) { background: var(--surface-muted); border-color: #b3c2cf; }
+.ui-button--danger { background: var(--danger); color: white; border-color: var(--danger); }
+.ui-button--danger:hover:not(:disabled) { filter: brightness(.92); }
+.ui-button--ghost { background: transparent; color: var(--muted-foreground); box-shadow: none; }
+.ui-button--ghost:hover:not(:disabled) { background: var(--neutral-soft); color: var(--foreground); }
+.ui-button--sm { min-height: 34px; padding: 6px 12px; font-size: 12px; }
+.ui-button--md { min-height: 38px; padding: 8px 16px; }
+.ui-button--lg { min-height: 44px; padding: 11px 20px; }
+.ui-button:active:not(:disabled) { transform: translateY(1px); }
+.ui-field :is(input:not([type=radio]), select, textarea) { min-height: 38px; border-radius: 8px; font-size: 13px; line-height: 20px; }
+.ui-field select { padding-right: 32px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2364748b' stroke-width='1.5'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E"); background-position: right 10px center; background-repeat: no-repeat; }
+.ui-field textarea { resize: vertical; min-height: 94px; }
+.ui-field input[readonly] { background: var(--surface-muted); color: var(--muted-foreground); }
+.ui-tag { white-space: nowrap; font-size: 11px; line-height: 18px; font-weight: 500; }
+.ui-table { box-shadow: none; }
+.ui-table table { min-width: 640px; }
+.ui-table thead { background: #f7f9fb; }
+.ui-table th { height: 46px; font-size: 12px; color: #536479; letter-spacing: .015em; }
+.ui-table td { padding-top: 15px; padding-bottom: 15px; font-size: 13px; line-height: 1.6; }
+.ui-table tbody tr:last-child { border-bottom: 0; }
+.ui-table tbody tr:hover { background-color: #f5faf8; }
+.ui-step-wizard { padding: 6px 0; }
+.ui-step-wizard .text-\[10px\] { font-size: 11px; margin-top: 3px; }
+.ui-overlay { background: #172b4652; backdrop-filter: blur(2px); animation: overlay-in .18s ease-out; }
+.ui-drawer-panel { max-width: 560px; border-left: 1px solid var(--border); animation: drawer-in .22s ease-out; }
+.ui-drawer-panel > div:first-child { min-height: 76px; padding-inline: 24px; }
+.ui-drawer-panel > div:first-child button { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: var(--surface-muted); }
+.ui-drawer-panel > div:last-child:not(:first-child) { padding-inline: 24px; }
+.ui-drawer-panel > div:last-child.border-t { background: var(--surface-muted); padding-block: 18px; }
+@keyframes drawer-in { from { transform: translateX(32px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes overlay-in { from { opacity: 0; } to { opacity: 1; } }
+@media (max-width: 1024px) {
+  .ui-main { padding: 20px 18px 32px; }
+  .ui-page-header { grid-template-columns: minmax(0, 1fr); }
+  .ui-page-actions { grid-column: 1; grid-row: auto; justify-content: flex-start; margin-top: 8px; }
+}
+@media (max-width: 640px) {
+  :root { --rail-w: 64px; --header-h: 56px; }
+  .ui-shell-header, .ui-workspace-tabs { padding-inline: 12px; }
+  .ui-shell-header > div:first-child { font-size: 11px; gap: 4px; flex-wrap: wrap; }
+  .ui-shell-header > div:last-child { gap: 8px; }
+  .ui-main { padding: 16px 12px 28px; }
+  .ui-card { padding: 16px; }
+  .ui-page-title { font-size: 21px; }
+  .ui-summary { gap: 10px; }
+  .ui-summary-item { padding: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

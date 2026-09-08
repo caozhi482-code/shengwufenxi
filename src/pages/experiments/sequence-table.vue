@@ -325,6 +325,7 @@ import { evaluationItems } from '@/api/mock/evaluation';
 import { files, getFilesByProject, getFileTypeLabel } from '@/api/mock/files';
 import { projects } from '@/api/mock/projects';
 import { formTemplates } from '@/api/mock/form-templates';
+import { DEMO_PLAN_CODE } from '@/api/mock/demoContext';
 import type { EvaluationItem } from '@/api/mock/evaluation';
 import type { FileItem, FileType } from '@/api/mock/files';
 import type { SequenceCell, SequenceOperation, FormTemplateRecord, CellOperation } from '@/types/experiments';
@@ -352,7 +353,7 @@ const cellEditorOpen = ref(false);
 const selectedIds = computed(() => parseList(route.query.itemIds));
 const projectId = computed(() => parseSingle(route.query.projectId));
 const fileIds = computed(() => parseList(route.query.fileIds));
-const planCode = computed(() => parseSingle(route.query.planCode) || 'PLAN-DRAFT');
+const planCode = computed(() => parseSingle(route.query.planCode) || DEMO_PLAN_CODE);
 
 const selectedProject = computed(() => {
   const id = projectId.value;

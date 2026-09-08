@@ -1,6 +1,6 @@
 <template>
-  <div class="bg-white border border-[--border] rounded-[--radius-lg] shadow-[var(--shadow-card)] p-5">
-    <div v-if="$slots.header" class="flex items-center gap-2 mb-4 pb-3 border-b border-[--border]">
+  <div class="ui-card bg-white border border-[--border] rounded-[--radius-lg] shadow-[var(--shadow-card)] p-5">
+    <div v-if="$slots.header" class="ui-card__header flex items-center gap-2 mb-4 pb-3 border-b border-[--border]">
       <slot name="header" />
     </div>
     <slot />

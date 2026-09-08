@@ -148,7 +148,7 @@ function editTask(row: any) { editForm.value = { itemId: row.itemCode, taskName:
 function executeTask(row: any) {
   router.push({
     path: `/experiments/tasks/${row.id}/execute`,
-    query: { planCode, projectId: '' },
+    query: { planCode, projectId: 'PRJ001' },
   });
 }
 function saveTask() { showDrawer.value = false; }

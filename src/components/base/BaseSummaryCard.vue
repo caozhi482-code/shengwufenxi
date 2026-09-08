@@ -1,6 +1,6 @@
 <template>
-  <div class="bg-white border border-[--border] rounded-[--radius-lg] shadow-[var(--shadow-card)] p-4 grid grid-cols-4 gap-4">
-    <div v-for="(card, i) in cards" :key="i" class="p-3 border border-[--neutral-border] rounded-md">
+  <div class="ui-summary grid grid-cols-2 xl:grid-cols-4 gap-4">
+    <div v-for="(card, i) in cards" :key="i" class="ui-summary-item bg-white p-5 border border-[--border] rounded-[--radius-lg] shadow-[var(--shadow-card)]">
       <div class="text-xs text-[--muted-foreground] mb-1">{{ card.label }}</div>
       <div :class="['text-2xl font-bold', card.color || 'text-[--foreground]']">{{ card.value }}</div>
       <div v-if="card.sub" class="text-xs text-[--muted-foreground] mt-1">{{ card.sub }}</div>

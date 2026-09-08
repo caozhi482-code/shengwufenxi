@@ -6,7 +6,7 @@
 
     <BasePageHeader
       title="任务分配"
-      :subtitle="`${selectedProject?.name ?? '—'} · ${planCode}`"
+      :subtitle="`${selectedProject?.name ?? '—'} · ${planCode}${currentBatch ? ` · ${currentBatch.id}` : ''}`"
     >
       <template #extra>
         <BaseButton variant="secondary" size="sm" @click="backToPublish">返回确认创建</BaseButton>
@@ -285,8 +285,11 @@ import StepWizard from '@/components/experiments/StepWizard.vue';
 import { evaluationItems } from '@/api/mock/evaluation';
 import { projects } from '@/api/mock/projects';
 import { formTemplates } from '@/api/mock/form-templates';
+import { getBatchesByPlan } from '@/api/mock/batches';
+import { DEMO_PLAN_CODE } from '@/api/mock/demoContext';
 import type { EvaluationItem } from '@/api/mock/evaluation';
 import type { FormTemplateRecord } from '@/types/experiments';
+import type { AnalysisBatch } from '@/api/mock/batches';
 
 type PlanSubTask = {
   id: string;
@@ -350,10 +353,11 @@ const parseTemplatePairs = (value: unknown): Array<{ itemId: string; templateId:
     return { itemId: itemId?.trim() ?? '', templateId: templateId?.trim() ?? '' };
   }).filter(p => p.itemId && p.templateId);
 
-const planCode = computed(() => parseSingle(route.query.planCode) || 'PLAN-DRAFT');
+const planCode = computed(() => parseSingle(route.query.planCode) || DEMO_PLAN_CODE);
 const projectId = computed(() => parseSingle(route.query.projectId));
 const itemIds = computed(() => parseList(route.query.itemIds));
 const templateIds = computed(() => parseTemplatePairs(route.query.templateIds));
+const batchId = computed(() => parseSingle(route.query.batchId));
 
 const selectedProject = computed(() => {
   const id = projectId.value;
@@ -363,6 +367,11 @@ const selectedProject = computed(() => {
 const selectedItems = computed<EvaluationItem[]>(() =>
   evaluationItems.filter(item => itemIds.value.includes(item.id))
 );
+
+const currentBatch = computed(() => {
+  if (!batchId.value) return null;
+  return getBatchesByPlan(planCode.value).find(b => b.id === batchId.value) ?? null;
+});
 
 const investigatorOptions = computed(() => [
   { value: '张明', label: '张明' },
@@ -554,8 +563,9 @@ function backToPublish() {
     path: '/experiments/plans/new/publish',
     query: {
       planCode: planCode.value,
-      projectId: projectId.value,
+      projectId: projectId.value || 'PRJ001',
       itemIds: itemIds.value.join(','),
+      batchId: batchId.value,
       ...(templateIds.value.length > 0 ? { templateIds: templateIds.value.map(p => `${p.itemId}:${p.templateId}`).join(',') } : {}),
     },
   });
@@ -570,8 +580,9 @@ function backToWorkspace() {
       : '/experiments/plans/new/forms',
     query: {
       planCode: planCode.value,
-      projectId: projectId.value,
+      projectId: projectId.value || 'PRJ001',
       itemIds: itemIds.value.join(','),
+      batchId: batchId.value,
       ...(group ? { activeItemId: group.item.id } : {}),
       ...(firstTask ? { instanceId: firstTask.instanceId, currentTemplateId: firstTask.templateId } : {}),
       ...(templateIds.value.length > 0 ? { templateIds: templateIds.value.map(p => `${p.itemId}:${p.templateId}`).join(',') } : {}),
@@ -582,7 +593,7 @@ function backToWorkspace() {
 function goToTasks() {
   router.push({
     path: `/experiments/plans/${planCode.value}/tasks`,
-    query: { planCode: planCode.value, projectId: projectId.value || '' },
+    query: { planCode: planCode.value, projectId: projectId.value || 'PRJ001' },
   });
 }
 

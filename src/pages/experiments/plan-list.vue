@@ -1,12 +1,39 @@
 <template>
   <div class="space-y-5">
-    <BasePageHeader title="实验计划列表" subtitle="管理方法学验证实验计划">
+    <BasePageHeader title="实验计划列表" subtitle="实验负责人从 SD 已保存的项目进入，独立编辑实验计划">
       <template #extra>
         <BaseButton variant="secondary" @click="$router.push('/experiments/form-templates')">进入模板中心</BaseButton>
-        <BaseButton variant="secondary" @click="$router.push('/experiments/project-resource-allocation')">项目资源调配</BaseButton>
-        <BaseButton variant="primary" @click="$router.push('/experiments/plans/new')">+ 新建实验计划</BaseButton>
+        <BaseButton variant="primary" @click="$router.push('/experiments/project-resource-allocation')">SD 项目资源调配</BaseButton>
       </template>
     </BasePageHeader>
+
+    <BaseCard>
+      <template #header>
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <span class="text-base font-bold text-[--foreground]">待编辑实验计划项目</span>
+            <div class="text-xs text-[--muted-foreground] mt-0.5">SD 保存项目资源后，实验负责人从这里进入原实验计划编辑流程。</div>
+          </div>
+          <BaseTag label="实验负责人处理" tone="info" />
+        </div>
+      </template>
+      <div class="space-y-2">
+        <div
+          v-for="project in readyProjects"
+          :key="project.id"
+          class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[--border] bg-[--surface-muted] px-4 py-3"
+        >
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="text-sm font-semibold text-[--text-main]">{{ project.name }}</span>
+              <BaseTag label="资源已保存" tone="success" />
+            </div>
+            <div class="mt-1 text-xs text-[--muted-foreground]">{{ project.code }} · {{ project.department }} · SD：{{ project.manager }}</div>
+          </div>
+          <BaseButton variant="primary" size="sm" @click="enterPlanEditor(project)">进入实验计划编辑</BaseButton>
+        </div>
+      </div>
+    </BaseCard>
 
     <BaseSummaryCard :cards="summaryCards" />
 
@@ -33,9 +60,9 @@
       <template #cell-status="{ row }">
         <BaseTag :tone="statusTone(row.status)">{{ statusLabel(row.status) }}</BaseTag>
       </template>
-      <template #cell-actions>
+      <template #cell-actions="{ row }">
         <div class="flex gap-2">
-          <button class="text-[--info] text-xs font-medium hover:underline">编辑</button>
+          <button class="text-[--info] text-xs font-medium hover:underline" @click.stop="enterPlanEditorByPlan(row)">进入计划编辑</button>
           <button class="text-[--primary] text-xs font-medium hover:underline">发布</button>
           <button class="text-[--muted-foreground] text-xs hover:underline">查看任务</button>
           <button class="text-[--muted-foreground] text-xs hover:underline">复制</button>
@@ -56,6 +83,8 @@ import BaseFormField from '@/components/base/BaseFormField.vue';
 import BaseButton from '@/components/base/BaseButton.vue';
 import BaseTag from '@/components/base/BaseTag.vue';
 import { plans } from '@/api/mock/plans';
+import { projects } from '@/api/mock/projects';
+import type { Project } from '@/api/mock/projects';
 import type { Plan, PlanStatus } from '@/types/experiments';
 
 const router = useRouter();
@@ -78,6 +107,8 @@ const summaryCards = computed(() => [
   { label: '已完成', value: plans.filter(p => p.status === 'done').length },
   { label: '本月新建', value: '2' },
 ]);
+
+const readyProjects = computed(() => projects.filter(p => p.status === 'active').slice(0, 3));
 
 const columns = [
   { key: 'code', label: '计划编号' },
@@ -112,6 +143,27 @@ function viewPlan(row: Plan) {
   router.push({
     path: `/experiments/plans/${row.id}/tasks`,
     query: { planCode: row.code, projectId: '' },
+  });
+}
+function enterPlanEditor(project: Project) {
+  router.push({
+    path: '/experiments/plans/new',
+    query: {
+      projectId: project.id,
+      planCode: `PLAN-${project.code}-DRAFT`,
+      step: '2',
+    },
+  });
+}
+function enterPlanEditorByPlan(plan: Plan) {
+  const project = projects.find(p => p.name === plan.projectName || plan.projectName.includes(p.name.replace('项目', '')));
+  router.push({
+    path: '/experiments/plans/new',
+    query: {
+      projectId: project?.id ?? '',
+      planCode: plan.code,
+      step: project ? '2' : '1',
+    },
   });
 }
 function reset() { search.value = ''; statusFilter.value = ''; }

@@ -12,6 +12,8 @@
         <BaseButton variant="secondary" size="sm" @click="addStepDescription">新增步骤说明</BaseButton>
         <BaseButton variant="secondary" size="sm" @click="backToForms">上一步</BaseButton>
         <BaseButton variant="secondary" size="sm" @click="backToItems">返回考察项</BaseButton>
+        <BaseButton variant="secondary" size="sm" @click="goToSpecialRequest">申请特殊资源</BaseButton>
+        <BaseButton variant="secondary" size="sm" @click="goToDiscovery">新发现资源记录</BaseButton>
         <BaseButton variant="primary" size="sm" :disabled="workspaceForms.length === 0" @click="goToPublish">下一步：确认创建</BaseButton>
       </template>
     </BasePageHeader>
@@ -49,41 +51,36 @@
     </div>
 
     <div v-else class="space-y-4">
-      <div class="grid grid-cols-2 gap-5">
+      <div class="grid grid-cols-3 gap-4">
         <BaseCard>
           <template #header>
-            <div class="flex items-center justify-between gap-2">
-              <span class="text-sm font-bold text-[--foreground]">已选考察项</span>
-              <span class="text-xs text-[--muted-foreground]">{{ selectedItems.length }} 项</span>
-            </div>
+            <span class="text-xs font-bold text-[--foreground]">已选考察项</span>
           </template>
-
-          <div class="space-y-2">
+          <div class="space-y-1">
             <button
               v-for="item in selectedItems"
               :key="item.id"
               type="button"
-              class="w-full rounded-lg border p-3 text-left transition-all"
+              class="w-full rounded border p-2 text-left transition-all"
               :class="currentItem?.id === item.id ? 'border-[--primary] bg-[--primary-soft]' : 'border-[--border] bg-white hover:border-[--primary-border]'"
               @click="currentItemId = item.id"
             >
-              <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center justify-between gap-1">
                 <div class="min-w-0">
-                  <div class="truncate text-sm font-semibold text-[--text-main]">{{ item.name }}</div>
-                  <div class="mt-1 font-mono text-[10px] text-[--primary]">{{ item.id }}</div>
+                  <div class="truncate text-xs font-semibold text-[--text-main]">{{ item.name }}</div>
+                  <div class="mt-0.5 font-mono text-[9px] text-[--primary]">{{ item.id }}</div>
                 </div>
-                <BaseTag :label="`${selectionCount(item.id)} 个表单`" tone="success" />
+                <BaseTag :label="`${selectionCount(item.id)} 个表单`" tone="success" size="xs" />
               </div>
-              <div class="mt-2 text-xs text-[--muted-foreground]">点击查看该考察项下已选表单</div>
             </button>
           </div>
         </BaseCard>
 
         <BaseCard>
           <template #header>
-            <span class="text-sm font-bold text-[--foreground]">表单状态</span>
+            <span class="text-xs font-bold text-[--foreground]">表单状态</span>
           </template>
-          <div class="space-y-2 text-sm">
+          <div class="space-y-1.5 text-xs">
             <div class="flex justify-between gap-3">
               <span class="text-[--muted-foreground]">未编辑</span>
               <span class="font-semibold text-[--danger]">{{ statusCount('unedited') }}</span>
@@ -95,6 +92,39 @@
             <div class="flex justify-between gap-3">
               <span class="text-[--muted-foreground]">已完成</span>
               <span class="font-semibold text-[--primary]">{{ statusCount('done') }}</span>
+            </div>
+          </div>
+        </BaseCard>
+
+        <BaseCard>
+          <template #header>
+            <div class="flex items-center justify-between gap-2">
+              <div>
+                <span class="text-xs font-bold text-[--foreground]">SD已调配资源池</span>
+                <div class="text-[10px] text-[--muted-foreground] mt-0.5">由 SD 调配，仅供查看</div>
+              </div>
+              <div class="flex gap-1">
+                <BaseButton variant="secondary" size="xs" @click="goToSpecialRequest">申请</BaseButton>
+                <BaseButton variant="secondary" size="xs" @click="goToDiscovery">新发现</BaseButton>
+              </div>
+            </div>
+          </template>
+          <div v-if="allocationResources.length === 0" class="py-3 text-center text-[10px] text-[--muted-foreground]">
+            暂无已调配资源
+          </div>
+          <div v-else class="space-y-1.5 max-h-32 overflow-y-auto">
+            <div
+              v-for="r in allocationResources.slice(0, 5)"
+              :key="r.id"
+              class="rounded border border-[--border] bg-[--surface-muted] px-2 py-1.5"
+            >
+              <div class="flex items-center justify-between gap-1">
+                <span class="text-[11px] font-medium text-[--text-main] truncate">{{ r.name }}</span>
+                <BaseTag :label="r.source === 'sampleLedger' ? '样品台账' : r.source === 'warehouseLedger' ? '仓库台账' : r.source === 'equipmentLedger' ? '仪器台账' : '特殊'" :tone="r.source === 'sampleLedger' ? 'success' : r.source === 'warehouseLedger' ? 'info' : r.source === 'equipmentLedger' ? 'warning' : 'neutral'" size="xs" />
+              </div>
+              <div class="text-[9px] text-[--muted-foreground] mt-0.5">
+                {{ r.materialCode }} · {{ r.plannedQty }}{{ r.unit }}
+              </div>
             </div>
           </div>
         </BaseCard>
@@ -563,6 +593,8 @@ import type { EvaluationItem } from '@/api/mock/evaluation';
 import type { FileItem } from '@/api/mock/files';
 import type { SequenceCell, SequenceOperation, FormTemplateRecord } from '@/types/experiments';
 import type { MethodStep } from '@/types/experiments';
+import type { SDResourceItem } from '@/types/experiments';
+import { DEMO_PLAN_CODE } from '@/api/mock/demoContext';
 
 type FormStatus = 'unedited' | 'editing' | 'done';
 type TemplateFooter = { location?: string; time?: string; owner?: string; reviewer?: string };
@@ -598,9 +630,8 @@ const steps = [
   { label: '选择项目', sub: '确定计划所属项目' },
   { label: '选择关联文件', sub: '选择方法 / 方案 / SOP' },
   { label: '选择考察项', sub: '确定本次计划范围' },
-  { label: '选择模板表单', sub: '为考察项绑定表单模板' },
-  { label: '编辑模板内容', sub: '编辑计划下模板实例' },
-  { label: '确认创建', sub: '确认并创建实验计划' },
+  { label: '表单编辑', sub: '编辑表单内容' },
+  { label: '资源管理', sub: '查看调配资源池' },
 ];
 
 const currentItemId = ref(parseSingle(route.params.itemId) || parseSingle(route.query.activeItemId));
@@ -655,7 +686,7 @@ const projectId = computed(() => parseSingle(route.query.projectId));
 const fileIds = computed(() => parseList(route.query.fileIds));
 const itemIds = computed(() => parseList(route.query.itemIds));
 const templateIds = computed(() => parseTemplatePairs(route.query.templateIds));
-const planCode = computed(() => parseSingle(route.query.planCode) || 'PLAN-DRAFT');
+const planCode = computed(() => parseSingle(route.query.planCode) || DEMO_PLAN_CODE);
 const workspaceStateKey = computed(() => ['plan-workspace', planCode.value, projectId.value || ''].join('::'));
 
 const selectedProject = computed(() => {
@@ -671,6 +702,17 @@ const selectedFiles = computed<FileItem[]>(() => {
 
 const selectedItems = computed<EvaluationItem[]>(() => evaluationItems.filter(item => itemIds.value.includes(item.id)));
 const currentItem = computed<EvaluationItem | null>(() => selectedItems.value.find(item => item.id === currentItemId.value) ?? selectedItems.value[0] ?? null);
+const allocationResources = computed(() => {
+  if (typeof window === 'undefined' || !projectId.value) return [];
+  try {
+    const raw = window.localStorage.getItem(`project-resource-allocation::${projectId.value}`);
+    if (raw) {
+      const state = JSON.parse(raw) as { resources?: unknown[] };
+      return Array.isArray(state.resources) ? state.resources as SDResourceItem[] : [];
+    }
+  } catch { /* ignore */ }
+  return [];
+});
 const currentForms = computed(() => workspaceForms.value.filter(form => form.itemId === currentItem.value?.id));
 const activeForm = computed(() => currentForms.value.find(form => form.instanceId === activeFormId.value) ?? currentForms.value[0] ?? null);
 const currentOps = computed<SequenceOperation[]>(() => {
@@ -1697,6 +1739,18 @@ function goToPublish() {
       currentTemplateId: preferredTemplateId.value,
       ...(templateIds.value.length > 0 ? { templateIds: templateIds.value.map(pair => `${pair.itemId}:${pair.templateId}`).join(',') } : {}),
     },
+  });
+}
+function goToSpecialRequest() {
+  router.push({
+    path: '/experiments/special-resource-request',
+    query: { planCode: planCode.value, projectId: projectId.value },
+  });
+}
+function goToDiscovery() {
+  router.push({
+    path: '/experiments/ledger-discovery',
+    query: { planCode: planCode.value, projectId: projectId.value },
   });
 }
 

@@ -1,7 +1,7 @@
 <template>
-  <div class="flex gap-3">
+  <div class="ui-step-wizard flex gap-3">
     <div v-for="(step, i) in steps" :key="i" class="flex items-center gap-2 flex-1 last:flex-none">
-      <div :class="['w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0',
+      <div :class="['w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0',
         i < current ? 'bg-[--primary] text-white' :
         i === current ? 'bg-[--primary] text-white ring-2 ring-[--primary-soft] ring-offset-1' :
         'bg-[--neutral-soft] text-[--text-tertiary]']">

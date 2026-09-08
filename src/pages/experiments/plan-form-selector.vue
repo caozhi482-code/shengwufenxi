@@ -35,6 +35,16 @@
           <div class="text-xs text-[--muted-foreground]">模板实例</div>
           <div class="font-semibold text-[--text-main] mt-1">{{ selectedTemplateCount }} 个</div>
         </div>
+        <div class="rounded-lg border border-[--info-border] bg-[--info-soft] p-3">
+          <div class="text-xs text-[--muted-foreground]">分析批</div>
+          <div class="flex items-center gap-2 mt-1">
+            <div v-if="currentBatch" class="flex items-center gap-2">
+              <span class="font-mono text-xs font-semibold text-[--primary]">{{ currentBatch.id }}</span>
+              <span class="text-xs text-[--text-main]">{{ currentBatch.name }}</span>
+            </div>
+            <div v-else class="text-xs text-[--muted-foreground]">未指定</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -280,10 +290,13 @@ import { evaluationItems } from '@/api/mock/evaluation';
 import { files, getFilesByProject } from '@/api/mock/files';
 import { projects } from '@/api/mock/projects';
 import { formTemplates } from '@/api/mock/form-templates';
+import { getBatchesByPlan } from '@/api/mock/batches';
 import type { EvaluationItem } from '@/api/mock/evaluation';
 import type { FileItem } from '@/api/mock/files';
 import type { Project } from '@/api/mock/projects';
 import type { FormTemplateRecord, FormTemplateStatus } from '@/types/experiments';
+import type { AnalysisBatch } from '@/api/mock/batches';
+import { DEMO_PLAN_CODE } from '@/api/mock/demoContext';
 
 const router = useRouter();
 const route = useRoute();
@@ -305,7 +318,8 @@ const selectedTemplateIds = reactive<Record<string, string[]>>({});
 const projectId = computed(() => parseSingle(route.query.projectId));
 const fileIds = computed(() => parseList(route.query.fileIds));
 const itemIds = computed(() => parseList(route.query.itemIds));
-const planCode = computed(() => parseSingle(route.query.planCode) || (selectedProject.value ? `PLAN-${selectedProject.value.code}-DRAFT` : 'PLAN-DRAFT'));
+const batchId = computed(() => parseSingle(route.query.batchId));
+const planCode = computed(() => parseSingle(route.query.planCode) || (selectedProject.value ? `PLAN-${selectedProject.value.code}-DRAFT` : DEMO_PLAN_CODE));
 
 const selectedProject = computed<Project | null>(() => {
   const id = projectId.value;
@@ -319,6 +333,10 @@ const selectedFiles = computed<FileItem[]>(() => {
 });
 
 const selectedItems = computed<EvaluationItem[]>(() => evaluationItems.filter(item => itemIds.value.includes(item.id)));
+const currentBatch = computed(() => {
+  if (!batchId.value) return null;
+  return getBatchesByPlan(planCode.value).find(b => b.id === batchId.value) ?? null;
+});
 const currentItem = computed<EvaluationItem | null>(() => selectedItems.value.find(item => item.id === currentItemId.value) ?? selectedItems.value[0] ?? null);
 
 const initialTemplateIds = computed(() => parseTemplatePairs(route.query.templateIds));
@@ -489,10 +507,11 @@ function backToItems() {
   router.push({
     path: '/experiments/plans/new/items',
     query: {
-      projectId: selectedProject.value?.id ?? '',
+      projectId: selectedProject.value?.id ?? 'PRJ001',
       fileIds: fileIds.value.join(','),
       itemIds: itemIds.value.join(','),
       planCode: planCode.value,
+      batchId: batchId.value,
       ...(selectedTemplateCount.value > 0 ? { templateIds: selectedTemplateIdsQuery() } : {}),
       ...(currentItem.value?.id ? { activeItemId: currentItem.value.id } : {}),
     },
@@ -508,9 +527,10 @@ function goToTemplateEditor(preferredTemplateId?: string) {
     path: `/experiments/plans/${encodeURIComponent(planCode.value)}/items/${encodeURIComponent(item.id)}/forms`,
     query: {
       planCode: planCode.value,
-      projectId: selectedProject.value?.id ?? '',
+      projectId: selectedProject.value?.id ?? 'PRJ001',
       fileIds: fileIds.value.join(','),
       itemIds: itemIds.value.join(','),
+      batchId: batchId.value,
       templateIds: selectedTemplateIdsQuery(),
       currentTemplateId: templateId,
       activeItemId: item.id,
@@ -529,10 +549,11 @@ function goTemplateCenter() {
     path: '/experiments/form-templates',
     query: {
       from: 'plan-flow',
-      projectId: selectedProject.value?.id ?? '',
+      projectId: selectedProject.value?.id ?? 'PRJ001',
       fileIds: fileIds.value.join(','),
       itemIds: itemIds.value.join(','),
       planCode: planCode.value,
+      batchId: batchId.value,
     },
   });
 }

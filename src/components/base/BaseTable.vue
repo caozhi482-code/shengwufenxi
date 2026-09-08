@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white border border-[--border] rounded-[--radius-lg] shadow-[var(--shadow-card)] overflow-hidden">
+  <div class="ui-table bg-white border border-[--border] rounded-[--radius-lg] shadow-[var(--shadow-card)] overflow-x-auto">
     <table class="w-full text-sm">
       <thead>
         <tr class="border-b border-[--border] bg-[--surface-muted]">

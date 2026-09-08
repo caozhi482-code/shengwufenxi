@@ -608,6 +608,7 @@ import type { EvaluationItem } from '@/api/mock/evaluation';
 import type { FormTemplateRecord } from '@/types/experiments';
 import type { SDResourceItem, SDResourceType, SDResourceStatus, SDResourceSource } from '@/types/experiments';
 import { sampleLedger, warehouseLedger, equipmentLedger } from '@/api/mock/ledgers';
+import { DEMO_PLAN_CODE } from '@/api/mock/demoContext';
 import type { SampleLedgerItem, WarehouseLedgerItem, EquipmentLedgerItem } from '@/api/mock/ledgers';
 
 type FormStatus = 'unedited' | 'editing' | 'done';
@@ -666,7 +667,7 @@ const parseTemplatePairs = (value: unknown): Array<{ itemId: string; templateId:
     return { itemId: itemId?.trim() ?? '', templateId: templateId?.trim() ?? '' };
   }).filter(p => p.itemId && p.templateId);
 
-const planCode = computed(() => parseSingle(route.query.planCode) || 'PLAN-DRAFT');
+const planCode = computed(() => parseSingle(route.query.planCode) || DEMO_PLAN_CODE);
 const projectId = computed(() => parseSingle(route.query.projectId));
 const itemIds = computed(() => parseList(route.query.itemIds));
 const templateIds = computed(() => parseTemplatePairs(route.query.templateIds));
