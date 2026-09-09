@@ -100,7 +100,7 @@ import type { SequenceOperation } from '@/types/experiments';
 interface Row { id: string; sampleId: string; initialResult: string; initialBatch: string; reason: string; reResult: string; reBatch: string; }
 interface ModelValue { context: { projectCode?: string; analyteName?: string; linearRange?: string }; rows: Row[]; signatures: { summarizer: string; lead: string; auditor: string }; }
 const props = withDefaults(defineProps<{ modelValue: ModelValue; editable?: boolean }>(), { editable: false });
-const emit = defineEmits<{ 'update:modelValue': [value: ModelValue]; }>()();
+const emit = defineEmits<{ 'update:modelValue': [value: ModelValue]; }>();
 const model = computed(() => props.modelValue);
 const drawerOpen = ref(false);
 const activeCellRow = ref(0);

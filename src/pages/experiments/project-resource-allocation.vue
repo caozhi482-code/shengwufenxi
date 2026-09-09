@@ -303,7 +303,7 @@
             type="button"
             class="flex-1 text-xs font-medium py-1.5 px-3 rounded-md transition-all"
             :class="drawerSource === tab.value ? 'bg-white text-[--text-main] shadow-sm' : 'text-[--muted-foreground] hover:text-[--text-main]'"
-            @click="drawerSource = tab.value; drawerSearch = ''"
+            @click="switchDrawerSource(tab.value)"
           >{{ tab.label }}</button>
         </div>
 
@@ -327,6 +327,7 @@
               <option value="consumable">耗材</option>
               <option value="solvent">溶剂</option>
             </select>
+            <BaseButton variant="secondary" size="sm" @click="toggleAllWarehouseLedger">{{ isAllWarehouseSelected ? '取消全选' : '全选' }}</BaseButton>
           </div>
           <div class="space-y-1.5 max-h-[240px] overflow-y-auto pr-1">
             <div
@@ -378,6 +379,7 @@
               <option value="质控品">质控品</option>
               <option value="基质">基质</option>
             </select>
+            <BaseButton variant="secondary" size="sm" @click="toggleAllSampleLedger">{{ isAllSampleSelected ? '取消全选' : '全选' }}</BaseButton>
           </div>
           <div class="space-y-1.5 max-h-[240px] overflow-y-auto pr-1">
             <div
@@ -410,13 +412,16 @@
 
         <!-- 仪器台账 -->
         <template v-else-if="drawerSource === 'equipmentLedger'">
-          <div class="relative">
-            <input
-              type="text"
-              v-model="drawerSearch"
-              class="w-full h-8 pl-3 pr-3 text-xs bg-white border border-[--border] rounded-md outline-none focus:border-[--primary]"
-              placeholder="搜索设备名称、编号、型号…"
-            />
+          <div class="flex gap-2 items-center">
+            <div class="relative flex-1">
+              <input
+                type="text"
+                v-model="drawerSearch"
+                class="w-full h-8 pl-3 pr-3 text-xs bg-white border border-[--border] rounded-md outline-none focus:border-[--primary]"
+                placeholder="搜索设备名称、编号、型号…"
+              />
+            </div>
+            <BaseButton variant="secondary" size="sm" @click="toggleAllEquipmentLedger">{{ isAllEquipmentSelected ? '取消全选' : '全选' }}</BaseButton>
           </div>
           <div class="space-y-1.5 max-h-[240px] overflow-y-auto pr-1">
             <div
@@ -462,7 +467,8 @@
           </div>
         </div>
 
-        <!-- 公共表单 -->
+        <!-- 手动资源才需要填写基础信息；台账物资的基础信息统一在详情中查看。 -->
+        <template v-if="shouldShowManualResourceFields">
         <div class="grid grid-cols-2 gap-4">
           <BaseFormField label="资源名称" placeholder="输入资源名称" v-model="editForm.name" />
           <BaseFormField label="物料编码" placeholder="如：REG-2026-001" v-model="editForm.materialCode" />
@@ -475,6 +481,7 @@
           <BaseFormField label="规格型号" placeholder="如：10mL/瓶" v-model="editForm.specification" />
           <BaseFormField label="品牌" placeholder="如：Sigma" v-model="editForm.brand" />
         </div>
+        </template>
         <div class="grid grid-cols-3 gap-4">
           <BaseFormField label="计划数量" type="number" placeholder="0" v-model.number="editForm.plannedQty" />
           <BaseFormField label="当前库存" type="number" placeholder="0" v-model.number="editForm.currentStock" />
@@ -660,7 +667,7 @@ const priorityOptions = [
 
 const localStorageKey = computed(() => selectedProject.value ? `project-resource-allocation::${selectedProject.value.id}` : 'project-resource-allocation::draft');
 
-const drawerTabs = [
+const drawerTabs: Array<{ label: string; value: SDResourceSource }> = [
   { label: '仓库台账', value: 'warehouseLedger' },
   { label: '样品台账', value: 'sampleLedger' },
   { label: '仪器台账', value: 'equipmentLedger' },
@@ -696,6 +703,15 @@ const filteredEquipmentLedger = computed<EquipmentLedgerItem[]>(() => {
   const q = drawerSearch.value.toLowerCase();
   return equipmentLedger.filter(i => i.name.toLowerCase().includes(q) || i.code.toLowerCase().includes(q));
 });
+const isAllWarehouseSelected = computed(() =>
+  filteredWarehouseLedger.value.length > 0 && filteredWarehouseLedger.value.every(item => selectedLedgerIds.value.includes(item.id))
+);
+const isAllSampleSelected = computed(() =>
+  filteredSampleLedger.value.length > 0 && filteredSampleLedger.value.every(item => selectedLedgerIds.value.includes(item.id))
+);
+const isAllEquipmentSelected = computed(() =>
+  filteredEquipmentLedger.value.length > 0 && filteredEquipmentLedger.value.every(item => selectedLedgerIds.value.includes(item.id))
+);
 
 const selectedLedgerItems = computed(() => {
   const ids = new Set(selectedLedgerIds.value);
@@ -704,6 +720,9 @@ const selectedLedgerItems = computed(() => {
   if (drawerSource.value === 'equipmentLedger') return equipmentLedger.filter(item => ids.has(item.id));
   return [];
 });
+const shouldShowManualResourceFields = computed(() =>
+  drawerMode.value === 'edit' || drawerSource.value === 'special' || selectedLedgerIds.value.length === 0
+);
 
 const ledgerDetailTitle = computed(() => ledgerDetailItem.value?.name ?? '物品详情');
 const ledgerDetailSourceLabel = computed(() => sourceLabel(ledgerDetailSource.value));
@@ -963,15 +982,29 @@ function openAddDrawer() {
   selectedLedgerIds.value = [];
   closeLedgerDetail();
   editingId.value = '';
+  resetEditFormForActiveFile();
+  drawerOpen.value = true;
+}
+
+function resetEditFormForActiveFile() {
   editForm.value = {
-    fileId: activeFile.value.id,
-    fileName: activeFile.value.name,
-    fileType: activeFile.value.type,
+    fileId: activeFile.value?.id ?? '',
+    fileName: activeFile.value?.name ?? '',
+    fileType: activeFile.value?.type ?? 'sop',
     name: '', materialCode: '', type: 'reagent', specification: '', unit: '', plannedQty: 0, currentStock: 0,
     gapQty: 0, brand: '', expectedArrival: '', isCritical: false, priority: 'medium', status: 'pending', remark: '',
     source: 'special', itemId: '', itemName: '', templateId: '', templateName: '',
   };
-  drawerOpen.value = true;
+}
+
+function switchDrawerSource(source: SDResourceSource) {
+  drawerSource.value = source;
+  drawerSearch.value = '';
+  selectedLedgerIds.value = [];
+  closeLedgerDetail();
+  resetEditFormForActiveFile();
+  if (source === 'warehouseLedger') drawerWarehouseFilter.value = '全部';
+  if (source === 'sampleLedger') drawerSampleFilter.value = '全部';
 }
 
 function isLedgerSelected(id: string): boolean {
@@ -1000,6 +1033,43 @@ function toggleEquipmentLedger(item: EquipmentLedgerItem) {
   drawerSource.value = 'equipmentLedger';
   toggleLedger(item.id);
   fillFromEquipmentLedger(item);
+}
+
+function replaceSelectedLedgerIds(ids: string[]) {
+  selectedLedgerIds.value = [...ids];
+}
+
+function toggleAllWarehouseLedger() {
+  if (isAllWarehouseSelected.value) {
+    replaceSelectedLedgerIds([]);
+    resetEditFormForActiveFile();
+    return;
+  }
+  replaceSelectedLedgerIds(filteredWarehouseLedger.value.map(item => item.id));
+  const first = filteredWarehouseLedger.value[0];
+  if (first) fillFromWarehouseLedger(first);
+}
+
+function toggleAllSampleLedger() {
+  if (isAllSampleSelected.value) {
+    replaceSelectedLedgerIds([]);
+    resetEditFormForActiveFile();
+    return;
+  }
+  replaceSelectedLedgerIds(filteredSampleLedger.value.map(item => item.id));
+  const first = filteredSampleLedger.value[0];
+  if (first) fillFromSampleLedger(first);
+}
+
+function toggleAllEquipmentLedger() {
+  if (isAllEquipmentSelected.value) {
+    replaceSelectedLedgerIds([]);
+    resetEditFormForActiveFile();
+    return;
+  }
+  replaceSelectedLedgerIds(filteredEquipmentLedger.value.map(item => item.id));
+  const first = filteredEquipmentLedger.value[0];
+  if (first) fillFromEquipmentLedger(first);
 }
 
 function openLedgerDetail(source: SDResourceSource, item: SampleLedgerItem | WarehouseLedgerItem | EquipmentLedgerItem) {
