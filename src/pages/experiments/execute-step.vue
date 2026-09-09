@@ -555,45 +555,6 @@
             <BaseFormField type="textarea" v-model="exceptionForm.reason" :required="true"
               placeholder="请详细描述异常发生的原因、过程及现场情况..." />
           </div>
-          <!-- 异常详情 -->
-          <div>
-            <div class="text-xs font-bold text-[--text-main] mb-2 flex items-center gap-1.5">
-              <div class="w-1 h-3 bg-[--danger] rounded-full" />异常详情
-            </div>
-            <div class="bg-[--surface] rounded-md border border-[--border] p-3 space-y-2 text-xs">
-              <div class="grid grid-cols-2 gap-x-3">
-                <div><span class="text-[--muted-foreground]">计划值：</span><span class="text-[--warning] font-mono">{{ getSelectedCellPlanDisplay() || '—' }}</span></div>
-                <div><span class="text-[--muted-foreground]">实际值：</span><span class="text-[--text-main] font-mono">{{ getSelectedCellActualDisplay() || '—' }}</span></div>
-              </div>
-              <div class="flex gap-4 text-[--muted-foreground]">
-                <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" v-model="exceptionForm.affectsNext" class="accent-[--danger]" /> 影响后续步骤</label>
-                <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" v-model="exceptionForm.needsRetake" class="accent-[--danger]" /> 需重新执行</label>
-                <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" v-model="exceptionForm.pauseTask" class="accent-[--danger]" /> 暂停当前任务</label>
-              </div>
-            </div>
-          </div>
-          <!-- 处理建议 -->
-          <div>
-            <div class="text-xs font-bold text-[--text-main] mb-2 flex items-center gap-1.5">
-              <div class="w-1 h-3 bg-[--danger] rounded-full" />处理建议
-            </div>
-            <select v-model="exceptionForm.handling"
-              class="w-full text-xs border border-[--border] rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[--danger]/40 bg-white"
-            >
-              <option v-for="h in exceptionHandlingOptions" :key="h.value" :value="h.value">{{ h.label }}</option>
-            </select>
-          </div>
-          <!-- 证明材料 -->
-          <div>
-            <div class="text-xs font-bold text-[--text-main] mb-2 flex items-center gap-1.5">
-              <div class="w-1 h-3 bg-[--danger] rounded-full" />证明材料
-            </div>
-            <div class="border-2 border-dashed border-[--border] rounded-md p-4 text-center text-[10px] text-[--muted-foreground] hover:border-[--danger]/40 cursor-pointer transition-colors">
-              <div class="text-lg mb-1">📎</div>
-              <div>点击上传截图、照片或扫码结果</div>
-              <div class="text-[9px] mt-0.5">支持 JPG/PNG/PDF，最大 10MB</div>
-            </div>
-          </div>
         </div>
         <div class="px-5 py-4 border-t border-[--border] flex items-center justify-end gap-2 bg-[--surface]">
           <BaseButton variant="secondary" size="sm" @click="showExceptionDrawer = false">取消</BaseButton>
@@ -1253,10 +1214,6 @@ const showExceptionDrawer = ref(false);
 const exceptionForm = ref({
   type: '',
   reason: '',
-  affectsNext: false,
-  needsRetake: false,
-  pauseTask: false,
-  handling: '',
 });
 
 interface ExceptionRecord {
@@ -1265,9 +1222,6 @@ interface ExceptionRecord {
   reason: string;
   cell: string;
   step: string;
-  affectsNext: boolean;
-  needsRetake: boolean;
-  handling: string;
   status: 'submitted' | 'pending' | 'approved' | 'rejected' | 'closed';
   createdAt: string;
 }
@@ -1279,9 +1233,6 @@ const exceptionRecords = ref<ExceptionRecord[]>([
     reason: '移液器校准过期，加入体积偏差约±15%',
     cell: 'A-3',
     step: '步骤三：加入沉淀剂',
-    affectsNext: true,
-    needsRetake: true,
-    handling: '暂停当前任务',
     status: 'approved',
     createdAt: '2026-09-03 14:30:00',
   },
@@ -1298,34 +1249,15 @@ const exceptionTypes = [
   { value: '其他', label: '其他' },
 ];
 
-const exceptionHandlingOptions = [
-  { value: 'continue_flag', label: '继续执行并标记偏差' },
-  { value: 'pause', label: '暂停当前任务' },
-  { value: 'retake', label: '重新录入该格子' },
-  { value: 'review', label: '提交复核' },
-];
 
 function openExceptionDrawer() {
   showExceptionDrawer.value = true;
-  exceptionForm.value = { type: '', reason: '', affectsNext: false, needsRetake: false, pauseTask: false, handling: '' };
-}
-
-function getSelectedCellPlanDisplay(): string {
-  if (!selectedCell.value) return '';
-  return selectedCell.value.operations.map(op =>
-    `${op.action}：${op.substance || '—'} ${op.volume ?? '—'}${op.unit || ''} ${op.equipment || ''}`
-  ).join('；');
-}
-
-function getSelectedCellActualDisplay(): string {
-  if (!selectedCell.value) return '';
-  const data = getCellExecData();
-  return `${data.substance || '—'} ${data.volume ?? '—'}${data.unit || ''} ${data.equipment || ''}`;
+  exceptionForm.value = { type: '', reason: '' };
 }
 
 function submitException() {
   if (!exceptionForm.value.type || !exceptionForm.value.reason.trim()) {
-    alert('请填写异常类型和异常原因');
+    alert('请填写现象类型和现象描述');
     return;
   }
   const record: ExceptionRecord = {
@@ -1334,9 +1266,6 @@ function submitException() {
     reason: exceptionForm.value.reason,
     cell: selectedCellLabel.value || '未选择',
     step: currentStepData.value?.action?.slice(0, 30) || '—',
-    affectsNext: exceptionForm.value.affectsNext,
-    needsRetake: exceptionForm.value.needsRetake,
-    handling: exceptionForm.value.handling,
     status: 'pending',
     createdAt: new Date().toLocaleString('zh-CN', { hour12: false }),
   };
