@@ -328,14 +328,17 @@
               <option value="solvent">溶剂</option>
             </select>
           </div>
-          <div class="space-y-1.5 max-h-[200px] overflow-y-auto pr-1">
+          <div class="space-y-1.5 max-h-[240px] overflow-y-auto pr-1">
             <div
               v-for="item in filteredWarehouseLedger"
               :key="item.id"
-                            class="flex items-start gap-3 p-2.5 rounded-lg border cursor-pointer transition-all hover:border-[--primary-border] hover:bg-[--primary-soft]/30"
-              :class="item.status === 'out_of_stock' ? 'opacity-50 border-dashed' : 'border-[--border]'"
-              @click="fillFromWarehouseLedger(item)"
+              class="flex items-start gap-3 p-2.5 rounded-lg border transition-all hover:border-[--primary-border] hover:bg-[--primary-soft]/30"
+              :class="[
+                isLedgerSelected(item.id) ? 'border-[--primary] bg-[--primary-soft]' : 'border-[--border]',
+                item.status === 'out_of_stock' ? 'opacity-60 border-dashed' : ''
+              ]"
             >
+              <BaseCheckbox :checked="isLedgerSelected(item.id)" @update:checked="() => toggleWarehouseLedger(item)" />
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2">
                   <span class="text-xs font-medium text-[--text-main] truncate">{{ item.name }}</span>
@@ -347,10 +350,11 @@
               <div class="shrink-0">
                 <BaseTag :label="warehouseStockStatusLabel(item)" :tone="warehouseStockStatusTone(item)" />
               </div>
+              <button type="button" class="shrink-0 text-xs font-medium text-[--primary] hover:underline" @click.stop="openLedgerDetail('warehouseLedger', item)">详情</button>
             </div>
             <div v-if="filteredWarehouseLedger.length === 0" class="text-xs text-[--muted-foreground] text-center py-6">无匹配结果</div>
           </div>
-          <div class="text-[10px] text-[--muted-foreground]">点击条目自动填充表单，可在下方手动调整</div>
+          <div class="text-[10px] text-[--muted-foreground]">可勾选多条台账物资批量加入；点击详情查看完整台账信息。</div>
         </template>
 
         <!-- 样品台账 -->
@@ -375,14 +379,17 @@
               <option value="基质">基质</option>
             </select>
           </div>
-          <div class="space-y-1.5 max-h-[200px] overflow-y-auto pr-1">
+          <div class="space-y-1.5 max-h-[240px] overflow-y-auto pr-1">
             <div
               v-for="item in filteredSampleLedger"
               :key="item.id"
-                            class="flex items-start gap-3 p-2.5 rounded-lg border cursor-pointer transition-all hover:border-[--primary-border] hover:bg-[--primary-soft]/30"
-              :class="item.status === 'out_of_stock' ? 'opacity-50 border-dashed' : 'border-[--border]'"
-              @click="fillFromSampleLedger(item)"
+              class="flex items-start gap-3 p-2.5 rounded-lg border transition-all hover:border-[--primary-border] hover:bg-[--primary-soft]/30"
+              :class="[
+                isLedgerSelected(item.id) ? 'border-[--primary] bg-[--primary-soft]' : 'border-[--border]',
+                item.status === 'out_of_stock' ? 'opacity-60 border-dashed' : ''
+              ]"
             >
+              <BaseCheckbox :checked="isLedgerSelected(item.id)" @update:checked="() => toggleSampleLedger(item)" />
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2">
                   <span class="text-xs font-medium text-[--text-main] truncate">{{ item.name }}</span>
@@ -394,10 +401,11 @@
               <div class="shrink-0">
                 <BaseTag :label="sampleStockStatusLabel(item)" :tone="sampleStockStatusTone(item)" />
               </div>
+              <button type="button" class="shrink-0 text-xs font-medium text-[--primary] hover:underline" @click.stop="openLedgerDetail('sampleLedger', item)">详情</button>
             </div>
             <div v-if="filteredSampleLedger.length === 0" class="text-xs text-[--muted-foreground] text-center py-6">无匹配结果</div>
           </div>
-          <div class="text-[10px] text-[--muted-foreground]">点击条目自动填充表单，可在下方手动调整</div>
+          <div class="text-[10px] text-[--muted-foreground]">可勾选多条台账物资批量加入；点击详情查看完整台账信息。</div>
         </template>
 
         <!-- 仪器台账 -->
@@ -410,14 +418,17 @@
               placeholder="搜索设备名称、编号、型号…"
             />
           </div>
-          <div class="space-y-1.5 max-h-[200px] overflow-y-auto pr-1">
+          <div class="space-y-1.5 max-h-[240px] overflow-y-auto pr-1">
             <div
               v-for="item in filteredEquipmentLedger"
               :key="item.id"
-                            class="flex items-start gap-3 p-2.5 rounded-lg border cursor-pointer transition-all hover:border-[--primary-border] hover:bg-[--primary-soft]/30"
-              :class="item.status !== 'available' ? 'opacity-60 border-dashed' : 'border-[--border]'"
-              @click="fillFromEquipmentLedger(item)"
+              class="flex items-start gap-3 p-2.5 rounded-lg border transition-all hover:border-[--primary-border] hover:bg-[--primary-soft]/30"
+              :class="[
+                isLedgerSelected(item.id) ? 'border-[--primary] bg-[--primary-soft]' : 'border-[--border]',
+                item.status !== 'available' ? 'opacity-60 border-dashed' : ''
+              ]"
             >
+              <BaseCheckbox :checked="isLedgerSelected(item.id)" @update:checked="() => toggleEquipmentLedger(item)" />
               <div class="flex-1 min-w-0">
                 <div class="text-xs font-medium text-[--text-main]">{{ item.name }}</div>
                 <div class="text-[10px] text-[--muted-foreground] font-mono mt-0.5">{{ item.code }} · {{ item.model }} · {{ item.brand }}</div>
@@ -426,10 +437,11 @@
               <div class="shrink-0">
                 <BaseTag :label="equipStatusLabel(item.status)" :tone="equipStatusTone(item.status)" />
               </div>
+              <button type="button" class="shrink-0 text-xs font-medium text-[--primary] hover:underline" @click.stop="openLedgerDetail('equipmentLedger', item)">详情</button>
             </div>
             <div v-if="filteredEquipmentLedger.length === 0" class="text-xs text-[--muted-foreground] text-center py-6">无匹配结果</div>
           </div>
-          <div class="text-[10px] text-[--muted-foreground]">点击条目自动填充表单，可在下方手动调整</div>
+          <div class="text-[10px] text-[--muted-foreground]">可勾选多台设备批量加入；点击详情查看完整台账信息。</div>
         </template>
 
         <!-- 特殊资源 -->
@@ -443,9 +455,10 @@
         <div v-if="drawerSource !== 'special'" class="rounded-md border border-[--border] bg-[--surface-muted] px-3 py-2 text-xs">
           <div class="font-medium text-[--text-main] mb-1">已选来源</div>
           <div class="text-[--muted-foreground]">
-            <span v-if="drawerSource === 'warehouseLedger'">来源：仓库台账 · {{ editForm.materialCode || '未选中条目' }}</span>
-            <span v-else-if="drawerSource === 'sampleLedger'">来源：样品台账 · {{ editForm.materialCode || '未选中条目' }}</span>
-            <span v-else-if="drawerSource === 'equipmentLedger'">来源：仪器台账 · {{ editForm.materialCode || '未选中条目' }}</span>
+            <span v-if="selectedLedgerIds.length > 0">已选 {{ selectedLedgerIds.length }} 条台账物资，保存后将批量加入当前文件资源清单。</span>
+            <span v-else-if="drawerSource === 'warehouseLedger'">来源：仓库台账 · 未选中条目</span>
+            <span v-else-if="drawerSource === 'sampleLedger'">来源：样品台账 · 未选中条目</span>
+            <span v-else-if="drawerSource === 'equipmentLedger'">来源：仪器台账 · 未选中条目</span>
           </div>
         </div>
 
@@ -471,10 +484,6 @@
           <BaseFormField label="预计到位时间" type="date" v-model="editForm.expectedArrival" />
           <BaseFormField label="优先级" type="select" :options="priorityOptions" v-model="editForm.priority" />
         </div>
-        <div class="flex items-center gap-2">
-          <BaseCheckbox :checked="editForm.isCritical" @update:checked="v => (editForm.isCritical = v)" />
-          <span class="text-xs text-[--text-main]">关键物料</span>
-        </div>
         <BaseFormField label="备注" type="textarea" placeholder="可选备注" v-model="editForm.remark" />
       </div>
       <template #footer>
@@ -491,6 +500,29 @@
         <div class="flex justify-end gap-2">
           <BaseButton variant="secondary" @click="confirmDelete = null">取消</BaseButton>
           <BaseButton variant="danger" size="sm" @click="confirmDeleteResource">确认删除</BaseButton>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="ledgerDetailOpen" class="fixed inset-0 z-50 flex items-center justify-center">
+      <div class="absolute inset-0 bg-black/30" @click="closeLedgerDetail" />
+      <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 p-5">
+        <div class="flex items-start justify-between gap-4 border-b border-[--border] pb-3">
+          <div>
+            <div class="text-base font-bold text-[--text-main]">{{ ledgerDetailTitle }}</div>
+            <div class="mt-1 text-xs text-[--muted-foreground]">{{ ledgerDetailSourceLabel }}</div>
+          </div>
+          <button type="button" class="text-sm text-[--muted-foreground] hover:text-[--foreground]" @click="closeLedgerDetail">关闭</button>
+        </div>
+        <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
+          <div v-for="row in ledgerDetailRows" :key="row.label" class="rounded-lg border border-[--border] bg-[--surface-muted] px-3 py-2">
+            <div class="text-[10px] text-[--muted-foreground]">{{ row.label }}</div>
+            <div class="mt-1 break-words text-xs font-medium text-[--text-main]">{{ row.value || '—' }}</div>
+          </div>
+        </div>
+        <div class="mt-4 flex justify-end gap-2">
+          <BaseButton variant="secondary" size="sm" @click="closeLedgerDetail">关闭</BaseButton>
+          <BaseButton v-if="ledgerDetailItem" variant="primary" size="sm" @click="selectLedgerFromDetail">选中该物品</BaseButton>
         </div>
       </div>
     </div>
@@ -565,6 +597,10 @@ const drawerSource = ref<SDResourceSource>('warehouseLedger');
 const drawerSearch = ref('');
 const drawerSampleFilter = ref('全部');
 const drawerWarehouseFilter = ref('全部');
+const selectedLedgerIds = ref<string[]>([]);
+const ledgerDetailOpen = ref(false);
+const ledgerDetailSource = ref<SDResourceSource>('warehouseLedger');
+const ledgerDetailItem = ref<SampleLedgerItem | WarehouseLedgerItem | EquipmentLedgerItem | null>(null);
 const confirmDelete = ref<AllocationResourceItem | null>(null);
 const editingId = ref('');
 const editForm = ref<Partial<AllocationResourceItem>>({
@@ -659,6 +695,61 @@ const filteredEquipmentLedger = computed<EquipmentLedgerItem[]>(() => {
   if (!drawerSearch.value) return equipmentLedger;
   const q = drawerSearch.value.toLowerCase();
   return equipmentLedger.filter(i => i.name.toLowerCase().includes(q) || i.code.toLowerCase().includes(q));
+});
+
+const selectedLedgerItems = computed(() => {
+  const ids = new Set(selectedLedgerIds.value);
+  if (drawerSource.value === 'warehouseLedger') return warehouseLedger.filter(item => ids.has(item.id));
+  if (drawerSource.value === 'sampleLedger') return sampleLedger.filter(item => ids.has(item.id));
+  if (drawerSource.value === 'equipmentLedger') return equipmentLedger.filter(item => ids.has(item.id));
+  return [];
+});
+
+const ledgerDetailTitle = computed(() => ledgerDetailItem.value?.name ?? '物品详情');
+const ledgerDetailSourceLabel = computed(() => sourceLabel(ledgerDetailSource.value));
+const ledgerDetailRows = computed(() => {
+  const item = ledgerDetailItem.value;
+  if (!item) return [];
+  if (ledgerDetailSource.value === 'warehouseLedger') {
+    const row = item as WarehouseLedgerItem;
+    return [
+      { label: '物料编码', value: row.code },
+      { label: '类型', value: warehouseTypeLabel(row.type) },
+      { label: '规格', value: row.specification },
+      { label: '品牌', value: row.brand },
+      { label: '批次', value: row.batch },
+      { label: '库存', value: `${row.stock}${row.unit}` },
+      { label: '货位', value: row.shelf },
+      { label: '状态', value: warehouseStockStatusLabel(row) },
+      { label: '备注', value: row.remark ?? '' },
+    ];
+  }
+  if (ledgerDetailSource.value === 'sampleLedger') {
+    const row = item as SampleLedgerItem;
+    return [
+      { label: '物料编码', value: row.code },
+      { label: '类型', value: row.type },
+      { label: '规格', value: row.specification },
+      { label: '品牌', value: row.brand },
+      { label: '批次', value: row.batch },
+      { label: '库存', value: `${row.stock}${row.unit}` },
+      { label: '存放位置', value: row.location },
+      { label: '有效期', value: row.expiryDate },
+      { label: '状态', value: sampleStockStatusLabel(row) },
+      { label: '备注', value: row.remark ?? '' },
+    ];
+  }
+  const row = item as EquipmentLedgerItem;
+  return [
+    { label: '设备编号', value: row.code },
+    { label: '型号', value: row.model },
+    { label: '品牌', value: row.brand },
+    { label: '序列号', value: row.serialNumber },
+    { label: '位置', value: row.location },
+    { label: '状态', value: equipStatusLabel(row.status) },
+    { label: '下次校准', value: row.nextCalibration },
+    { label: '备注', value: row.remark ?? '' },
+  ];
 });
 
 function sampleTypeTone(t: string): 'success' | 'info' | 'warning' | 'danger' | 'neutral' {
@@ -869,6 +960,8 @@ function openAddDrawer() {
   drawerSearch.value = '';
   drawerSampleFilter.value = '全部';
   drawerWarehouseFilter.value = '全部';
+  selectedLedgerIds.value = [];
+  closeLedgerDetail();
   editingId.value = '';
   editForm.value = {
     fileId: activeFile.value.id,
@@ -881,9 +974,57 @@ function openAddDrawer() {
   drawerOpen.value = true;
 }
 
-function fillFromWarehouseLedger(item: WarehouseLedgerItem) {
+function isLedgerSelected(id: string): boolean {
+  return selectedLedgerIds.value.includes(id);
+}
+
+function toggleLedger(id: string) {
+  const index = selectedLedgerIds.value.indexOf(id);
+  if (index >= 0) selectedLedgerIds.value.splice(index, 1);
+  else selectedLedgerIds.value.push(id);
+}
+
+function toggleWarehouseLedger(item: WarehouseLedgerItem) {
   drawerSource.value = 'warehouseLedger';
-  drawerSearch.value = '';
+  toggleLedger(item.id);
+  fillFromWarehouseLedger(item);
+}
+
+function toggleSampleLedger(item: SampleLedgerItem) {
+  drawerSource.value = 'sampleLedger';
+  toggleLedger(item.id);
+  fillFromSampleLedger(item);
+}
+
+function toggleEquipmentLedger(item: EquipmentLedgerItem) {
+  drawerSource.value = 'equipmentLedger';
+  toggleLedger(item.id);
+  fillFromEquipmentLedger(item);
+}
+
+function openLedgerDetail(source: SDResourceSource, item: SampleLedgerItem | WarehouseLedgerItem | EquipmentLedgerItem) {
+  ledgerDetailSource.value = source;
+  ledgerDetailItem.value = item;
+  ledgerDetailOpen.value = true;
+}
+
+function closeLedgerDetail() {
+  ledgerDetailOpen.value = false;
+  ledgerDetailItem.value = null;
+}
+
+function selectLedgerFromDetail() {
+  const item = ledgerDetailItem.value;
+  if (!item) return;
+  drawerSource.value = ledgerDetailSource.value;
+  if (!isLedgerSelected(item.id)) selectedLedgerIds.value.push(item.id);
+  if (ledgerDetailSource.value === 'warehouseLedger') fillFromWarehouseLedger(item as WarehouseLedgerItem);
+  if (ledgerDetailSource.value === 'sampleLedger') fillFromSampleLedger(item as SampleLedgerItem);
+  if (ledgerDetailSource.value === 'equipmentLedger') fillFromEquipmentLedger(item as EquipmentLedgerItem);
+  closeLedgerDetail();
+}
+
+function fillFromWarehouseLedger(item: WarehouseLedgerItem) {
   const typeMap: Record<string, SDResourceType> = { reagent: 'reagent', consumable: 'consumable', solvent: 'reagent', other: 'other' };
   editForm.value = {
     fileId: activeFile.value?.id ?? '',
@@ -902,8 +1043,6 @@ function fillFromWarehouseLedger(item: WarehouseLedgerItem) {
 }
 
 function fillFromSampleLedger(item: SampleLedgerItem) {
-  drawerSource.value = 'sampleLedger';
-  drawerSearch.value = '';
   const typeMap: Record<string, SDResourceType> = { '标准品': 'standard', '内标': 'standard', '质控品': 'control', '基质': 'other' };
   editForm.value = {
     fileId: activeFile.value?.id ?? '',
@@ -922,8 +1061,6 @@ function fillFromSampleLedger(item: SampleLedgerItem) {
 }
 
 function fillFromEquipmentLedger(item: EquipmentLedgerItem) {
-  drawerSource.value = 'equipmentLedger';
-  drawerSearch.value = '';
   editForm.value = {
     fileId: activeFile.value?.id ?? '',
     fileName: activeFile.value?.name ?? '',
@@ -945,6 +1082,8 @@ function editResource(item: AllocationResourceItem) {
   drawerMode.value = 'edit';
   drawerSource.value = item.source;
   drawerSearch.value = '';
+  selectedLedgerIds.value = [];
+  closeLedgerDetail();
   editingId.value = item.id;
   editForm.value = { ...item };
   drawerOpen.value = true;
@@ -967,13 +1106,24 @@ function confirmDeleteResource() {
   persistState();
 }
 
-function saveResource() {
-  if (!editForm.value.name || !editForm.value.fileId) {
-    alert('请先选择文件并填写资源名称');
-    return;
-  }
-  const payload: AllocationResourceItem = {
-    id: editingId.value || `${editForm.value.fileId}-${Date.now().toString(36)}`,
+function buildResourceFromWarehouseLedger(item: WarehouseLedgerItem): AllocationResourceItem {
+  fillFromWarehouseLedger(item);
+  return buildResourcePayload(`${activeFile.value?.id ?? 'file'}-${item.id}-${Date.now().toString(36)}`);
+}
+
+function buildResourceFromSampleLedger(item: SampleLedgerItem): AllocationResourceItem {
+  fillFromSampleLedger(item);
+  return buildResourcePayload(`${activeFile.value?.id ?? 'file'}-${item.id}-${Date.now().toString(36)}`);
+}
+
+function buildResourceFromEquipmentLedger(item: EquipmentLedgerItem): AllocationResourceItem {
+  fillFromEquipmentLedger(item);
+  return buildResourcePayload(`${activeFile.value?.id ?? 'file'}-${item.id}-${Date.now().toString(36)}`);
+}
+
+function buildResourcePayload(id: string): AllocationResourceItem {
+  return {
+    id,
     fileId: editForm.value.fileId ?? '',
     fileName: editForm.value.fileName ?? '',
     fileType: (editForm.value.fileType ?? 'sop') as FileType,
@@ -997,6 +1147,27 @@ function saveResource() {
     remark: editForm.value.remark ?? '',
     source: drawerSource.value as SDResourceSource,
   };
+}
+
+function saveResource() {
+  if (drawerMode.value === 'add' && drawerSource.value !== 'special' && selectedLedgerIds.value.length > 0) {
+    const items = selectedLedgerItems.value.map((item) => {
+      if (drawerSource.value === 'warehouseLedger') return buildResourceFromWarehouseLedger(item as WarehouseLedgerItem);
+      if (drawerSource.value === 'sampleLedger') return buildResourceFromSampleLedger(item as SampleLedgerItem);
+      return buildResourceFromEquipmentLedger(item as EquipmentLedgerItem);
+    });
+    resourceItems.value.push(...items);
+    drawerOpen.value = false;
+    selectedLedgerIds.value = [];
+    closeLedgerDetail();
+    persistState();
+    return;
+  }
+  if (!editForm.value.name || !editForm.value.fileId) {
+    alert('请先选择文件并填写资源名称');
+    return;
+  }
+  const payload = buildResourcePayload(editingId.value || `${editForm.value.fileId}-${Date.now().toString(36)}`);
   if (drawerMode.value === 'add') {
     resourceItems.value.push(payload);
   } else {
