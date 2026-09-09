@@ -532,10 +532,10 @@
               <div><span class="text-[--muted-foreground]">触发人：</span><span>{{ dailySheets.find((s: any) => s.id === effectiveTaskId)?.investigator || '—' }}</span></div>
             </div>
           </div>
-          <!-- 异常类型 -->
+          <!-- 现象类型 -->
           <div>
             <div class="text-xs font-bold text-[--text-main] mb-2 flex items-center gap-1.5">
-              <div class="w-1 h-3 bg-[--danger] rounded-full" />异常类型 <span class="text-[--danger]">*</span>
+              <div class="w-1 h-3 bg-[--danger] rounded-full" />现象类型 <span class="text-[--danger]">*</span>
             </div>
             <div class="grid grid-cols-4 gap-1.5">
               <button v-for="t in exceptionTypes" :key="t.value"
@@ -547,12 +547,12 @@
               >{{ t.label }}</button>
             </div>
           </div>
-          <!-- 异常原因 -->
+          <!-- 现象描述 -->
           <div>
             <div class="text-xs font-bold text-[--text-main] mb-2 flex items-center gap-1.5">
-              <div class="w-1 h-3 bg-[--danger] rounded-full" />异常原因 <span class="text-[--danger]">*</span>
+              <div class="w-1 h-3 bg-[--danger] rounded-full" />现象描述 <span class="text-[--danger]">*</span>
             </div>
-            <BaseFormField label="详细说明" type="textarea" v-model="exceptionForm.reason" :required="true"
+            <BaseFormField type="textarea" v-model="exceptionForm.reason" :required="true"
               placeholder="请详细描述异常发生的原因、过程及现场情况..." />
           </div>
           <!-- 异常详情 -->
