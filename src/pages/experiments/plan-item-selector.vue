@@ -104,8 +104,7 @@
             >
               <div class="flex min-w-0 items-center gap-3">
                 <input
-                  type="radio"
-                  name="selected-evaluation-item"
+                  type="checkbox"
                   class="h-4 w-4 accent-[--primary]"
                   :checked="selectedIds.includes(item.id)"
                   @change="toggleItem(item.id)"
@@ -468,7 +467,13 @@ function validateItem(name: string, id: string, excludeId = ''): ItemErrors {
 }
 
 function toggleItem(itemId: string) {
-  selectedIds.value = selectedIds.value[0] === itemId ? [] : [itemId];
+  const ids = selectedIds.value;
+  const idx = ids.indexOf(itemId);
+  if (idx >= 0) {
+    selectedIds.value = ids.filter(i => i !== itemId);
+  } else {
+    selectedIds.value = [...ids, itemId];
+  }
 }
 
 function selectAllVisible() {
