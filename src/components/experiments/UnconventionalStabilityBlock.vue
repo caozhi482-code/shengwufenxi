@@ -23,19 +23,19 @@
 
         <tr>
           <td class="us-label" colspan="2">项目编号</td>
-          <td class="us-blank" colspan="2"><CellEditor :value="model.context.projectCode" :editable="editable" @update="updateContext('projectCode', $event)" /></td>
+          <td class="us-blank" colspan="2"><div class="space-y-1"><CellEditor :value="model.context.projectCode" :editable="editable" @update="updateContext('projectCode', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('us-1')">配置格子</button></div></td>
           <td class="us-label" colspan="2">方法版本号</td>
-          <td class="us-blank" colspan="2"><CellEditor :value="model.context.methodVersion" :editable="editable" @update="updateContext('methodVersion', $event)" /></td>
+          <td class="us-blank" colspan="2"><div class="space-y-1"><CellEditor :value="model.context.methodVersion" :editable="editable" @update="updateContext('methodVersion', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('us-2')">配置格子</button></div></td>
         </tr>
         <tr>
           <td class="us-label" colspan="2">恒温箱编号</td>
-          <td class="us-blank" colspan="2"><CellEditor :value="model.equipment.incubatorId" :editable="editable" @update="updateEquipment('incubatorId', $event)" /></td>
+          <td class="us-blank" colspan="2"><div class="space-y-1"><CellEditor :value="model.equipment.incubatorId" :editable="editable" @update="updateEquipment('incubatorId', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('us-3')">配置格子</button></div></td>
           <td class="us-label" colspan="2">离心机编号</td>
-          <td class="us-blank" colspan="2"><CellEditor :value="model.equipment.centrifugeId" :editable="editable" @update="updateEquipment('centrifugeId', $event)" /></td>
+          <td class="us-blank" colspan="2"><div class="space-y-1"><CellEditor :value="model.equipment.centrifugeId" :editable="editable" @update="updateEquipment('centrifugeId', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('us-4')">配置格子</button></div></td>
         </tr>
         <tr>
           <td class="us-label" colspan="2">移液器编号</td>
-          <td class="us-blank" colspan="6"><CellEditor :value="model.equipment.pipetteId" :editable="editable" @update="updateEquipment('pipetteId', $event)" /></td>
+          <td class="us-blank" colspan="6"><div class="space-y-1"><CellEditor :value="model.equipment.pipetteId" :editable="editable" @update="updateEquipment('pipetteId', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('us-5')">配置格子</button></div></td>
         </tr>
 
         <tr><td class="us-section" colspan="8">一、全血样品的配制</td></tr>
@@ -48,18 +48,18 @@
           <td class="us-head" colspan="3"></td>
         </tr>
         <tr v-for="(row, index) in model.blood.rows" :key="row.id" class="us-row">
-          <td class="us-data light-bg"><CellEditor :value="row.sampleCode" :editable="editable" @update="updateBloodRow(index, 'sampleCode', $event)" /></td>
-          <td class="us-data"><CellEditor :value="row.sourceCode" :editable="editable" @update="updateBloodRow(index, 'sourceCode', $event)" /></td>
-          <td class="us-data"><CellEditor :value="displayNumber(row.sourceVolume)" :editable="editable" type="number" @update="updateBloodRow(index, 'sourceVolume', parseNumber($event))" /></td>
-          <td class="us-data"><CellEditor :value="displayNumber(row.blankBloodVolume)" :editable="editable" type="number" @update="updateBloodRow(index, 'blankBloodVolume', parseNumber($event))" /></td>
-          <td class="us-data"><CellEditor :value="displayNumber(row.finalVolume)" :editable="editable" type="number" @update="updateBloodRow(index, 'finalVolume', parseNumber($event))" /></td>
+          <td class="us-data light-bg"><div class="space-y-1"><CellEditor :value="row.sampleCode" :editable="editable" @update="updateBloodRow(index, 'sampleCode', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('us-6')">配置格子</button></div></td>
+          <td class="us-data"><div class="space-y-1"><CellEditor :value="row.sourceCode" :editable="editable" @update="updateBloodRow(index, 'sourceCode', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('us-7')">配置格子</button></div></td>
+          <td class="us-data"><div class="space-y-1"><CellEditor :value="displayNumber(row.sourceVolume)" :editable="editable" type="number" @update="updateBloodRow(index, 'sourceVolume', parseNumber($event))" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('us-8')">配置格子</button></div></td>
+          <td class="us-data"><div class="space-y-1"><CellEditor :value="displayNumber(row.blankBloodVolume)" :editable="editable" type="number" @update="updateBloodRow(index, 'blankBloodVolume', parseNumber($event))" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('us-9')">配置格子</button></div></td>
+          <td class="us-data"><div class="space-y-1"><CellEditor :value="displayNumber(row.finalVolume)" :editable="editable" type="number" @update="updateBloodRow(index, 'finalVolume', parseNumber($event))" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('us-10')">配置格子</button></div></td>
           <td class="us-data" colspan="3"></td>
         </tr>
         <tr>
           <td class="us-label">源溶液批号：</td>
-          <td class="us-blank" colspan="3"><CellEditor :value="model.blood.sourceBatch" :editable="editable" @update="updateBloodModel('sourceBatch', $event)" /></td>
+          <td class="us-blank" colspan="3"><div class="space-y-1"><CellEditor :value="model.blood.sourceBatch" :editable="editable" @update="updateBloodModel('sourceBatch', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('us-11')">配置格子</button></div></td>
           <td class="us-label">空白全血编号：</td>
-          <td class="us-blank" colspan="3"><CellEditor :value="model.blood.blankBloodCode" :editable="editable" @update="updateBloodModel('blankBloodCode', $event)" /></td>
+          <td class="us-blank" colspan="3"><div class="space-y-1"><CellEditor :value="model.blood.blankBloodCode" :editable="editable" @update="updateBloodModel('blankBloodCode', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('us-12')">配置格子</button></div></td>
         </tr>
         <tr>
           <td class="us-label">样品配制过程在：</td>
@@ -80,13 +80,13 @@
         <tr><td class="us-section" colspan="8">二、全血样品的孵育及分装</td></tr>
         <tr>
           <td class="us-label">开始孵育时间</td>
-          <td class="us-blank"><CellEditor :value="model.incubation.startTime" :editable="editable" @update="updateIncubation('startTime', $event)" /></td>
+          <td class="us-blank"><div class="space-y-1"><CellEditor :value="model.incubation.startTime" :editable="editable" @update="updateIncubation('startTime', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('us-13')">配置格子</button></div></td>
           <td class="us-label">孵育时间(min)</td>
-          <td class="us-blank"><CellEditor :value="displayNumber(model.incubation.duration)" :editable="editable" type="number" @update="updateIncubation('duration', parseNumber($event))" /></td>
+          <td class="us-blank"><div class="space-y-1"><CellEditor :value="displayNumber(model.incubation.duration)" :editable="editable" type="number" @update="updateIncubation('duration', parseNumber($event))" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('us-14')">配置格子</button></div></td>
           <td class="us-label">结束时间</td>
-          <td class="us-blank"><CellEditor :value="model.incubation.endTime" :editable="editable" @update="updateIncubation('endTime', $event)" /></td>
+          <td class="us-blank"><div class="space-y-1"><CellEditor :value="model.incubation.endTime" :editable="editable" @update="updateIncubation('endTime', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('us-15')">配置格子</button></div></td>
           <td class="us-label">分装份数</td>
-          <td class="us-blank"><CellEditor :value="displayNumber(model.incubation.aliquotCount)" :editable="editable" type="number" @update="updateIncubation('aliquotCount', parseNumber($event))" /></td>
+          <td class="us-blank"><div class="space-y-1"><CellEditor :value="displayNumber(model.incubation.aliquotCount)" :editable="editable" type="number" @update="updateIncubation('aliquotCount', parseNumber($event))" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('us-16')">配置格子</button></div></td>
         </tr>
         <tr>
           <td class="us-label">分装容器材质</td>
@@ -111,7 +111,7 @@
         <tr><td class="us-section" colspan="8">三、稳定性考察样品的放置</td></tr>
         <tr>
           <td class="us-label">具体过程描述：</td>
-          <td class="us-blank" colspan="7"><CellEditor :value="model.stability.description" :editable="editable" @update="updateStability('description', $event)" /></td>
+          <td class="us-blank" colspan="7"><div class="space-y-1"><CellEditor :value="model.stability.description" :editable="editable" @update="updateStability('description', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('us-17')">配置格子</button></div></td>
         </tr>
         <tr>
           <td class="us-head">样品代码</td>
@@ -122,9 +122,9 @@
           <td class="us-head" colspan="3"></td>
         </tr>
         <tr v-for="(row, index) in model.stability.rows" :key="row.id" class="us-row">
-          <td class="us-data light-bg"><CellEditor :value="row.sampleCode" :editable="editable" @update="updateStabilityRow(index, 'sampleCode', $event)" /></td>
-          <td class="us-data"><CellEditor :value="row.stabilityCode" :editable="editable" @update="updateStabilityRow(index, 'stabilityCode', $event)" /></td>
-          <td class="us-data"><CellEditor :value="row.startTime" :editable="editable" @update="updateStabilityRow(index, 'startTime', $event)" /></td>
+          <td class="us-data light-bg"><div class="space-y-1"><CellEditor :value="row.sampleCode" :editable="editable" @update="updateStabilityRow(index, 'sampleCode', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('us-18')">配置格子</button></div></td>
+          <td class="us-data"><div class="space-y-1"><CellEditor :value="row.stabilityCode" :editable="editable" @update="updateStabilityRow(index, 'stabilityCode', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('us-19')">配置格子</button></div></td>
+          <td class="us-data"><div class="space-y-1"><CellEditor :value="row.startTime" :editable="editable" @update="updateStabilityRow(index, 'startTime', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('us-20')">配置格子</button></div></td>
           <td class="us-data">
             <div v-if="editable" class="condition-stack">
               <label class="inline-flex items-center gap-1"><BaseCheckbox :checked="row.conditions.includes('黄光灯')" @update:checked="toggleStabLight(index, '黄光灯')" /><span>黄光灯</span></label>
@@ -134,7 +134,7 @@
             </div>
             <span v-else>{{ row.conditions.length ? row.conditions.join(' / ') : '—' }}</span>
           </td>
-          <td class="us-data"><CellEditor :value="row.endTime" :editable="editable" @update="updateStabilityRow(index, 'endTime', $event)" /></td>
+          <td class="us-data"><div class="space-y-1"><CellEditor :value="row.endTime" :editable="editable" @update="updateStabilityRow(index, 'endTime', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('us-21')">配置格子</button></div></td>
           <td class="us-data" colspan="3"></td>
         </tr>
         <tr>
@@ -156,30 +156,42 @@
             <span v-else>{{ model.stability.color || '—' }}</span>
           </td>
           <td class="us-label">储存条件：</td>
-          <td class="us-blank" colspan="4"><CellEditor :value="model.stability.storageCondition" :editable="editable" @update="updateStability('storageCondition', $event)" /></td>
+          <td class="us-blank" colspan="4"><div class="space-y-1"><CellEditor :value="model.stability.storageCondition" :editable="editable" @update="updateStability('storageCondition', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('us-22')">配置格子</button></div></td>
         </tr>
 
         <tr><td class="us-section" colspan="8">签字区</td></tr>
         <tr>
           <td class="us-label">操作人/日期：</td>
-          <td class="us-blank" colspan="7"><CellEditor :value="model.signatures.operator" :editable="editable" @update="updateSignature('operator', $event)" /></td>
+          <td class="us-blank" colspan="7"><div class="space-y-1"><CellEditor :value="model.signatures.operator" :editable="editable" @update="updateSignature('operator', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('us-23')">配置格子</button></div></td>
         </tr>
         <tr>
           <td class="us-label">现场复核人/日期：</td>
-          <td class="us-blank" colspan="7"><CellEditor :value="model.signatures.reviewer" :editable="editable" @update="updateSignature('reviewer', $event)" /></td>
+          <td class="us-blank" colspan="7"><div class="space-y-1"><CellEditor :value="model.signatures.reviewer" :editable="editable" @update="updateSignature('reviewer', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('us-24')">配置格子</button></div></td>
         </tr>
         <tr>
           <td class="us-label">审核人/日期：</td>
-          <td class="us-blank" colspan="7"><CellEditor :value="model.signatures.auditor" :editable="editable" @update="updateSignature('auditor', $event)" /></td>
+          <td class="us-blank" colspan="7"><div class="space-y-1"><CellEditor :value="model.signatures.auditor" :editable="editable" @update="updateSignature('auditor', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('us-25')">配置格子</button></div></td>
         </tr>
       </tbody>
     </table>
+    <CellOpEditor
+      v-if="drawerOpen"
+      :open="drawerOpen"
+      :read-only="!props.editable"
+      :cell-row="activeCellRow"
+      :cell-col="activeCellCol"
+      :operations="cellOperations"
+      @close="drawerOpen = false"
+      @save="saveDrawer"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, defineComponent, h } from 'vue';
+import { computed, defineComponent, h, ref } from 'vue';
 import BaseCheckbox from '@/components/base/BaseCheckbox.vue';
+import CellOpEditor from './CellOpEditor.vue';
+import type { SequenceOperation } from '@/types/experiments';
 
 interface BloodRow {
   id: string;
@@ -230,6 +242,10 @@ interface ModelValue {
 const props = withDefaults(defineProps<{ modelValue: ModelValue; editable?: boolean }>(), { editable: false });
 const emit = defineEmits<{ 'update:modelValue': [value: ModelValue] }>();
 const model = computed(() => props.modelValue);
+const drawerOpen = ref(false);
+const activeCellRow = ref<string | number>('');
+const activeCellCol = ref(0);
+const cellOperations = ref<SequenceOperation[]>([]);
 
 const bloodConditionDisplay = computed(() => {
   const light = model.value.blood.lightConditions.length ? model.value.blood.lightConditions.join(' / ') : '—';
@@ -252,6 +268,17 @@ const CellEditor = defineComponent({
   },
 });
 
+function handleConfigureCellByKey(key: string) {
+  activeCellRow.value = key;
+  activeCellCol.value = 0;
+  cellOperations.value = (props.modelValue as any).cellOperations?.[key] ?? [];
+  drawerOpen.value = true;
+}
+function saveDrawer(ops: SequenceOperation[]) {
+  const key = String(activeCellRow.value);
+  emit('update:modelValue', { ...props.modelValue, cellOperations: { ...(props.modelValue as any).cellOperations ?? {}, [key]: ops } } as any);
+  drawerOpen.value = false;
+}
 function parseNumber(value: string | number) {
   if (value === '' || value === null || value === undefined) return 0;
   const next = Number(value);

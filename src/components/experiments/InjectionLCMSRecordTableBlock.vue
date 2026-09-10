@@ -26,9 +26,9 @@
         </tr>
         <tr>
           <td class="lcm-label">分析批编号</td>
-          <td class="lcm-cell"><CellEditor :value="model.context.analysisBatchNo" :editable="editable" @update="updateContext('analysisBatchNo', $event)" /></td>
+          <td class="lcm-cell"><div class="space-y-1"><CellEditor :value="model.context.analysisBatchNo" :editable="editable" @update="updateContext('analysisBatchNo', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('lcm-1')">配置格子</button></div></td>
           <td class="lcm-label">Run ID</td>
-          <td class="lcm-cell" colspan="3"><CellEditor :value="model.context.runId" :editable="editable" @update="updateContext('runId', $event)" /></td>
+          <td class="lcm-cell" colspan="3"><div class="space-y-1"><CellEditor :value="model.context.runId" :editable="editable" @update="updateContext('runId', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('lcm-2')">配置格子</button></div></td>
         </tr>
 
         <tr>
@@ -51,25 +51,25 @@
         </tr>
         <tr>
           <td class="lcm-label">液质联用仪编号</td>
-          <td class="lcm-cell bg-[#f3efe0]" colspan="2"><CellEditor :value="model.instrumentSubmission.instrumentId" :editable="editable" @update="updateInstrument('instrumentId', $event)" /></td>
+          <td class="lcm-cell bg-[#f3efe0]" colspan="2"><div class="space-y-1"><CellEditor :value="model.instrumentSubmission.instrumentId" :editable="editable" @update="updateInstrument('instrumentId', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('lcm-3')">配置格子</button></div></td>
           <td class="lcm-label">板位号</td>
-          <td class="lcm-cell" colspan="2"><CellEditor :value="model.instrumentSubmission.platePosition" :editable="editable" @update="updateInstrument('platePosition', $event)" /></td>
+          <td class="lcm-cell" colspan="2"><div class="space-y-1"><CellEditor :value="model.instrumentSubmission.platePosition" :editable="editable" @update="updateInstrument('platePosition', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('lcm-4')">配置格子</button></div></td>
         </tr>
         <tr>
           <td class="lcm-label">色谱柱编号</td>
-          <td class="lcm-cell" colspan="2"><CellEditor :value="model.instrumentSubmission.columnId" :editable="editable" @update="updateInstrument('columnId', $event)" /></td>
+          <td class="lcm-cell" colspan="2"><div class="space-y-1"><CellEditor :value="model.instrumentSubmission.columnId" :editable="editable" @update="updateInstrument('columnId', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('lcm-5')">配置格子</button></div></td>
           <td class="lcm-label">流动相A批号</td>
-          <td class="lcm-cell" colspan="2"><CellEditor :value="model.instrumentSubmission.mobilePhaseABatch" :editable="editable" @update="updateInstrument('mobilePhaseABatch', $event)" /></td>
+          <td class="lcm-cell" colspan="2"><div class="space-y-1"><CellEditor :value="model.instrumentSubmission.mobilePhaseABatch" :editable="editable" @update="updateInstrument('mobilePhaseABatch', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('lcm-6')">配置格子</button></div></td>
         </tr>
         <tr>
           <td class="lcm-label">流动相B批号</td>
-          <td class="lcm-cell" colspan="2"><CellEditor :value="model.instrumentSubmission.mobilePhaseBBatch" :editable="editable" @update="updateInstrument('mobilePhaseBBatch', $event)" /></td>
+          <td class="lcm-cell" colspan="2"><div class="space-y-1"><CellEditor :value="model.instrumentSubmission.mobilePhaseBBatch" :editable="editable" @update="updateInstrument('mobilePhaseBBatch', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('lcm-7')">配置格子</button></div></td>
           <td class="lcm-label">洗针液(Pump)批号</td>
-          <td class="lcm-cell" colspan="2"><CellEditor :value="model.instrumentSubmission.washPumpBatch" :editable="editable" @update="updateInstrument('washPumpBatch', $event)" /></td>
+          <td class="lcm-cell" colspan="2"><div class="space-y-1"><CellEditor :value="model.instrumentSubmission.washPumpBatch" :editable="editable" @update="updateInstrument('washPumpBatch', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('lcm-8')">配置格子</button></div></td>
         </tr>
         <tr>
           <td class="lcm-label">洗针液(Port)批号</td>
-          <td class="lcm-cell" colspan="2"><CellEditor :value="model.instrumentSubmission.washPortBatch" :editable="editable" @update="updateInstrument('washPortBatch', $event)" /></td>
+          <td class="lcm-cell" colspan="2"><div class="space-y-1"><CellEditor :value="model.instrumentSubmission.washPortBatch" :editable="editable" @update="updateInstrument('washPortBatch', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('lcm-9')">配置格子</button></div></td>
           <td class="lcm-label">是否纯试剂</td>
           <td class="lcm-cell">
             <div class="flex items-center gap-4">
@@ -86,28 +86,28 @@
         </tr>
         <tr v-if="model.instrumentSubmission.isPureReagent">
           <td class="lcm-label">试剂名称</td>
-          <td class="lcm-cell" colspan="2"><CellEditor :value="model.instrumentSubmission.reagentName" :editable="editable" @update="updateInstrument('reagentName', $event)" /></td>
+          <td class="lcm-cell" colspan="2"><div class="space-y-1"><CellEditor :value="model.instrumentSubmission.reagentName" :editable="editable" @update="updateInstrument('reagentName', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('lcm-10')">配置格子</button></div></td>
           <td class="lcm-label">试剂批号</td>
-          <td class="lcm-cell" colspan="2"><CellEditor :value="model.instrumentSubmission.reagentBatch" :editable="editable" @update="updateInstrument('reagentBatch', $event)" /></td>
+          <td class="lcm-cell" colspan="2"><div class="space-y-1"><CellEditor :value="model.instrumentSubmission.reagentBatch" :editable="editable" @update="updateInstrument('reagentBatch', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('lcm-11')">配置格子</button></div></td>
         </tr>
         <tr v-if="model.instrumentSubmission.isPureReagent">
           <td class="lcm-label">试剂厂家</td>
-          <td class="lcm-cell" colspan="2"><CellEditor :value="model.instrumentSubmission.reagentManufacturer" :editable="editable" @update="updateInstrument('reagentManufacturer', $event)" /></td>
+          <td class="lcm-cell" colspan="2"><div class="space-y-1"><CellEditor :value="model.instrumentSubmission.reagentManufacturer" :editable="editable" @update="updateInstrument('reagentManufacturer', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('lcm-12')">配置格子</button></div></td>
           <td class="lcm-label">试剂失效期</td>
-          <td class="lcm-cell" colspan="2"><CellEditor :value="model.instrumentSubmission.reagentExpiry" :editable="editable" @update="updateInstrument('reagentExpiry', $event)" /></td>
+          <td class="lcm-cell" colspan="2"><div class="space-y-1"><CellEditor :value="model.instrumentSubmission.reagentExpiry" :editable="editable" @update="updateInstrument('reagentExpiry', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('lcm-13')">配置格子</button></div></td>
         </tr>
         <tr>
           <td class="lcm-label">进样体积</td>
-          <td class="lcm-cell"><CellEditor :value="String(model.instrumentSubmission.injectionVolume)" :editable="editable" @update="updateInstrument('injectionVolume', Number($event) || 0)" type="number" /></td>
+          <td class="lcm-cell"><div class="space-y-1"><CellEditor :value="String(model.instrumentSubmission.injectionVolume)" :editable="editable" @update="updateInstrument('injectionVolume', Number($event) || 0)" type="number" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('lcm-14')">配置格子</button></div></td>
           <td class="lcm-label">μL</td>
           <td class="lcm-label">采集方法名</td>
-          <td class="lcm-cell" colspan="2"><CellEditor :value="model.instrumentSubmission.acquisitionMethod" :editable="editable" @update="updateInstrument('acquisitionMethod', $event)" /></td>
+          <td class="lcm-cell" colspan="2"><div class="space-y-1"><CellEditor :value="model.instrumentSubmission.acquisitionMethod" :editable="editable" @update="updateInstrument('acquisitionMethod', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('lcm-15')">配置格子</button></div></td>
         </tr>
         <tr v-if="model.instrumentSubmission.submitType === 'follow'">
           <td class="lcm-label">紧跟的分析批编号</td>
-          <td class="lcm-cell" colspan="2"><CellEditor :value="model.instrumentSubmission.followedBatchNo" :editable="editable" @update="updateInstrument('followedBatchNo', $event)" /></td>
+          <td class="lcm-cell" colspan="2"><div class="space-y-1"><CellEditor :value="model.instrumentSubmission.followedBatchNo" :editable="editable" @update="updateInstrument('followedBatchNo', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('lcm-16')">配置格子</button></div></td>
           <td class="lcm-label">板位号</td>
-          <td class="lcm-cell" colspan="2"><CellEditor :value="model.instrumentSubmission.platePosition" :editable="editable" @update="updateInstrument('platePosition', $event)" /></td>
+          <td class="lcm-cell" colspan="2"><div class="space-y-1"><CellEditor :value="model.instrumentSubmission.platePosition" :editable="editable" @update="updateInstrument('platePosition', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('lcm-17')">配置格子</button></div></td>
         </tr>
 
         <tr>
@@ -115,13 +115,13 @@
         </tr>
         <tr>
           <td class="lcm-label">操作人 / 日期</td>
-          <td class="lcm-cell" colspan="2"><CellEditor :value="model.instrumentSignatures.operator" :editable="editable" @update="updateSignature('instrumentSignatures', 'operator', $event)" /></td>
+          <td class="lcm-cell" colspan="2"><div class="space-y-1"><CellEditor :value="model.instrumentSignatures.operator" :editable="editable" @update="updateSignature('instrumentSignatures', 'operator', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('lcm-18')">配置格子</button></div></td>
           <td class="lcm-label">现场复核人 / 日期</td>
-          <td class="lcm-cell" colspan="2"><CellEditor :value="model.instrumentSignatures.reviewer" :editable="editable" @update="updateSignature('instrumentSignatures', 'reviewer', $event)" /></td>
+          <td class="lcm-cell" colspan="2"><div class="space-y-1"><CellEditor :value="model.instrumentSignatures.reviewer" :editable="editable" @update="updateSignature('instrumentSignatures', 'reviewer', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('lcm-19')">配置格子</button></div></td>
         </tr>
         <tr>
           <td class="lcm-label">审核人 / 日期</td>
-          <td class="lcm-cell" colspan="5"><CellEditor :value="model.instrumentSignatures.auditor" :editable="editable" @update="updateSignature('instrumentSignatures', 'auditor', $event)" /></td>
+          <td class="lcm-cell" colspan="5"><div class="space-y-1"><CellEditor :value="model.instrumentSignatures.auditor" :editable="editable" @update="updateSignature('instrumentSignatures', 'auditor', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('lcm-20')">配置格子</button></div></td>
         </tr>
 
         <tr>
@@ -144,13 +144,13 @@
         </tr>
         <tr v-if="model.resultIntegration.disposalMethod === 'store'">
           <td class="lcm-label">储存位置</td>
-          <td class="lcm-cell" colspan="5"><CellEditor :value="model.resultIntegration.storageLocation" :editable="editable" @update="updateResult('storageLocation', $event)" /></td>
+          <td class="lcm-cell" colspan="5"><div class="space-y-1"><CellEditor :value="model.resultIntegration.storageLocation" :editable="editable" @update="updateResult('storageLocation', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('lcm-21')">配置格子</button></div></td>
         </tr>
         <tr>
           <td class="lcm-label">积分方法名</td>
-          <td class="lcm-cell" colspan="2"><CellEditor :value="model.resultIntegration.integrationMethod" :editable="editable" @update="updateResult('integrationMethod', $event)" /></td>
+          <td class="lcm-cell" colspan="2"><div class="space-y-1"><CellEditor :value="model.resultIntegration.integrationMethod" :editable="editable" @update="updateResult('integrationMethod', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('lcm-22')">配置格子</button></div></td>
           <td class="lcm-label">积分结果保存名</td>
-          <td class="lcm-cell" colspan="2"><CellEditor :value="model.resultIntegration.resultSaveName" :editable="editable" @update="updateResult('resultSaveName', $event)" /></td>
+          <td class="lcm-cell" colspan="2"><div class="space-y-1"><CellEditor :value="model.resultIntegration.resultSaveName" :editable="editable" @update="updateResult('resultSaveName', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('lcm-23')">配置格子</button></div></td>
         </tr>
 
         <tr>
@@ -158,13 +158,13 @@
         </tr>
         <tr>
           <td class="lcm-label">操作人 / 日期</td>
-          <td class="lcm-cell" colspan="2"><CellEditor :value="model.resultSignatures.operator" :editable="editable" @update="updateSignature('resultSignatures', 'operator', $event)" /></td>
+          <td class="lcm-cell" colspan="2"><div class="space-y-1"><CellEditor :value="model.resultSignatures.operator" :editable="editable" @update="updateSignature('resultSignatures', 'operator', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('lcm-24')">配置格子</button></div></td>
           <td class="lcm-label">现场复核人 / 日期</td>
-          <td class="lcm-cell" colspan="2"><CellEditor :value="model.resultSignatures.reviewer" :editable="editable" @update="updateSignature('resultSignatures', 'reviewer', $event)" /></td>
+          <td class="lcm-cell" colspan="2"><div class="space-y-1"><CellEditor :value="model.resultSignatures.reviewer" :editable="editable" @update="updateSignature('resultSignatures', 'reviewer', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('lcm-25')">配置格子</button></div></td>
         </tr>
         <tr>
           <td class="lcm-label">审核人 / 日期</td>
-          <td class="lcm-cell" colspan="5"><CellEditor :value="model.resultSignatures.auditor" :editable="editable" @update="updateSignature('resultSignatures', 'auditor', $event)" /></td>
+          <td class="lcm-cell" colspan="5"><div class="space-y-1"><CellEditor :value="model.resultSignatures.auditor" :editable="editable" @update="updateSignature('resultSignatures', 'auditor', $event)" /><button v-if="editable" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCellByKey('lcm-26')">配置格子</button></div></td>
         </tr>
       </tbody>
     </table>
@@ -235,7 +235,7 @@ const emit = defineEmits<{
 
 const model = computed(() => props.modelValue);
 const drawerOpen = ref(false);
-const activeCellRow = ref(0);
+const activeCellRow = ref<string | number>(0);
 const activeCellCol = ref(0);
 const cellOperations = ref<SequenceOperation[]>([]);
 
@@ -299,12 +299,15 @@ function handleDisposalChange(method: 'discard' | 'store') {
   }
   patch({ resultIntegration: next });
 }
-function handleConfigureCell(rowIndex: number, colIndex: number) {
+function handleConfigureCell(rowIndex: number | string, colIndex: number) {
   activeCellRow.value = rowIndex;
   activeCellCol.value = colIndex;
   const key = `${rowIndex}-${colIndex}`;
   cellOperations.value = (props.modelValue as any).cellOperations?.[key] ?? [];
   drawerOpen.value = true;
+}
+function handleConfigureCellByKey(key: string) {
+  handleConfigureCell(key, 0);
 }
 function saveDrawer(ops: SequenceOperation[]) {
   const key = `${activeCellRow.value}-${activeCellCol.value}`;

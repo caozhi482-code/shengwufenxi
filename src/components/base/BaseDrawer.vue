@@ -1,7 +1,7 @@
 <template>
   <div v-if="open" class="ui-drawer fixed inset-0 z-50 flex justify-end">
     <div class="ui-overlay absolute inset-0 bg-black/30" @click="emit('close')" />
-    <div class="ui-drawer-panel relative ml-auto w-full max-w-lg bg-white shadow-2xl flex flex-col">
+    <div :class="['ui-drawer-panel relative ml-auto w-full bg-white shadow-2xl flex flex-col', widthClass]">
       <div class="flex items-center justify-between px-5 py-4 border-b border-[--border]">
         <h3 class="text-base font-bold text-[--foreground]">{{ title }}</h3>
         <button aria-label="关闭抽屉" class="text-[--muted-foreground] hover:text-[--foreground]" @click="emit('close')">✕</button>
@@ -17,6 +17,6 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{ title: string; open: boolean }>();
+withDefaults(defineProps<{ title: string; open: boolean; widthClass?: string }>(), { widthClass: 'max-w-lg' });
 const emit = defineEmits<{ close: [] }>();
 </script>

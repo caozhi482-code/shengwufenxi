@@ -170,7 +170,7 @@ interface ModelValue {
   signatures: { operator: string; reviewer: string; auditor: string };
 }
 const props = withDefaults(defineProps<{ modelValue: ModelValue; editable?: boolean }>(), { editable: false });
-const emit = defineEmits<{ 'update:modelValue': [value: ModelValue]; }>()();
+const emit = defineEmits<{ 'update:modelValue': [value: ModelValue]; }>();
 const model = computed(() => props.modelValue);
 const drawerOpen = ref(false);
 const activeCellRow = ref(0);

@@ -71,6 +71,7 @@
           >
             <div class="space-y-1 relative">
               <CellEditor :value="cell" :editable="editable" @update="updateRow(rowIndex, rowKeys[cellIndex], $event)" />
+              <button v-if="editable && !props.executionMode" type="button" class="inline-flex items-center gap-1 text-[10px] font-medium text-[--primary] hover:underline" @click.stop="handleConfigureCell(rowIndex, cellIndex)">配置格子</button>
               <div v-if="props.executionMode && isCellHovered(rowIndex, cellIndex) && getCellPlanText(rowIndex, cellIndex)" class="absolute left-0 top-full z-10 mt-2 w-[260px] rounded-md bg-[--foreground] px-3 py-2 text-[11px] text-white shadow-xl pointer-events-none">
                 {{ getCellPlanText(rowIndex, cellIndex) }}
               </div>
@@ -78,7 +79,7 @@
           </td>
           <td class="ws-cell text-center align-top" :data-cell-key="cellKey(rowIndex, 9)" :class="props.executionMode ? cellClass(rowIndex, 9) : ''" @click="handleCellClick(rowIndex, 9)" @mouseenter="props.executionMode && showCellHover(rowIndex, 9)" @mouseleave="props.executionMode && clearCellHover()">
             <div class="space-y-1 relative">
-              <div class="font-medium leading-5">{{ props.executionMode ? '点击查看' : '配置' }}</div>
+              <button v-if="editable && !props.executionMode" type="button" class="text-[--primary] text-xs font-medium hover:underline" @click.stop="handleConfigureCell(rowIndex, 9)">配置格子</button><div v-else class="font-medium leading-5">{{ props.executionMode ? '点击查看' : '配置格子' }}</div>
               <div v-if="props.executionMode && isCellHovered(rowIndex, 9) && getCellPlanText(rowIndex, 9)" class="absolute left-0 top-full z-10 mt-2 w-[260px] rounded-md bg-[--foreground] px-3 py-2 text-[11px] text-white shadow-xl pointer-events-none">
                 {{ getCellPlanText(rowIndex, 9) }}
               </div>

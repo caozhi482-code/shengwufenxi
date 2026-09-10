@@ -63,7 +63,7 @@
                     : 'bg-white border-[--border] text-[--text-tertiary] hover:border-[--primary-border]']"
                 @click="handleCellClick(rowLabel, col)"
               >
-                <span v-if="getCell(rowLabel, col).operations.length === 0">未配置</span>
+                <span v-if="getCell(rowLabel, col).operations.length === 0">配置格子</span>
                 <template v-else>
                   <div v-for="op in getCell(rowLabel, col).operations.slice(0, 2)" :key="op.id" class="text-center leading-tight">
                     <span class="font-semibold">{{ op.substance || op.action }}</span>
