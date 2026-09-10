@@ -17,6 +17,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'ledger-discovery', component: () => import('@/pages/experiments/ledger-discovery.vue') },
       { path: 'plans/new/task-assignment', component: () => import('@/pages/experiments/plan-task-assignment.vue') },
       { path: 'plans/:planId/items/:itemId/sequence-template', component: () => import('@/pages/experiments/sequence-table.vue') },
+      { path: 'method-management', component: () => import('@/pages/experiments/method-management.vue') },
       { path: 'form-templates', component: () => import('@/pages/experiments/form-templates.vue') },
       { path: 'form-templates/:id', component: () => import('@/pages/experiments/form-template-detail.vue') },
       { path: 'form-templates/:id/preview', component: () => import('@/pages/experiments/form-template-preview.vue') },
@@ -33,6 +34,30 @@ const routes: RouteRecordRaw[] = [
       { path: 'review', component: () => import('@/pages/experiments/data-review.vue') },
       { path: 'results', component: () => import('@/pages/experiments/result-judgment.vue') },
       { path: 'deviations', component: () => import('@/pages/experiments/deviation-list.vue') },
+    ],
+  },
+  {
+    path: '/warehouse',
+    redirect: '/warehouse/dashboard',
+    children: [
+      { path: 'dashboard', component: () => import('@/views/warehouse/Dashboard.vue') },
+      { path: 'inventory', component: () => import('@/views/warehouse/Inventory.vue') },
+      { path: 'inbound', component: () => import('@/views/warehouse/InboundApplication.vue') },
+      { path: 'outbound', component: () => import('@/views/warehouse/Outbound.vue') },
+      { path: 'stock-count', component: () => import('@/views/warehouse/StockCount.vue') },
+      { path: 'locations', component: () => import('@/views/warehouse/Locations.vue') },
+      { path: 'categories', component: () => import('@/views/warehouse/Categories.vue') },
+      { path: 'barcodes', component: () => import('@/views/warehouse/Barcodes.vue') },
+      { path: 'alerts', component: () => import('@/views/warehouse/Alerts.vue') },
+    ],
+  },
+  {
+    path: '/procurement',
+    redirect: '/procurement/requests',
+    children: [
+      { path: 'requests', component: () => import('@/views/procurement/Requests.vue') },
+      { path: 'requests/:id', component: () => import('@/views/procurement/RequestDetail.vue') },
+      { path: 'records', component: () => import('@/views/procurement/Records.vue') },
     ],
   },
 ];

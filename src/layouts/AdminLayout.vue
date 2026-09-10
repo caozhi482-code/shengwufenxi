@@ -57,7 +57,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { Beaker, TestTube, ClipboardPen } from 'lucide-vue-next';
+import { Beaker, TestTube, ClipboardPen, BookOpenText, Package, ShoppingCart } from 'lucide-vue-next';
 
 const route = useRoute();
 const router = useRouter();
@@ -65,6 +65,9 @@ const router = useRouter();
 const menuItems = [
   { label: '实验', path: '/experiments/plans', icon: Beaker },
   { label: '执行', path: '/experiments/my-sheets', icon: TestTube },
+  { label: '仓库管理', path: '/warehouse/dashboard', icon: Package },
+  { label: '采购管理', path: '/procurement/requests', icon: ShoppingCart },
+  { label: '方法管理', path: '/experiments/method-management', icon: BookOpenText },
   { label: '模板中心', path: '/experiments/form-templates', icon: ClipboardPen },
 ];
 
