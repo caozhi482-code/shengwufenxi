@@ -279,6 +279,110 @@ export const dashboardStats = {
 // 最近预警（前5）
 export const recentAlerts = alerts.slice(0, 5);
 
+// 采购申请
+export interface ProcurementItem {
+  itemId: string;
+  itemName: string;
+  itemType: string;
+  qty: number;
+  unit: string;
+  receivedQty: number;
+  pendingQty: number;
+}
+
+export interface ProcurementRequest {
+  id: string;
+  code: string;
+  applicant: string;
+  department: string;
+  projectId: string;
+  projectName: string;
+  category: string;
+  purpose: string;
+  status: 'draft' | 'pending' | 'approved' | 'rejected' | 'withdrawn' | 'purchasing' | 'received' | 'completed';
+  currentNode: string;
+  date: string;
+  notes?: string;
+  items: ProcurementItem[];
+}
+
+// 项目列表
+export const projects = [
+  { id: 'PRJ001', code: 'BRH-BIO-2025-001', name: 'BRH-BIO-2025-001 生物分析方法验证' },
+  { id: 'PRJ002', code: 'ONC-BIO-2025-002', name: 'ONC-BIO-2025-002 肿瘤标志物检测' },
+  { id: 'PRJ003', code: 'IMM-BIO-2025-003', name: 'IMM-BIO-2025-003 免疫分析开发' },
+];
+
+export const procurementRequests: ProcurementRequest[] = [
+  {
+    id: 'PR-0001',
+    code: 'PR-0001',
+    applicant: '何晓明',
+    department: '生物分析部',
+    projectId: 'PRJ001',
+    projectName: 'BRH-BIO-2025-001 生物分析方法验证',
+    category: 'reagent',
+    purpose: '方法验证实验用试剂采购',
+    status: 'completed',
+    currentNode: '已完成',
+    date: '2026-08-20',
+    items: [
+      { itemId: '1', itemName: '乙腈（色谱纯）', itemType: 'reagent', qty: 10, unit: '瓶', receivedQty: 10, pendingQty: 0 },
+      { itemId: '2', itemName: '甲醇（色谱纯）', itemType: 'reagent', qty: 8, unit: '瓶', receivedQty: 8, pendingQty: 0 },
+    ],
+  },
+  {
+    id: 'PR-0002',
+    code: 'PR-0002',
+    applicant: '何晓明',
+    department: '生物分析部',
+    projectId: 'PRJ002',
+    projectName: 'ONC-BIO-2025-002 肿瘤标志物检测',
+    category: 'consumable',
+    purpose: '样品前处理耗材',
+    status: 'purchasing',
+    currentNode: '采购执行中',
+    date: '2026-09-01',
+    items: [
+      { itemId: '3', itemName: '离心管（50mL）', itemType: 'consumable', qty: 500, unit: '个', receivedQty: 0, pendingQty: 500 },
+      { itemId: '4', itemName: '移液器吸头（1000μL）', itemType: 'consumable', qty: 1000, unit: '盒', receivedQty: 0, pendingQty: 1000 },
+    ],
+  },
+  {
+    id: 'PR-0003',
+    code: 'PR-0003',
+    applicant: '何晓明',
+    department: '生物分析部',
+    projectId: 'PRJ001',
+    projectName: 'BRH-BIO-2025-001 生物分析方法验证',
+    category: 'equipment',
+    purpose: 'HPLC色谱柱更换',
+    status: 'rejected',
+    currentNode: '已驳回',
+    date: '2026-09-05',
+    notes: '请补充采购规格说明',
+    items: [
+      { itemId: '5', itemName: 'C18色谱柱', itemType: 'equipment', qty: 3, unit: '支', receivedQty: 0, pendingQty: 3 },
+    ],
+  },
+  {
+    id: 'PR-0004',
+    code: 'PR-0004',
+    applicant: '何晓明',
+    department: '生物分析部',
+    projectId: 'PRJ003',
+    projectName: 'IMM-BIO-2025-003 免疫分析开发',
+    category: 'standard',
+    purpose: '标准品采购',
+    status: 'draft',
+    currentNode: '—',
+    date: '2026-09-09',
+    items: [
+      { itemId: '6', itemName: '白蛋白标准品', itemType: 'standard', qty: 5, unit: '支', receivedQty: 0, pendingQty: 5 },
+    ],
+  },
+];
+
 // 物品统计
 export const inventoryStats = {
   total: items.length,
