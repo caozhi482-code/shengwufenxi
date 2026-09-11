@@ -280,14 +280,66 @@ export const dashboardStats = {
 export const recentAlerts = alerts.slice(0, 5);
 
 // 采购申请
+export type ProcurementCategory =
+  | 'office'
+  | 'chromatographyColumn'
+  | 'equipment'
+  | 'standard'
+  | 'reagent'
+  | 'consumable'
+  | 'blankMatrix'
+  | 'other';
+
+export type ProcurementStatus =
+  | 'draft'
+  | 'submitted'
+  | 'processing'
+  | 'ordered'
+  | 'accepted'
+  | 'stocked'
+  | 'rejected'
+  | 'withdrawn';
+
 export interface ProcurementItem {
   itemId: string;
+  productCode: string;
+  projectCode: string;
   itemName: string;
-  itemType: string;
+  itemType: ProcurementCategory;
+  productType: string;
+  brand: string;
+  spec: string;
+  purityLevel?: string;
+  catalogNo?: string;
+  batchNo?: string;
+  casNo?: string;
+  material?: string;
+  cleanGrade?: string;
+  hazardClass?: string;
+  controlledCategory?: string;
+  licenseNo?: string;
+  sourceType?: string;
+  coldChain?: string;
+  installLocation?: string;
+  technicalParams?: string;
+  matrixType?: string;
+  species?: string;
+  anticoagulant?: string;
+  matrixRequirement?: string;
+  columnSize?: string;
+  particleSize?: string;
+  poreSize?: string;
   qty: number;
   unit: string;
+  expectedArrivalDate: string;
+  supplier?: string;
+  unitPrice?: number;
+  purchaseOrderNo?: string;
+  acceptanceStatus?: 'pending' | 'passed' | 'failed';
+  warehouseLocation?: string;
   receivedQty: number;
   pendingQty: number;
+  remark?: string;
 }
 
 export interface ProcurementRequest {
@@ -297,11 +349,20 @@ export interface ProcurementRequest {
   department: string;
   projectId: string;
   projectName: string;
-  category: string;
+  category: ProcurementCategory;
   purpose: string;
-  status: 'draft' | 'pending' | 'approved' | 'rejected' | 'withdrawn' | 'purchasing' | 'received' | 'completed';
+  budgetOwner?: string;
+  expectedArrivalDate: string;
+  approver: string;
+  approvalFlow: string;
+  status: ProcurementStatus;
   currentNode: string;
   date: string;
+  processor?: string;
+  processedAt?: string;
+  orderNo?: string;
+  warehouseAcceptanceNo?: string;
+  inboundNo?: string;
   notes?: string;
   items: ProcurementItem[];
 }
@@ -323,12 +384,21 @@ export const procurementRequests: ProcurementRequest[] = [
     projectName: 'BRH-BIO-2025-001 生物分析方法验证',
     category: 'reagent',
     purpose: '方法验证实验用试剂采购',
-    status: 'completed',
-    currentNode: '已完成',
+    budgetOwner: 'BA-2026-方法验证',
+    expectedArrivalDate: '2026-09-03',
+    approver: '武琴',
+    approvalFlow: '部门负责人 → 采购负责人',
+    status: 'stocked',
+    currentNode: '已入库',
     date: '2026-08-20',
+    processor: '采购负责人-刘敏',
+    processedAt: '2026-08-21 11:20',
+    orderNo: 'PO-20260821-001',
+    warehouseAcceptanceNo: 'ACC-20260903-001',
+    inboundNo: 'IN-20260903-001',
     items: [
-      { itemId: '1', itemName: '乙腈（色谱纯）', itemType: 'reagent', qty: 10, unit: '瓶', receivedQty: 10, pendingQty: 0 },
-      { itemId: '2', itemName: '甲醇（色谱纯）', itemType: 'reagent', qty: 8, unit: '瓶', receivedQty: 8, pendingQty: 0 },
+      { itemId: '1', productCode: 'MAT-REG-0001', projectCode: 'BRH-BIO-2025-001', itemName: '乙腈', itemType: 'reagent', productType: 'HPLC 试剂', brand: 'Merck', spec: '4L/瓶', purityLevel: 'HPLC', catalogNo: '1000304008', batchNo: 'K202601', casNo: '75-05-8', hazardClass: '易燃', qty: 10, unit: '瓶', expectedArrivalDate: '2026-09-03', supplier: '默克化工', unitPrice: 650, purchaseOrderNo: 'PO-20260821-001', acceptanceStatus: 'passed', warehouseLocation: '试剂架 R-01', receivedQty: 10, pendingQty: 0, remark: '进口试剂，需随货 COA' },
+      { itemId: '2', productCode: 'MAT-REG-0002', projectCode: 'BRH-BIO-2025-001', itemName: '甲醇', itemType: 'reagent', productType: 'HPLC 试剂', brand: 'Merck', spec: '4L/瓶', purityLevel: 'HPLC', catalogNo: '1060094008', batchNo: 'M202603', casNo: '67-56-1', hazardClass: '易燃', qty: 8, unit: '瓶', expectedArrivalDate: '2026-09-03', supplier: '默克化工', unitPrice: 520, purchaseOrderNo: 'PO-20260821-001', acceptanceStatus: 'passed', warehouseLocation: '试剂架 R-01', receivedQty: 8, pendingQty: 0 },
     ],
   },
   {
@@ -340,12 +410,19 @@ export const procurementRequests: ProcurementRequest[] = [
     projectName: 'ONC-BIO-2025-002 肿瘤标志物检测',
     category: 'consumable',
     purpose: '样品前处理耗材',
-    status: 'purchasing',
-    currentNode: '采购执行中',
+    budgetOwner: 'BA-2026-样品检测',
+    expectedArrivalDate: '2026-09-18',
+    approver: '武琴',
+    approvalFlow: '部门负责人 → 采购负责人',
+    status: 'ordered',
+    currentNode: '待仓库验收',
     date: '2026-09-01',
+    processor: '采购负责人-刘敏',
+    processedAt: '2026-09-02 15:40',
+    orderNo: 'PO-20260902-004',
     items: [
-      { itemId: '3', itemName: '离心管（50mL）', itemType: 'consumable', qty: 500, unit: '个', receivedQty: 0, pendingQty: 500 },
-      { itemId: '4', itemName: '移液器吸头（1000μL）', itemType: 'consumable', qty: 1000, unit: '盒', receivedQty: 0, pendingQty: 1000 },
+      { itemId: '3', productCode: 'MAT-CSM-0003', projectCode: 'ONC-BIO-2025-002', itemName: '离心管（50mL）', itemType: 'consumable', productType: '实验耗材', brand: 'Corning', spec: '50支/袋', catalogNo: '430829', material: 'PP', cleanGrade: '无 RNase/DNase', qty: 500, unit: '个', expectedArrivalDate: '2026-09-18', supplier: '康宁代理商', unitPrice: 2.1, purchaseOrderNo: 'PO-20260902-004', acceptanceStatus: 'pending', receivedQty: 0, pendingQty: 500 },
+      { itemId: '4', productCode: 'MAT-CSM-0004', projectCode: 'ONC-BIO-2025-002', itemName: '移液器吸头（1000μL）', itemType: 'consumable', productType: '仪器耗材', brand: 'Eppendorf', spec: '96支/盒', catalogNo: '0030073608', material: 'PP', cleanGrade: '低吸附', qty: 1000, unit: '盒', expectedArrivalDate: '2026-09-18', supplier: '艾本德代理商', unitPrice: 78, purchaseOrderNo: 'PO-20260902-004', acceptanceStatus: 'pending', receivedQty: 0, pendingQty: 1000 },
     ],
   },
   {
@@ -355,14 +432,18 @@ export const procurementRequests: ProcurementRequest[] = [
     department: '生物分析部',
     projectId: 'PRJ001',
     projectName: 'BRH-BIO-2025-001 生物分析方法验证',
-    category: 'equipment',
-    purpose: 'HPLC色谱柱更换',
+    category: 'chromatographyColumn',
+    purpose: 'HPLC 色谱柱更换',
+    budgetOwner: 'BA-2026-方法验证',
+    expectedArrivalDate: '2026-09-20',
+    approver: '武琴',
+    approvalFlow: '部门负责人 → 采购负责人',
     status: 'rejected',
     currentNode: '已驳回',
     date: '2026-09-05',
     notes: '请补充采购规格说明',
     items: [
-      { itemId: '5', itemName: 'C18色谱柱', itemType: 'equipment', qty: 3, unit: '支', receivedQty: 0, pendingQty: 3 },
+      { itemId: '5', productCode: 'MAT-COL-0005', projectCode: 'BRH-BIO-2025-001', itemName: 'C18 色谱柱', itemType: 'chromatographyColumn', productType: '液相色谱柱', brand: 'Waters', spec: '250×4.6 mm', catalogNo: '', columnSize: '250×4.6 mm', particleSize: '5 μm', poreSize: '100Å', qty: 3, unit: '根', expectedArrivalDate: '2026-09-20', receivedQty: 0, pendingQty: 3, remark: '缺少货号和系列型号' },
     ],
   },
   {
@@ -374,11 +455,15 @@ export const procurementRequests: ProcurementRequest[] = [
     projectName: 'IMM-BIO-2025-003 免疫分析开发',
     category: 'standard',
     purpose: '标准品采购',
+    budgetOwner: 'BA-2026-方法开发',
+    expectedArrivalDate: '2026-09-25',
+    approver: '武琴',
+    approvalFlow: '部门负责人 → 采购负责人',
     status: 'draft',
     currentNode: '—',
     date: '2026-09-09',
     items: [
-      { itemId: '6', itemName: '白蛋白标准品', itemType: 'standard', qty: 5, unit: '支', receivedQty: 0, pendingQty: 5 },
+      { itemId: '6', productCode: 'MAT-STD-0006', projectCode: 'IMM-BIO-2025-003', itemName: '白蛋白标准品', itemType: 'standard', productType: 'USP 标准品', brand: 'USP', spec: '100mg/支', sourceType: 'USP', casNo: '9048-46-8', coldChain: '否', qty: 5, unit: '支', expectedArrivalDate: '2026-09-25', receivedQty: 0, pendingQty: 5 },
     ],
   },
 ];
